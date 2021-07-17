@@ -1,4 +1,4 @@
-This is the repo for meeting analysis
+This is the repo for sequential query recommendation
 
 ```
 frontend
@@ -13,6 +13,6 @@ backend
 
 
 Environment:
-- Vue 3.6.3
+- vue@2.6.11
 - d3v5
-- python 3.6
+- python 3.7 or above

@@ -1,4 +1,4 @@
-This is the repo for meeting analysis
+This is the repo for sequential query analysis in NLI
 
 ```
 frontend

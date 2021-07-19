@@ -1,15 +1,23 @@
 This is the repo for sequential query analysis in NLI
 
+1. Download data & model:
 ```
-frontend
+python download_model_data.py
+```
+
+2. set up frontend
+```
+cd frontend
 - npm install
 - npm run serve
 ```
 
+3. set up backend
 ```
-backend
+cd backend
 - python run-data-backend.py
 ```
+
 
 
 Environment:

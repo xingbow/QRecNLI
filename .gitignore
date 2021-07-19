@@ -6,7 +6,7 @@ frontend/node_modules/
 # backend
 __pycache__/
 backend/app/data/
-backend/app/dataService/cache
+backend/app/dataService/cache/
 *.pyc
 
 # Editor directories and files

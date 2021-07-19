@@ -43,10 +43,23 @@ function getTableCols(tableName, callback){
     request(url, params, GET_REQUEST, callback)
 }
 
+function loadTablesContent(tableName, callback){
+    const url = `${dataServerUrl}/load_tables/${tableName}` 
+    const params = {}
+    request(url, params, GET_REQUEST, callback)
+}
+
+function text2SQL(userQuery, callback){
+    const url = `${dataServerUrl}/text2sql/${userQuery[0]}/${userQuery[1]}` 
+    const params = {}
+    request(url, params, GET_REQUEST, callback);
+}
 
 export default {
     dataServerUrl,
     initialization,
     getTables,
-    getTableCols
+    getTableCols,
+    loadTablesContent,
+    text2SQL
 }

@@ -7,9 +7,9 @@
       </nav>
       <div class="d-flex flex-row rowele">
         <div class="p border rounded rowchild" style="width: 25%;">
-          <div class="align-self-center" style="margin-right:5px; width:20%"><h6>Dataset:</h6></div>
-          <div style="width:80%; font-size:15px;">
-            <v-select v-model="dbselected" :options="['Canada', 'United States']"/>
+          <div class="align-self-center" style="margin-right:5px; width:30%"><h6>Databases:</h6></div>
+          <div style="width:70%; font-size:15px;">
+            <v-select v-model="dbselected" :options="dbLists"/>
             </div>
         </div>
         <div class="p border rounded rowchild" style="width: 75%;">
@@ -26,7 +26,9 @@
         </div>
       </div>
       <div class="d-flex flex-row rowele">
-        <div class="p" style="width: 25%; text-align:start;"><Settings></Settings></div>
+        <div class="p" style="width: 25%; text-align:start;">
+          <Settings :tableLists="tableLists"></Settings>
+        </div>
         <div class="p" style="width: 75%; text-align:start;"><ResultView></ResultView></div>
       </div>     
   </div>
@@ -49,19 +51,41 @@ export default {
   },
   data() {
     return {
+        dataset: "spider",
         userText: "",
-        dbselected: "",
+        dbselected: "cinema",
+        dbLists: [],
+        tableLists: [],
     }
   },
   watch: {
     dbselected: function(dbselected){
       console.log("selected db name:",dbselected);
+      dataService.getTables(dbselected, (data)=>{
+        this.tableLists = data["data"];
+        console.log("tables: ", this.tableLists);
+      });
     }
   },
   mounted: function () {
     console.log('d3: ', d3) /* eslint-disable-line */
     console.log('$: ', $) /* eslint-disable-line */
     console.log('_', _.partition([1, 2, 3, 4], n => n % 2)) /* eslint-disable-line */
+    let dataset = this.dataset;
+    let dbselected = this.dbselected;
+    const _this = this;
+    this.$nextTick(()=>{
+        dataService.initialization(dataset, (data)=>{
+          _this.dbLists = data["data"];
+          if(dbselected.length>0){
+            dataService.getTables(dbselected, (data)=>{
+              _this.tableLists = data["data"];
+              console.log("tables: ", _this.tableLists)
+            })
+          }
+      });
+    })
+    
   },
   methods: {
     search: function() {

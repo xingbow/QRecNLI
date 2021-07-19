@@ -2,6 +2,14 @@
     <div class="card">
         <div class="card-block" id="settingsContainer">
             <div style="margin:5px;"><h6>Settings</h6></div>
+            <div style="margin:5px; width:100%; display:inline-flex"><div class="align-self-center"  style="font-size: 14px;">Tables:</div>
+                <v-select style="width:50%; margin-left:5px; font-size: 12px; padding:0px;" v-model="tabselected" :options="tableLists"/>
+            </div>
+            <ul id="table-cols">
+                <li v-for="colInfo in tableCols">
+                  {{ colInfo[0] }}: {{ colInfo[1] }}
+                </li>
+            </ul>
         </div>
     </div>
 </div>

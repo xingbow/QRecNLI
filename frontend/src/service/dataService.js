@@ -24,9 +24,21 @@ function request(url, params, type, callback) {
     })
 }
 
-function initialization(userText, callback) {
-    console.log("user text: ", userText);
-    const url = `${dataServerUrl}/initialization/${userText}`
+function initialization(dataset, callback) {
+    // console.log("dataset: ", dataset);
+    const url = `${dataServerUrl}/initialization/${dataset}`
+    const params = {}
+    request(url, params, GET_REQUEST, callback)
+}
+
+function getTables(dbselected, callback) {
+    const url = `${dataServerUrl}/get_tables/${dbselected}` 
+    const params = {}
+    request(url, params, GET_REQUEST, callback)
+}
+
+function getTableCols(tableName, callback){
+    const url = `${dataServerUrl}/get_cols/${tableName}` 
     const params = {}
     request(url, params, GET_REQUEST, callback)
 }
@@ -35,4 +47,6 @@ function initialization(userText, callback) {
 export default {
     dataServerUrl,
     initialization,
+    getTables,
+    getTableCols
 }

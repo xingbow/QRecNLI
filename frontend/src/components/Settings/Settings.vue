@@ -22,5 +22,8 @@
     #settingsContainer {
         height: 670px;
     }
+    #table-cols {
+        font-size: 13px;
+    }
 
 </style>

@@ -77,15 +77,28 @@ def index():
     return json.dumps('/')
     # return render_template('index.html')
 
-@app.route('/initialization/<user_text>')
-def initialization(user_text):
-    print("user query:", user_text)
-    return json.dumps(user_text)
+@app.route('/initialization/<dataset>')
+def initialization(dataset):
+    if dataset == "spider":
+        db_lists = dataService.db_lists
+        return json.dumps(db_lists)
+    else:
+        raise Exception("currently only support spider dataset")
+
+@app.route("/get_tables/<db_id>")
+def get_tables(db_id):
+    return json.dumps(dataService.get_tables(db_id))
+
+@app.route("/get_cols/<table_name>")
+def get_cols(table_name):
+    return json.dumps(dataService.get_cols(table_name))
 
 @app.route("/text2sql/<user_text>/<db_id>")
 def text2sql(user_text="films and film prices that cost below 10 dollars", db_id = "cinema"):
     sql = dataService.text2sql(user_text, db_id)
     return json.dumps(sql)
+
+
 
 if __name__ == '__main__':
     pass

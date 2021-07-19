@@ -93,10 +93,14 @@ def get_tables(db_id):
 def get_cols(table_name):
     return json.dumps(dataService.get_cols(table_name))
 
+@app.route("/load_tables/<table_name>")
+def load_tables(table_name):
+    return json.dumps(dataService.load_table_content(table_name))
+
 @app.route("/text2sql/<user_text>/<db_id>")
 def text2sql(user_text="films and film prices that cost below 10 dollars", db_id = "cinema"):
-    sql = dataService.text2sql(user_text, db_id)
-    return json.dumps(sql)
+    result = dataService.text2sql(user_text, db_id)
+    return json.dumps(result)
 
 
 

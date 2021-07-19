@@ -14,6 +14,8 @@ window.d3 = d3
 import $ from 'jquery'
 window.$ = $
 
+import "../node_modules/tabulator-tables/dist/css/semantic-ui/tabulator_semantic-ui.css"
+
 require('../node_modules/@fortawesome/fontawesome-free/css/all.css');
 
 Vue.config.productionTip = false

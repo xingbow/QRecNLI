@@ -90,7 +90,7 @@ export default {
   methods: {
     search: function() {
       if(this.userText.length>0){
-        dataService.initialization(this.userText, (data) => {
+        dataService.text2SQL([this.userText,this.dbselected], (data) => {
           console.log('user query result: ', data['data']) /* eslint-disable-line */
         });
       }else{

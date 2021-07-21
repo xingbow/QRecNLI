@@ -30,9 +30,8 @@ from smbop.modules.lxmert import LxmertCrossAttentionLayer
 from smbop.dataset_readers.spider import SmbopSpiderDatasetReader
 import smbop.utils.node_util as node_util
 
-
-
 pathlib.Path(f"cache").mkdir(exist_ok=True)
+
 
 class SmBop(object):
     def __init__(self):
@@ -46,8 +45,8 @@ class SmBop(object):
                 "dataset_path": os.path.join(GV.SPIDER_FOLDER, "database"),
             }
         }
-        self.predictor = Predictor.from_path(GV.SMBOP_PATH, cuda_device=0, overrides=overrides)
-    
+        self.predictor = Predictor.from_path(GV.SMBOP_PATH, cuda_device=-1, overrides=overrides)
+
     def predict(self, q, db_id):
         instance = self.predictor._dataset_reader.text_to_instance(utterance=q, db_id=db_id)
         self.predictor._dataset_reader.apply_token_indexers(instance)

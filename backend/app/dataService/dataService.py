@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+import copy
 import time
 import json
 import os
 import sys
+
 import sqlite3
+import pandas as pd
 
 try:
     import globalVariable as GV
@@ -12,15 +15,20 @@ except ImportError:
     import app.dataService.globalVariable as GV
     import app.dataService.sqlParser as sp
 
+from app.dataService.utils import helpers
+from app.dataService.utils.visRecos import vis_design_combos
+from app.dataService.vlgenie import VLGenie
+
+
 class DataService(object):
-    def __init__(self, dataset = "spider"):
+    def __init__(self, dataset="spider"):
         print("=== begin loading model ===")
         self.sql_parser = sp.SmBop()
         self.dataset = dataset
         if self.dataset == "spider":
             db_lists = []
             db_meta_dict = {}
-            for db_meta in json.load(open(os.path.join(GV.SPIDER_FOLDER,"tables.json"), "r")):
+            for db_meta in json.load(open(os.path.join(GV.SPIDER_FOLDER, "tables.json"), "r")):
                 db_lists.append(db_meta["db_id"])
                 db_meta_dict[db_meta["db_id"]] = db_meta
             self.db_lists = db_lists
@@ -30,7 +38,7 @@ class DataService(object):
             raise Exception("currently only support spider dataset")
         print("=== finish loading model ===")
         return
-    
+
     def get_tables(self, db_id):
         self.db_id = db_id
         table_names = self.db_meta_dict[db_id]["table_names_original"]
@@ -52,7 +60,7 @@ class DataService(object):
         col_data = conn.execute(f'PRAGMA table_info({table_name});').fetchall()
         conn.close()
         return [entry[1] for entry in col_data]
-    
+
     def load_table_content(self, table_name):
         db_path = os.path.join(GV.SPIDER_FOLDER, f"database/{self.db_id}/{self.db_id}.sqlite")
         con = sqlite3.connect(db_path)
@@ -78,6 +86,69 @@ class DataService(object):
         con.close()
         return [sql, data]
 
+    def sql2vl(self, sql, returns):
+        identifiers = helpers.get_sql_identifiers(sql)
+        data_types = helpers.join_data_types(returns, identifiers)
+        values = pd.DataFrame({ident: info['data']
+                               for ident, info in data_types.items()}).to_dict('records')
+
+        attr_list, attr_type_str = helpers.get_attr_datatype_shorthand(data_types)
+        if attr_type_str not in vis_design_combos or not \
+                vis_design_combos[attr_type_str]["support"]:
+            raise ValueError("Unsupported data combinations")
+
+        vl_specs = []
+
+        for d_counter in range(len(vis_design_combos[attr_type_str]["designs"])):
+
+            # Create reference to a design that matches the attribute combination.
+            design = copy.deepcopy(vis_design_combos[attr_type_str]["designs"][d_counter])
+
+            vl_genie_instance = VLGenie()
+
+            # MAP the attributes to the DESIGN spec.
+            for index, attr in enumerate(attr_list):
+                dim = design["priority"][index]  # Dimension: x, y, color, size, tooltip, ...
+                agg = design[dim]["agg"]  # Aggregate: sum, mean, ...
+                datatype = data_types[attr]['type']
+
+                # Update the design with the attribute. It could be referenced later.
+                design[dim]["attr"] = attr
+                design[dim]["is_defined"] = True
+
+                # Set the default VIS mark type. Note: Can be overridden later.
+                vl_genie_instance.set_vis_type(design["vis_type"])
+
+                # Set the encoding Note: Can be overridden later.
+                vl_genie_instance.set_encoding(dim, attr, datatype, agg)
+
+            # If an attribute is dual-encoded e.g. x axis as well as count of y axis,
+            # the attribute is supposed to be encoded to both channels.
+            for encoding in design["mandatory"]:
+                if not design[encoding]["is_defined"]:
+                    attr_reference = design[encoding]["attr_ref"]
+                    attr = design[attr_reference]["attr"]
+                    datatype = data_types[attr]['type']
+                    agg = design[encoding]["agg"]
+                    vl_genie_instance.set_encoding(encoding, attr, datatype, agg)
+
+            # AESTHETICS
+            # ------------------
+            # Format ticks (e.g. 10M, 1k, ... ) for Quantitative axes
+            vl_genie_instance.add_tick_format()
+            # ------------------
+
+            # Enable Tooltips
+            # ------------------
+            vl_genie_instance.add_tooltip()
+            # ------------------
+
+            # Combine the data
+            vl_genie_instance.vl_spec['data'] = {'values': values}
+            vl_specs.append(vl_genie_instance.vl_spec)
+
+        return vl_specs
+
 
 if __name__ == '__main__':
     print('dataService:')
@@ -90,7 +161,3 @@ if __name__ == '__main__':
     # dataService.get_tables("cinema")
     # print(dataService.get_cols("film"))
     # print(dataService.load_table_content("film"))
-
-
-
-

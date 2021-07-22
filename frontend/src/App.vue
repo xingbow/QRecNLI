@@ -91,12 +91,17 @@ export default {
   methods: {
     search: function() {
       if(this.userText.length>0){
+        let userText = this.userText;
         dataService.text2SQL([this.userText,this.dbselected], (data) => {
-          console.log('user query result: ', data['data']); /* eslint-disable-line */
-          let sql = data["data"][0];
+          let sqlResult = {
+            "sql": data["data"][0].trim(),
+            "data": data["data"][1],
+            "nl": userText.trim()
+          }
+          console.log('user query result: ', sqlResult); /* eslint-disable-line */
           // send "sql" to settings and record sql history
-          if(sql.trim().length>0){
-            pipeService.emitSql(sql.trim());
+          if(sqlResult["sql"].length>0){
+            pipeService.emitSql(sqlResult);
           }
         });
       }else{

@@ -1,4 +1,5 @@
 // /* global d3 $ */
+import pipeService from '../../service/pipeService.js';
 import DrawResult from './drawResult.js'
 
 export default {
@@ -10,11 +11,16 @@ export default {
     data() {
         return {
             containerId: 'resultContainer',
+            nl: "",
+            explanations: ""
         }
     },
     watch: {
     },
     mounted: function () {
-        this.drawResult = new DrawResult(this.containerId)
+        this.drawResult = new DrawResult(this.containerId);
+        pipeService.onSQL(sql=>{
+            this.nl = sql["sql"];
+        })
     }
 }

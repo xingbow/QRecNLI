@@ -10,6 +10,9 @@ backend/app/dataService/cache/
 cache
 *.pyc
 
+# jupyter
+.ipnb_*
+
 # Editor directories and files
 .idea
 .vscode

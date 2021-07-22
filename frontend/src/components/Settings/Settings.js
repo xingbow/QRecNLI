@@ -111,7 +111,7 @@ export default {
         });
 
         pipeService.onSQL(sql=>{
-            this.historyData.push(sql["sql"]);
+            this.historyData.push(sql);
             let nodeData = [], edges = [];
             this.historyData.map((h, hi)=>{
                 console.log(hi, h);
@@ -120,7 +120,7 @@ export default {
                     type: 'rect',
                     x: 1/2 * $("#"+this.containerId).width(),
                     y: flowchartConfig["betweenNodeDistance"]*(hi+1),
-                    text: sql["nl"]
+                    text: h["nl"]
                 });
                 // --- draw edges
                 if(hi-1>=0){

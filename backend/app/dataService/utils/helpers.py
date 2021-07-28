@@ -59,9 +59,9 @@ def isdate(datum):
     return False, None
 
 
-def get_attr_datatype_shorthand(data_with_type):
+def get_attr_datatype_shorthand(data_types):
     # Attribute-Datatype pair
-    unsorted_attr_datatype = [(attr, info['type']) for attr, info in data_with_type.items()]
+    unsorted_attr_datatype = [(attr, attr_type) for attr, attr_type in data_types.items()]
 
     # Since the `vis_combo` mapping keys are in a specific order [Q,N,O,T],
     # we will order the list of attributes in this order

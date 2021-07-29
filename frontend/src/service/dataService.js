@@ -67,5 +67,6 @@ export default {
     getTables,
     getTableCols,
     loadTablesContent,
-    text2SQL
+    text2SQL,
+    SQL2VL
 }

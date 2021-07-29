@@ -13,15 +13,15 @@ function request(url, params, type, callback) {
     }
 
     func(url, params).then((response) => {
-        if (response.status === 200) {
-            callback(response)
-        } else {
-            console.error(response) /* eslint-disable-line */
-        }
-    })
-    .catch((error) => {
-        console.error(error) /* eslint-disable-line */
-    })
+            if (response.status === 200) {
+                callback(response)
+            } else {
+                console.error(response) /* eslint-disable-line */
+            }
+        })
+        .catch((error) => {
+            console.error(error) /* eslint-disable-line */
+        })
 }
 
 function initialization(dataset, callback) {
@@ -32,26 +32,32 @@ function initialization(dataset, callback) {
 }
 
 function getTables(dbselected, callback) {
-    const url = `${dataServerUrl}/get_tables/${dbselected}` 
+    const url = `${dataServerUrl}/get_tables/${dbselected}`
     const params = {}
     request(url, params, GET_REQUEST, callback)
 }
 
-function getTableCols(tableName, callback){
-    const url = `${dataServerUrl}/get_cols/${tableName}` 
+function getTableCols(tableName, callback) {
+    const url = `${dataServerUrl}/get_cols/${tableName}`
     const params = {}
     request(url, params, GET_REQUEST, callback)
 }
 
-function loadTablesContent(tableName, callback){
-    const url = `${dataServerUrl}/load_tables/${tableName}` 
+function loadTablesContent(tableName, callback) {
+    const url = `${dataServerUrl}/load_tables/${tableName}`
     const params = {}
     request(url, params, GET_REQUEST, callback)
 }
 
-function text2SQL(userQuery, callback){
-    const url = `${dataServerUrl}/text2sql/${userQuery[0]}/${userQuery[1]}` 
+function text2SQL(userQuery, callback) {
+    const url = `${dataServerUrl}/text2sql/${userQuery[0]}/${userQuery[1]}`
     const params = {}
+    request(url, params, GET_REQUEST, callback);
+}
+
+function SQL2VL(sql, db_id, callback) {
+    const url = `${dataServerUrl}/sql2vis/${sql}/${db_id}`;
+    const params = {};
     request(url, params, GET_REQUEST, callback);
 }
 

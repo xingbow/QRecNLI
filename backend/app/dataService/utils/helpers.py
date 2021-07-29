@@ -1,8 +1,10 @@
 import re
 import sqlparse
 import json
+import numpy as np
 
 from datetime import date, datetime
+from flask.json import JSONDecoder
 
 from app.dataService.utils import constants
 
@@ -133,12 +135,17 @@ def get_attr_type(data):
         return "N"  # N is for Nominal
 
 
-def join_data_types(data, identifiers):
-    inversed_data = [list(e) for e in zip(*data)]
-    data_with_type = {}
-    for i, ident in enumerate(identifiers):
-        data_with_type[ident] = {
-            'data': inversed_data[i],
-            'type': get_attr_type(inversed_data[i])
-        }
-    return data_with_type
+# From https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not
+# -json-serializable
+class NpEncoder(JSONDecoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, np.datetime64):
+            return str(obj)
+        else:
+            return super(NpEncoder, self).default(obj)

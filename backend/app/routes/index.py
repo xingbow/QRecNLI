@@ -7,7 +7,6 @@ from app import app
 from app import dataService
 
 import json
-import numpy as np
 import os
 import re
 import logging
@@ -20,6 +19,7 @@ LOG = logging.getLogger(__name__)
 
 MB = 1 << 20
 BUFF_SIZE = 10 * MB
+
 
 def partial_response(path, start, end=None):
     LOG.info('Requested: %s, %s', start, end)
@@ -56,6 +56,7 @@ def partial_response(path, start, end=None):
     LOG.info('Response: %s', response.headers)
     return response
 
+
 def get_range(request):
     range = request.headers.get('Range')
     LOG.info('Requested: %s', range)
@@ -77,6 +78,7 @@ def index():
     return json.dumps('/')
     # return render_template('index.html')
 
+
 @app.route('/initialization/<dataset>')
 def initialization(dataset):
     if dataset == "spider":
@@ -85,24 +87,35 @@ def initialization(dataset):
     else:
         raise Exception("currently only support spider dataset")
 
+
 @app.route("/get_tables/<db_id>")
 def get_tables(db_id):
     return json.dumps(dataService.get_tables(db_id))
+
 
 @app.route("/get_cols/<table_name>")
 def get_cols(table_name):
     return json.dumps(dataService.get_cols(table_name))
 
+
 @app.route("/load_tables/<table_name>")
 def load_tables(table_name):
     return json.dumps(dataService.load_table_content(table_name))
 
+
 @app.route("/text2sql/<user_text>/<db_id>")
-def text2sql(user_text="films and film prices that cost below 10 dollars", db_id = "cinema"):
-    result = dataService.text2sql(user_text, db_id)
+def text2sql(user_text="films and film prices that cost below 10 dollars", db_id="cinema", execuate=True):
+    sql = dataService.text2sql(user_text, db_id)
+    result = {'sql': sql}
+    if execuate:
+        result['data'] = dataService.sql2data(sql, db_id).values.tolist()
     return json.dumps(result)
 
 
+@app.route("/sql2vis/<sql_text>/<db_id>")
+def sql2vis(sql, db_id="cinema"):
+    specs = dataService.sql2vl(sql, db_id)
+    return json.dumps(specs)
 
 if __name__ == '__main__':
     pass

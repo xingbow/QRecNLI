@@ -94,8 +94,8 @@ export default {
         let userText = this.userText;
         dataService.text2SQL([this.userText,this.dbselected], (data) => {
           let sqlResult = {
-            "sql": data["data"][0].trim(),
-            "data": data["data"][1],
+            "sql": data["data"]["sql"].trim(),
+            "data": data["data"]["data"],
             "nl": userText.trim()
           }
           console.log('user query result: ', sqlResult); /* eslint-disable-line */

@@ -27,30 +27,30 @@ export default {
         }
     },
     watch: {
-        tabselected: function(tabselected){
-            if(tabselected.length>0){
+        tabselected: function(tabselected) {
+            if (tabselected.length > 0) {
                 console.log("select table:", tabselected);
-                dataService.getTableCols(tabselected, data=>{
+                dataService.getTableCols(tabselected, data => {
                     console.log("columns: ", data["data"]);
                     let tableCols = data["data"];
-                    dataService.loadTablesContent(tabselected, (data)=> {
+                    dataService.loadTablesContent(tabselected, (data) => {
                         this.tableCols = tableCols
-                        this.dataTable.setData(data["data"].slice(0,(data["data"].length >= 5) ? 5 : data["data"].length));
+                        this.dataTable.setData(data["data"].slice(0, (data["data"].length >= 5) ? 5 : data["data"].length));
                     })
                 })
             }
-        } 
+        }
     },
-    methods:{
-          onAfterChange(obj){
-              console.log("after update: ", obj.item.itemMap);
-          }
+    methods: {
+        onAfterChange(obj) {
+            console.log("after update: ", obj.item.itemMap);
+        }
     },
-    mounted: function () {
+    mounted: function() {
         console.log("this is settings view");
         // 1. initialize table
         this.dataTable = new Tabulator("#data-table", {
-            autoColumns:true, //create columns from data field names
+            autoColumns: true, //create columns from data field names
             // pagination:"local",       //paginate the data
             // paginationSize:5,
         });
@@ -61,8 +61,8 @@ export default {
             rect: {
                 radius: 5,
                 height: 25,
-                width: 0.9 * $("#"+this.containerId).width(),
-                fill: "white",//'#87CEFA',
+                width: 0.9 * $("#" + this.containerId).width(),
+                fill: "white", //'#87CEFA',
                 stroke: '#1E90FF',
                 strokeWidth: 0.5,
             },
@@ -84,11 +84,11 @@ export default {
             container: document.querySelector('#logicFlow'),
             stopScrollGraph: true,
             stopZoomGraph: true,
-            width: $("#"+this.containerId).width(),
+            width: $("#" + this.containerId).width(),
             height: flowchartConfig["height"],
-            background:{
+            background: {
                 opacity: 0.2,
-                color:"lightgray"
+                color: "lightgray"
             },
             keyboard: {
                 enabled: true
@@ -110,23 +110,24 @@ export default {
             console.log("eventObject: ", eventObject);
         });
 
-        pipeService.onSQL(sql=>{
+        pipeService.onSQL(sql => {
             this.historyData.push(sql);
-            let nodeData = [], edges = [];
-            this.historyData.map((h, hi)=>{
+            let nodeData = [],
+                edges = [];
+            this.historyData.map((h, hi) => {
                 console.log(hi, h);
                 nodeData.push({
                     id: hi.toString(),
                     type: 'rect',
-                    x: 1/2 * $("#"+this.containerId).width(),
-                    y: flowchartConfig["betweenNodeDistance"]*(hi+1),
+                    x: 1 / 2 * $("#" + this.containerId).width(),
+                    y: flowchartConfig["betweenNodeDistance"] * (hi + 1),
                     text: h["nl"]
                 });
                 // --- draw edges
-                if(hi-1>=0){
+                if (hi - 1 >= 0) {
                     edges.push({
                         type: 'line',
-                        sourceNodeId: (hi-1).toString(),
+                        sourceNodeId: (hi - 1).toString(),
                         targetNodeId: hi.toString(),
                     });
                 }
@@ -137,9 +138,9 @@ export default {
                 edges: edges,
             });
             // -- handle overflow
-            if(flowchartConfig["betweenNodeDistance"] * (this.historyData.length+1)>=flowchartConfig["height"]){
-                $(".lf-graph").css("height", flowchartConfig["betweenNodeDistance"] * (this.historyData.length+1)+"px")
-            }     
+            if (flowchartConfig["betweenNodeDistance"] * (this.historyData.length + 1) >= flowchartConfig["height"]) {
+                $(".lf-graph").css("height", flowchartConfig["betweenNodeDistance"] * (this.historyData.length + 1) + "px")
+            }
         })
 
     }

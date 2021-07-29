@@ -4,22 +4,20 @@ import DrawResult from './drawResult.js'
 
 export default {
     name: 'ResultView',
-    components: {
-    },
-    props: {
-    },
+    components: {},
+    props: {},
     data() {
         return {
             containerId: 'resultContainer',
             nl: "",
+            specs: "",
             explanations: ""
         }
     },
-    watch: {
-    },
-    mounted: function () {
+    watch: {},
+    mounted: function() {
         this.drawResult = new DrawResult(this.containerId);
-        pipeService.onSQL(sql=>{
+        pipeService.onSQL(sql => {
             this.nl = sql["sql"];
         })
     }

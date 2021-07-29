@@ -138,7 +138,7 @@ def get_attr_type(data):
 # From https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not
 # -json-serializable
 class NpEncoder(JSONDecoder):
-    def default(self, obj):
+    def default(self, obj, **kwargs):
         if isinstance(obj, np.integer):
             return int(obj)
         elif isinstance(obj, np.floating):
@@ -148,4 +148,4 @@ class NpEncoder(JSONDecoder):
         elif isinstance(obj, np.datetime64):
             return str(obj)
         else:
-            return super(NpEncoder, self).default(obj)
+            return super(NpEncoder, self).default(obj, **kwargs)

@@ -113,7 +113,7 @@ def text2sql(user_text="films and film prices that cost below 10 dollars", db_id
 @api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
 def sql2vis(sql_text, db_id="cinema"):
     specs = current_app.dataService.sql2vl(sql_text, db_id)
-    return jsonify(specs)
+    return json.dumps(specs)
 
 if __name__ == '__main__':
     pass

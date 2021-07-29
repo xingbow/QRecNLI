@@ -101,7 +101,11 @@ export default {
           console.log('user query result: ', sqlResult); /* eslint-disable-line */
           // send "sql" to settings and record sql history
           if(sqlResult["sql"].length>0){
-            pipeService.emitSql(sqlResult);
+            dataService.SQL2VL(sqlResult["sql"], this.dbselected, (data) => {
+              console.log('vl specification result: ', data["data"]); /* eslint-disable-line */
+              sqlResult.vlSpecs = data["data"];
+              pipeService.emitSql(sqlResult);
+            })
           }
         });
       }else{

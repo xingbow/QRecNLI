@@ -134,11 +134,11 @@ class DataService(object):
 
             # Enable Tooltips
             # ------------------
-            vl_genie_instance.add_tooltip()
+            # vl_genie_instance.add_tooltip()
             # ------------------
 
             # Combine the data
-            vl_genie_instance.vl_spec['data'] = {'values': data}
+            vl_genie_instance.vl_spec['data'] = {'values': data.to_dict('records')}
             vl_specs.append(vl_genie_instance.vl_spec)
 
         return vl_specs

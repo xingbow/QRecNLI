@@ -24,7 +24,12 @@
     }
     
     #table-cols {
-        font-size: 13px;
+        font-size: 12px;
+    }
+
+    #data-table {
+        font-size:12px; 
+        height:175px;
     }
 
 </style>

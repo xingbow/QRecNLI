@@ -36,6 +36,7 @@
 
 <script>
 import dataService from './service/dataService.js'
+import pipeService from "./service/pipeService.js"
 /* global d3 $ _ */
 import Settings from './components/Settings/Settings.vue'
 import ResultView from './components/ResultView/ResultView.vue'
@@ -90,8 +91,18 @@ export default {
   methods: {
     search: function() {
       if(this.userText.length>0){
+        let userText = this.userText;
         dataService.text2SQL([this.userText,this.dbselected], (data) => {
-          console.log('user query result: ', data['data']) /* eslint-disable-line */
+          let sqlResult = {
+            "sql": data["data"]["sql"].trim(),
+            "data": data["data"]["data"],
+            "nl": userText.trim()
+          }
+          console.log('user query result: ', sqlResult); /* eslint-disable-line */
+          // send "sql" to settings and record sql history
+          if(sqlResult["sql"].length>0){
+            pipeService.emitSql(sqlResult);
+          }
         });
       }else{
         alert("input text is empty");

@@ -3,23 +3,21 @@
 '''
 from pprint import pprint
 
-from app import app
-from app import dataService
-
 import json
-import numpy as np
 import os
 import re
 import logging
 import mimetypes
-import subprocess
 
-from flask import send_file, request, jsonify, render_template, send_from_directory, Response
+from flask import Blueprint, current_app, request, jsonify, Response
 
 LOG = logging.getLogger(__name__)
 
+api = Blueprint('api', __name__)
+
 MB = 1 << 20
 BUFF_SIZE = 10 * MB
+
 
 def partial_response(path, start, end=None):
     LOG.info('Requested: %s, %s', start, end)
@@ -56,6 +54,7 @@ def partial_response(path, start, end=None):
     LOG.info('Response: %s', response.headers)
     return response
 
+
 def get_range(request):
     range = request.headers.get('Range')
     LOG.info('Requested: %s', range)
@@ -71,38 +70,50 @@ def get_range(request):
         return 0, None
 
 # ################################################################################ route
-@app.route('/')
+@api.route('/')
 def index():
     print('main url!')
     return json.dumps('/')
     # return render_template('index.html')
 
-@app.route('/initialization/<dataset>')
+
+@api.route('/initialization/<dataset>')
 def initialization(dataset):
     if dataset == "spider":
-        db_lists = dataService.db_lists
+        db_lists = current_app.dataService.db_lists
         return json.dumps(db_lists)
     else:
         raise Exception("currently only support spider dataset")
 
-@app.route("/get_tables/<db_id>")
+
+@api.route("/get_tables/<db_id>")
 def get_tables(db_id):
-    return json.dumps(dataService.get_tables(db_id))
+    return json.dumps(current_app.dataService.get_tables(db_id))
 
-@app.route("/get_cols/<table_name>")
+
+@api.route("/get_cols/<table_name>")
 def get_cols(table_name):
-    return json.dumps(dataService.get_cols(table_name))
+    return json.dumps(current_app.dataService.get_cols(table_name))
 
-@app.route("/load_tables/<table_name>")
+
+@api.route("/load_tables/<table_name>")
 def load_tables(table_name):
-    return json.dumps(dataService.load_table_content(table_name))
+    return json.dumps(current_app.dataService.load_table_content(table_name))
 
-@app.route("/text2sql/<user_text>/<db_id>")
-def text2sql(user_text="films and film prices that cost below 10 dollars", db_id = "cinema"):
-    result = dataService.text2sql(user_text, db_id)
+
+@api.route("/text2sql/<user_text>/<db_id>", methods=['GET'])
+def text2sql(user_text="films and film prices that cost below 10 dollars", db_id="cinema", execuate=True):
+    sql = current_app.dataService.text2sql(user_text, db_id)
+    result = {'sql': sql}
+    if execuate:
+        result['data'] = current_app.dataService.sql2data(sql, db_id).values.tolist()
     return json.dumps(result)
 
 
+@api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
+def sql2vis(sql_text, db_id="cinema"):
+    specs = current_app.dataService.sql2vl(sql_text, db_id)
+    return jsonify(specs)
 
 if __name__ == '__main__':
     pass

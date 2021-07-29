@@ -7,8 +7,11 @@ frontend/node_modules/
 __pycache__/
 backend/app/data/
 backend/app/dataService/cache/
-cache/
+cache
 *.pyc
+
+# jupyter
+.ipnb_*
 
 # Editor directories and files
 .idea

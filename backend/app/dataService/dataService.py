@@ -78,19 +78,13 @@ class DataService(object):
 
     def text2sql(self, q, db_id):
         sql = self.sql_parser.predict(q, db_id)
-        print("sql: ", sql)
-        db_path = os.path.join(GV.SPIDER_FOLDER, f"database/{db_id}/{db_id}.sqlite")
-        con = sqlite3.connect(db_path)
-        cur = con.cursor()
-        data = [list(d) for d in cur.execute(sql).fetchall()]
-        con.close()
-        return [sql, data]
+        return sql
 
-    def sql2vl(self, sql, returns):
-        identifiers = helpers.get_sql_identifiers(sql)
-        data_types = helpers.join_data_types(returns, identifiers)
-        values = pd.DataFrame({ident: info['data']
-                               for ident, info in data_types.items()}).to_dict('records')
+    def data2vl(self, data):
+        """Get VegaLite specifications from tabular-style data.
+        data: pd.DataFrame, data to be presented
+        """
+        data_types = {column: helpers.get_attr_type(data[column].tolist()) for column in data}
 
         attr_list, attr_type_str = helpers.get_attr_datatype_shorthand(data_types)
         if attr_type_str not in vis_design_combos or not \
@@ -110,7 +104,7 @@ class DataService(object):
             for index, attr in enumerate(attr_list):
                 dim = design["priority"][index]  # Dimension: x, y, color, size, tooltip, ...
                 agg = design[dim]["agg"]  # Aggregate: sum, mean, ...
-                datatype = data_types[attr]['type']
+                datatype = data_types[attr]
 
                 # Update the design with the attribute. It could be referenced later.
                 design[dim]["attr"] = attr
@@ -128,7 +122,7 @@ class DataService(object):
                 if not design[encoding]["is_defined"]:
                     attr_reference = design[encoding]["attr_ref"]
                     attr = design[attr_reference]["attr"]
-                    datatype = data_types[attr]['type']
+                    datatype = data_types[attr]
                     agg = design[encoding]["agg"]
                     vl_genie_instance.set_encoding(encoding, attr, datatype, agg)
 
@@ -144,10 +138,26 @@ class DataService(object):
             # ------------------
 
             # Combine the data
-            vl_genie_instance.vl_spec['data'] = {'values': values}
+            vl_genie_instance.vl_spec['data'] = {'values': data}
             vl_specs.append(vl_genie_instance.vl_spec)
 
         return vl_specs
+    
+    def sql2data(self, sql, db_id):
+        identifiers = helpers.get_sql_identifiers(sql)
+
+        db_path = os.path.join(GV.SPIDER_FOLDER, f"database/{db_id}/{db_id}.sqlite")
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        data = [list(d) for d in cur.execute(sql).fetchall()]
+        con.close()
+
+        data = pd.DataFrame(data, columns=identifiers)
+        return data
+
+    
+    def sql2vl(self, sql, db_id):
+        return self.data2vl(self.sql2data(sql, db_id))
 
 
 if __name__ == '__main__':

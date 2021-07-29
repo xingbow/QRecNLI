@@ -1,6 +1,9 @@
 This is the repo for sequential query analysis in NLI
 
-1. Download data & model (we use SmBop for text2sql. For the environment settings for the model, please refer to [*my forked version*](https://github.com/xingbow/SmBop)):
+0. Install python packages (suggest using conda for package management):
+[Requirements](https://github.com/xingbow/SmBop/blob/main/requirements.txt)
+
+1. Download data & model (we use SmBop for text2sql.
 ```
 python download_model_data.py
 ```

@@ -1,8 +1,8 @@
 import os
 import sys
-import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
+# import nltk
+# nltk.download('punkt')
+# nltk.download('stopwords')
 import torch
 import pathlib
 import numpy as np

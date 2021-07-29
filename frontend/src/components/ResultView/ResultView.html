@@ -8,8 +8,9 @@
                 <li><span class="badge badge-info">SQL</span>: {{nl}}</li>
                 <li><span class="badge badge-info">Explanations</span>: {{explanations}}</li>
                 <li><span class="badge badge-info">Visualizations</span>:</li>
-                <div>
-
+                <div v-for="(spec, index) in vlSpecs">
+                    <vega-lite :spec="spec"></vega-lite>
+                    <!-- <div>{{spec}}</div> -->
                 </div>
             </ul>
         </div>

@@ -24,4 +24,8 @@
         height: 670px;
     }
 
+    .vis-container {
+        display: inline-flex;
+    }
+
 </style>

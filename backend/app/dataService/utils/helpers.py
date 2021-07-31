@@ -6,7 +6,10 @@ import numpy as np
 from datetime import date, datetime
 from flask.json import JSONDecoder
 
-from app.dataService.utils import constants
+try:
+    from app.dataService.utils import constants
+except ImportError:
+    from utils import constants
 
 
 # Copied from NL4DV

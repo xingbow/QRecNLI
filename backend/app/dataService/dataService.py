@@ -11,20 +11,24 @@ import pandas as pd
 try:
     import globalVariable as GV
     import sqlParser as sp
+    from utils import helpers
+    from utils.visRecos import vis_design_combos
+    from vlgenie import VLGenie
 except ImportError:
     import app.dataService.globalVariable as GV
     import app.dataService.sqlParser as sp
-
-from app.dataService.utils import helpers
-from app.dataService.utils.visRecos import vis_design_combos
-from app.dataService.vlgenie import VLGenie
+    from app.dataService.utils import helpers
+    from app.dataService.utils.visRecos import vis_design_combos
+    from app.dataService.vlgenie import VLGenie
 
 
 class DataService(object):
     def __init__(self, dataset="spider"):
         print("=== begin loading model ===")
-        self.sql_parser = sp.SmBop()
+        self.text2sql_model = sp.SmBop()
+        self.sql_parser = sp.SQLParser()
         self.dataset = dataset
+        self.global_variable = GV
         if self.dataset == "spider":
             db_lists = []
             db_meta_dict = {}
@@ -77,8 +81,19 @@ class DataService(object):
         return table_data
 
     def text2sql(self, q, db_id):
-        sql = self.sql_parser.predict(q, db_id)
+        sql = self.text2sql_model.predict(q, db_id)
         return sql
+    
+    def parsesql(self, sql="SELECT name ,  country ,  age FROM singer group by country having count(*) > 2", db_id="concert_singer"):
+        """parse sql data based on spider database
+        sql: sql query
+        db_id: db name in Spider database
+        """
+        if self.dataset == "spider":
+            parsed = self.sql_parser.parse_sql(sql, db_id)
+            return parsed
+        else:
+            raise Exception(f"Can not support {self.dataset} dataset")
 
     def data2vl(self, data):
         """Get VegaLite specifications from tabular-style data.
@@ -171,3 +186,6 @@ if __name__ == '__main__':
     # dataService.get_tables("cinema")
     # print(dataService.get_cols("film"))
     # print(dataService.load_table_content("film"))
+    # 3. parse sql
+    parsed = dataService.parsesql()
+    print(parsed)

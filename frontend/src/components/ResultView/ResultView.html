@@ -8,7 +8,7 @@
                 <li><span class="badge badge-info">SQL</span>: {{nl}}</li>
                 <li><span class="badge badge-info">Explanations</span>: {{explanations}}</li>
                 <li><span class="badge badge-info">Visualizations</span>:</li>
-                <div v-for="(spec, index) in vlSpecs">
+                <div class="vis-container" v-for="(spec, index) in vlSpecs" style="pointer-events: none;">
                     <vega-lite :spec="spec"></vega-lite>
                     <!-- <div>{{spec}}</div> -->
                 </div>

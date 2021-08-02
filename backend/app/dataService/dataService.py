@@ -25,7 +25,7 @@ except ImportError:
 class DataService(object):
     def __init__(self, dataset="spider"):
         print("=== begin loading model ===")
-        self.text2sql_model = sp.SmBop()
+        # self.text2sql_model = sp.SmBop()
         self.sql_parser = sp.SQLParser()
         self.dataset = dataset
         self.global_variable = GV
@@ -88,6 +88,7 @@ class DataService(object):
         """parse sql data based on spider database
         sql: sql query
         db_id: db name in Spider database
+        return: {"sql_parse": sql_label, "table": table}
         """
         if self.dataset == "spider":
             parsed = self.sql_parser.parse_sql(sql, db_id)

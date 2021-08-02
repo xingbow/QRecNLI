@@ -1,10 +1,10 @@
 // /* global d3 $ */
 import pipeService from '../../service/pipeService.js';
 import DrawResult from './drawResult.js';
-import Vue from 'vue'
-import VueVega from 'vue-vega'
+import VueVega from 'vue-vega';
+import Vue from 'vue';
 
-Vue.use(VueVega)
+Vue.use(VueVega);
 
 export default {
     name: 'ResultView',

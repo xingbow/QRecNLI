@@ -52,6 +52,7 @@ class SQLParser(object):
         # print("sql_label: {}".format(sql_label))
         return {"sql_parse": sql_label, "table": table}
 
+
 class SmBop(object):
     def __init__(self):
         overrides = {

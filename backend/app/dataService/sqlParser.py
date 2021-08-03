@@ -30,7 +30,27 @@ from smbop.modules.lxmert import LxmertCrossAttentionLayer
 from smbop.dataset_readers.spider import SmbopSpiderDatasetReader
 import smbop.utils.node_util as node_util
 
+# process SQL
+try:
+    from utils.processSQL import process_sql
+except ImportError:
+    from app.dataService.utils.processSQL import process_sql
+
 pathlib.Path(f"cache").mkdir(exist_ok=True)
+
+class SQLParser(object):
+    def __init__(self):
+        self.db = GV.SPIDER_FOLDER
+        self.db_schema, self.db_names, self.tables = process_sql.get_schemas_from_json(os.path.join(self.db, "tables.json"))
+        
+    def parse_sql(self, sql="SELECT name ,  country ,  age FROM singer group by country having count(*) > 2", db_id="concert_singer"):
+        schema = self.db_schema[db_id]
+        table = self.tables[db_id]
+        schema = process_sql.Schema(schema, table)
+
+        sql_label = process_sql.get_sql(schema, sql)
+        # print("sql_label: {}".format(sql_label))
+        return {"sql_parse": sql_label, "table": table}
 
 
 class SmBop(object):
@@ -56,6 +76,8 @@ class SmBop(object):
 
 
 if __name__=='__main__':
-    smbop = SmBop()
-    result = smbop.predict("films and film prices that cost below 10 dollars", "cinema")
-    print("result: {}".format(result))
+    # smbop = SmBop()
+    # result = smbop.predict("films and film prices that cost below 10 dollars", "cinema")
+    # print("result: {}".format(result))
+    sp = SQLParser()
+    sp.parse_sql()

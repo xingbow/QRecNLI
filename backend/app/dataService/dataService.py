@@ -24,9 +24,8 @@ except ImportError:
 
 class DataService(object):
     def __init__(self, dataset="spider"):
-        print("=== begin loading model ===")
-        self.text2sql_model = sp.SmBop()
-        self.sql_parser = sp.SQLParser()
+        self.text2sql_model_loaded = False
+        self.sql_parser_loaded = False
         self.dataset = dataset
         self.global_variable = GV
         if self.dataset == "spider":
@@ -40,8 +39,28 @@ class DataService(object):
             self.db_id = ""
         else:
             raise Exception("currently only support spider dataset")
-        print("=== finish loading model ===")
         return
+
+    def _load_text2sql_model(self, verbose=True):
+        if self.text2sql_model_loaded:
+            return
+        if verbose:
+            print("=== begin loading model ===")
+        self.text2sql_model = sp.SmBop()
+        self.text2sql_model_loaded = True
+        if verbose:
+            print("=== finish loading model ===")
+
+    def _load_sql_parser(self, verbose=True):
+        if self.sql_parser_loaded:
+            return
+        if verbose:
+            print("=== begin loading sql parser ===")
+        self.sql_parser = sp.SQLParser()
+        self.sql_parser_loaded = True
+        if verbose:
+            print("=== finish loading sql parser ===")
+        
 
     def get_tables(self, db_id):
         self.db_id = db_id
@@ -81,6 +100,7 @@ class DataService(object):
         return table_data
 
     def text2sql(self, q, db_id):
+        self._load_text2sql_model()
         sql = self.text2sql_model.predict(q, db_id)
         return sql
     
@@ -91,6 +111,7 @@ class DataService(object):
         return: {"sql_parse": sql_label, "table": table}
         """
         if self.dataset == "spider":
+            self._load_sql_parser()
             parsed = self.sql_parser.parse_sql(sql, db_id)
             return parsed
         else:

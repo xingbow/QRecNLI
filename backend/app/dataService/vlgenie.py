@@ -1,4 +1,7 @@
-from app.dataService.utils import constants, helpers
+try:
+    from app.dataService.utils import constants, helpers
+except ImportError:
+    from utils import constants, helpers
 
 
 class VLGenie:

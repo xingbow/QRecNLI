@@ -28,4 +28,9 @@
         display: inline-flex;
     }
 
+    #vegaLiteContainer {
+        height: 550px;
+        overflow: scroll;
+    }
+
 </style>

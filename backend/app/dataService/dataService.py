@@ -25,7 +25,7 @@ except ImportError:
 class DataService(object):
     def __init__(self, dataset="spider"):
         print("=== begin loading model ===")
-        self.text2sql_model = sp.SmBop()
+        # self.text2sql_model = sp.SmBop()
         self.sql_parser = sp.SQLParser()
         self.dataset = dataset
         self.global_variable = GV

@@ -119,7 +119,8 @@ class T5FineTuner(pl.LightningModule):
     return tqdm_dict
 
   def train_dataloader(self):
-    train_dataset = get_dataset(tokenizer=self.tokenizer, type_path="train", args=self.myparams)
+    # train_dataset = get_dataset(tokenizer=self.tokenizer, type_path="train", args=self.myparams)
+    train_dataset = get_spider_dataset(tokenizer=self.tokenizer)
     dataloader = DataLoader(train_dataset, batch_size=self.myparams.train_batch_size, drop_last=True, shuffle=True, num_workers=4)
     t_total = (
         (len(dataloader.dataset) // (self.myparams.train_batch_size * max(1, self.myparams.n_gpu)))
@@ -133,7 +134,8 @@ class T5FineTuner(pl.LightningModule):
     return dataloader
 
   def val_dataloader(self):
-    val_dataset = get_dataset(tokenizer=self.tokenizer, type_path="test", args=self.myparams)
+    # val_dataset = get_dataset(tokenizer=self.tokenizer, type_path="test", args=self.myparams)
+    val_dataset = get_spider_dataset(tokenizer=self.tokenizer)
     return DataLoader(val_dataset, batch_size=self.myparams.eval_batch_size, num_workers=4)
 
 args_dict = dict(
@@ -160,6 +162,14 @@ args_dict = dict(
 from torch.utils.data import Dataset, DataLoader
 from datasets import load_dataset
 from random import random
+
+import sys
+import os
+sys.path.append( os.path.join( os.path.dirname(__file__), '../../'))
+import globalVariable as GV
+
+
+# class SeqSpiderDataset(Dataset):
 
 class ImdbDataset(Dataset):
   def __init__(self, tokenizer, dataset, split, text_labels, max_len=512):
@@ -188,7 +198,9 @@ class ImdbDataset(Dataset):
     REPLACE_NO_SPACE = re.compile("[.;:!\'?,\"()\[\]]")
     REPLACE_WITH_SPACE = re.compile("(<br\s*/><br\s*/>)|(\-)|(\/)")
 
+    print("len(self.dataset_split): {}".format(len(self.dataset_split)))
     for row in self.dataset_split:
+      # print(row)
       text = row['text']
       line = text.strip()
       line = REPLACE_NO_SPACE.sub("", line) 
@@ -219,6 +231,63 @@ class ImdbDataset(Dataset):
 #############
 def get_dataset(tokenizer, type_path, args):
   return ImdbDataset(tokenizer, load_dataset("imdb"), type_path, ['negative</s>', 'positive</s>'], max_len=512)
+
+class SeqSpiderDataset(Dataset):
+    def __init__(self, tokenizer, data, max_len=512):
+        self.source = data["source"]
+        self.target = data["target"]
+        self.meta = data["meta"]
+        self.max_len = max_len
+        self.tokenizer = tokenizer
+        self.inputs = []
+        self.targets = []
+
+        self._build()
+    def __len__(self):
+        return len(self.inputs)
+  
+    def __getitem__(self, index):
+        source_ids = self.inputs[index]["input_ids"].squeeze()
+        target_ids = self.targets[index]["input_ids"].squeeze()
+
+        src_mask    = self.inputs[index]["attention_mask"].squeeze()  # might need to squeeze
+        target_mask = self.targets[index]["attention_mask"].squeeze()  # might need to squeeze
+
+        return {"source_ids": source_ids, "source_mask": src_mask, "target_ids": target_ids, "target_mask": target_mask}
+    def _build(self):
+        REPLACE_NO_SPACE = re.compile("[.;:!\'?,\"()\[\]]")
+        REPLACE_WITH_SPACE = re.compile("(<br\s*/><br\s*/>)|(\-)|(\/)")
+
+        print("len(self.sources): {}".format(len(self.source)))
+    
+        for rs, rt, rm in zip(self.source, self.target, self.meta):
+            rs_ = ", ".join(rs).strip().lower() + "</s>"
+            rt_ = ", ".join(rt).strip().lower() + "</s>"
+            rm_ = " *, " + ", ".join(rm).strip().lower() + "</s>"
+            
+            # print(rs_ + rm_)
+            # print()
+            # print(rt_ + rm_)
+            # raise
+
+            # tokenize inputs
+            tokenized_inputs = self.tokenizer.batch_encode_plus(
+            [rs_ + rm_], max_length=self.max_len, padding='max_length', truncation=True, return_tensors="pt"
+            )
+            # tokenize targets
+            tokenized_targets = self.tokenizer.batch_encode_plus(
+            [rt_], max_length=self.max_len, padding='max_length', truncation=True, return_tensors="pt"
+            )
+
+            self.inputs.append(tokenized_inputs)
+            self.targets.append(tokenized_targets)
+
+
+def get_spider_dataset(tokenizer):
+  with open( os.path.join(GV.SPIDER_FOLDER, "query_seq_train.json"), "r") as f:
+    data = json.load(f)
+  return SeqSpiderDataset(tokenizer, data)
+
 
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained('t5-base')

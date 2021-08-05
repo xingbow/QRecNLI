@@ -26,3 +26,4 @@ cache
 t5_imdb_sentiment
 t5_base_imdb_sentiment
 lightning_logs
+t5_seq

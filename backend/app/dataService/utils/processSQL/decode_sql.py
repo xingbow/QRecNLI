@@ -27,8 +27,10 @@
 ################################
 import sys
 import os
-sys.path.append( os.path.join( os.path.dirname(__file__), '../../'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 import globalVariable as GV
+
 
 def decode_val_unit(val_unit, table):
     # val_unit: (unit_op, col_unit1, col_unit2)
@@ -39,6 +41,7 @@ def decode_val_unit(val_unit, table):
     col_unit2_decoded = decode_col_unit(col_unit2, table)
     return (unit_op, col_unit1_decoded, col_unit2_decoded)
 
+
 def decode_col_unit(col_unit, table):
     # col_unit: (agg_id, col_id, isDistinct(bool))
     if col_unit == None:
@@ -47,18 +50,20 @@ def decode_col_unit(col_unit, table):
         agg_id = GV.AGG_OPS[col_unit[0]]
         col = table["column_names"][col_unit[1]]
         # TODO: handle * with from clause
-        if col[1]!="*":
+        if col[1] != "*":
             col_name = table["table_names"][col[0]] + ": " + col[1]
         else:
             col_name = col[1]
         distinct_flag = "distinct" if col_unit[2] else ""
         return (agg_id, col_name, distinct_flag)
 
+
 def decode_val(val, table):
     if isinstance(val, float) or isinstance(val, str):
         return val
     elif isinstance(val, dict):
         return decode_sql(val, table)
+
 
 def decode_table_unit(table_unit, table):
     table_type = table_unit[0]
@@ -67,8 +72,9 @@ def decode_table_unit(table_unit, table):
     elif table_type == "sql":
         return (table_type, decode_sql(table_unit[1], table))
 
+
 def decode_condition(cond, table):
-    if cond not in ["and", "or"] and len(cond)>0:
+    if cond not in ["and", "or"] and len(cond) > 0:
         not_op = cond[0]
         op_id = GV.WHERE_OPS[cond[1]]
         val_unit = decode_val_unit(cond[2], table)
@@ -79,6 +85,7 @@ def decode_condition(cond, table):
     else:
         return cond
 
+
 def decode_from(from_data, table):
     table_units = from_data["table_units"]
     conds = from_data["conds"]
@@ -88,25 +95,29 @@ def decode_from(from_data, table):
         "conds": [decode_condition(cond, table) for cond in conds]
     }
 
-def decode_select(sql_data, table):
+
+def decode_select(sql_data, table, from_data=None):
     # NOTICE: here we use whole sql_data as input since * may be used in the select clause, 
     # we need from clause to identify the corresponding tables
     # 'select': (isDistinct(bool), [(agg_id, val_unit), (agg_id, val_unit), ...])
-    select = sql_data["select"]
-    distinct_flag = "distinct" if select[0] else ""
+    distinct_flag = "distinct" if sql_data[0] else ""
     select_units = []
-    for s in select[1]:
+    for s in sql_data[1]:
         agg_id = GV.AGG_OPS[s[0]]
         u, col1, col2 = decode_val_unit(s[1], table)
-        if col1[1] == "*":
-            get_table_name = " ".join([t[1] for t in decode_from(sql_data["from"], table)["table_units"] if t[0]=="table_unit"])
-            col1 = (col1[0], get_table_name + ": "+ col1[1], col1[2])
-        if col2 is not None:
-            if col2[1] == "*":
-                get_table_name = " ".join([t[1] for t in decode_from(sql_data["from"], table)["table_units"] if t[0]=="table_unit"])
-                col2 = (col2[0], get_table_name + ": "+ col2[1], col2[2])
+        if from_data is not None:
+            if col1[1] == "*":
+                get_table_name = " ".join(
+                    [t[1] for t in from_data["table_units"] if t[0] == "table_unit"])
+                col1 = (col1[0], get_table_name + ": " + col1[1], col1[2])
+            if col2 is not None:
+                if col2[1] == "*":
+                    get_table_name = " ".join(
+                        [t[1] for t in from_data["table_units"] if t[0] == "table_unit"])
+                    col2 = (col2[0], get_table_name + ": " + col2[1], col2[2])
         select_units.append((agg_id, (u, col1, col2)))
-    return (distinct_flag, select_units)
+    return distinct_flag, select_units
+
 
 def decode_where(where_data, table):
     if len(where_data) == 0:
@@ -114,16 +125,19 @@ def decode_where(where_data, table):
     else:
         return [decode_condition(cond, table) for cond in where_data]
 
+
 def decode_groupby(groupby_data, table):
     return [decode_col_unit(col_unit, table) for col_unit in groupby_data]
 
+
 def decode_orderby(orderby_data, table):
-    if len(orderby_data)>0:
+    if len(orderby_data) > 0:
         order = orderby_data[0]
         val_units = [decode_val_unit(val_unit, table) for val_unit in orderby_data[1]]
         return (order, val_units)
     else:
         return []
+
 
 def decode_having(having_data, table):
     if len(having_data) == 0:
@@ -131,8 +145,10 @@ def decode_having(having_data, table):
     else:
         return [decode_condition(cond, table) for cond in having_data]
 
+
 def decode_limit(limit_data, table):
     return limit_data
+
 
 def decode_intersect(intersect_data, table):
     if intersect_data is None:
@@ -140,11 +156,13 @@ def decode_intersect(intersect_data, table):
     else:
         return decode_sql(intersect_data, table)
 
+
 def decode_except(except_data, table):
     if except_data is None:
         return None
     else:
         return decode_sql(except_data, table)
+
 
 def decode_union(union_data, table):
     if union_data is None:
@@ -152,9 +170,10 @@ def decode_union(union_data, table):
     else:
         return decode_sql(union_data, table)
 
+
 def decode_sql(sql_data, table):
-    select_data = decode_select(sql_data, table)
     from_data = decode_from(sql_data["from"], table)
+    select_data = decode_select(sql_data["select"], table, from_data)
     where_data = decode_where(sql_data["where"], table)
     groupby_data = decode_groupby(sql_data["groupBy"], table)
     orderby_data = decode_orderby(sql_data["orderBy"], table)

@@ -99,7 +99,7 @@ def decode_select(sql_data, table):
         agg_id = GV.AGG_OPS[s[0]]
         u, col1, col2 = decode_val_unit(s[1], table)
         if col1[1] == "*":
-            get_table_name = " ".join([t[1] for t in decode_from(sql_data["from"], table)["table_units"] if t[0]=="table_unit"])
+            get_table_name = ", ".join([t[1] for t in decode_from(sql_data["from"], table)["table_units"] if t[0]=="table_unit"])
             col1 = (col1[0], get_table_name + ": "+ col1[1], col1[2])
         if col2 is not None:
             if col2[1] == "*":

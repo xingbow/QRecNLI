@@ -175,3 +175,15 @@ def decode_sql(sql_data, table):
         "except": except_data,
         "union": union_data
     }
+
+def extract_select_names(select_ents):
+    select_names = []
+    for s in select_ents[1]:
+        agg_id = s[0]
+        val_unit = s[1]
+        unit_op, col_unit1, col_unit2 = val_unit
+        col_string = col_unit1[1]
+        if col_unit2 is not None:
+            col_string += ", " + col_unit2[1]
+        select_names.append(col_string)
+    return select_names

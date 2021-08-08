@@ -62,9 +62,12 @@ class queryRecommender(object):
 
     def cal_cosine_sim(self, sen0, sen1):
         """
-        # calculate cosine similairty between sen0 and sen1
-        # sen0: list of str or single str
-        # sen1: list of str or single str
+        - calculate cosine similairty between sen0 and sen1
+        INPUT:
+        - sen0: list of str or single str
+        - sen1: list of str or single str
+        OUTPUT:
+        - cosine similarity between sen0 and sen1
         """
         embedd0 = self.model.encode(sen0, convert_to_tensor=True)
         embedd1 = self.model.encode(sen1, convert_to_tensor=True)
@@ -95,17 +98,19 @@ class queryRecommender(object):
         """
         freq_combo = fpmax(df, min_support=self.item_sim, use_colnames=True)
         freq_combo["itemlen"] = freq_combo["itemsets"].apply(len)
-        freq_combo = freq_combo.sort_values(["itemsets", "support"], ascending=False).reset_index(drop=True)
         # filter regarding to condition
         if len(filter_set) > 0:
-            freq_combo = freq_combo.iloc[[rowid for rowid, row in enumerate(freq_combo["itemsets"]) if ~row.issubset(filter_set)]]
+            freq_combo = freq_combo.iloc[[rowid for rowid, row in enumerate(freq_combo["itemsets"]) if row.issubset(filter_set)==False]]
+        freq_combo = freq_combo.sort_values(["itemlen", "support"], ascending=False).reset_index(drop=True)
         return freq_combo
 
     def query_suggestion(self, db_df_bin, contexts=[], top_n = 3):
         """
         TODO: 
         1. consider clustering input columns based on their semantics and operate cols on cluster levels
-        2. consider user specified combo of interest that are not frequently seen in the db
+        2. consider user specified (combo of interest) that are not frequently seen in the db
+        3. IMPLICIT feedback: selection of recomended items, indicating items that are not selected is not of users' interest,
+        consider decreasing the rank of unselected recommended items
         """
         # A. initial recommendation
         if len(contexts) == 0:
@@ -119,6 +124,7 @@ class queryRecommender(object):
         # B. recommendation considering the contexts information
         columns = db_df_bin.columns
         context_cols = np.concatenate(contexts)
+        # print(f"context_cols: {context_cols}")
         rest_cols = columns.difference(context_cols)
 
         all_sims = np.zeros(len(rest_cols))
@@ -133,6 +139,7 @@ class queryRecommender(object):
             all_sims += semantic_sim_scores + self.beta * db_relevance
 
         top_n_rest_cols = rest_cols[(-all_sims).argsort()][:top_n]
+        # print(top_n_rest_cols)
         self.item_sim *= self.alpha
         freq_combo = self.get_freq_combo(db_df_bin[list(context_cols) + list(top_n_rest_cols)], filter_set=set(context_cols))
         freq_cols = [list(v) for v in freq_combo["itemsets"].values]
@@ -152,5 +159,5 @@ if __name__ == "__main__":
     next_cols = qr.query_suggestion(db_bin, select_items)
     print(f"next_cols: {next_cols}")
     print()
-    next_cols = qr.query_suggestion(db_bin, freq_combo[:2])
+    next_cols = qr.query_suggestion(db_bin, select_items + [next_cols[0]])
     print(f"next_cols: {next_cols}")

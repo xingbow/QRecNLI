@@ -96,12 +96,14 @@ class queryRecommender(object):
         db_df_bin = db_df_bin[db_df_bin.columns[(-np.array(sim_sum)).argsort()]]
         return db_df_bin
 
-    def get_freq_combo(self, df, filter_set = set([])):
+    def get_freq_combo(self, df, filter_set = set([]), support = None):
         """
         - input: dataframe (m * n) => binary values
         - output: frequent combo => columns: support, itemsets, itemlen
         """
-        freq_combo = fpmax(df, min_support=self.item_sim, use_colnames=True)
+        if support is None:
+            support = self.item_sim
+        freq_combo = fpmax(df, min_support = support, use_colnames=True)
         freq_combo["itemlen"] = freq_combo["itemsets"].apply(len)
         # filter regarding to condition
         if len(filter_set) > 0:
@@ -141,19 +143,28 @@ class queryRecommender(object):
                 groupby_sugg.append([])
         return groupby_sugg
 
-    def query_suggestion(self, db_df_bin, contexts=[], min_support = None,top_n = 3):
+    def get_opt(self, df, cols):
+        """
+        recommend  `opt` items: `avg`, `min`, `max`, `count`, `sum`
+        - input: binary feature vectors (size: db_col_num * input_col_num) for input table cols
+        - output: groupby cols
+        """
+        return
+
+    def query_suggestion(self, db_df_bin, contexts=[], min_support = None, top_n = 3):
         """
         TODO: 
         1. consider clustering input columns based on their semantics and operate cols on cluster levels
         2. consider user specified (combo of interest) that are not frequently seen in the db
         3. IMPLICIT feedback: selection of recomended items, indicating items that are not selected is not of users' interest,
         consider decreasing the rank of unselected recommended items
+        4. ranking considering `groupby` and `opt` items
         """
         support = self.item_sim if min_support is None else min_support
 
         # initial recommendation
         if len(contexts) == 0:
-            freq_combo = self.get_freq_combo(db_df_bin)
+            freq_combo = self.get_freq_combo(db_df_bin, set([]), support)
             union_set = frozenset().union(*freq_combo["itemsets"].values)
             next_cols = [list(v) for v in freq_combo["itemsets"].values]
             if len(union_set) < 10:
@@ -182,13 +193,18 @@ class queryRecommender(object):
             all_sims += semantic_sim_scores + self.beta * db_relevance
 
         top_n_rest_cols = rest_cols[(-all_sims).argsort()][:top_n]
-        # print(top_n_rest_cols)
         # TODO: pay attention to item similarity threshold change & reinitialization
-        self.item_sim *= self.alpha
-        freq_combo = self.get_freq_combo(db_df_bin[list(context_cols) + list(top_n_rest_cols)], filter_set=set(context_cols))
+        support = self.item_sim * math.pow(self.alpha, len(contexts))
+        # print(f"support: {support}")
+        # self.item_sim *= self.alpha
+        # print(f"self.item_sim: {self.item_sim}")
+        freq_combo = self.get_freq_combo(db_df_bin[list(context_cols) + list(top_n_rest_cols)], filter_set=set(context_cols), support=support)
         freq_cols = [list(v) for v in freq_combo["itemsets"].values]
         if len(freq_cols) < top_n:
-            freq_cols += [[col] for col in top_n_rest_cols if col not in freq_cols]
+            # print("*"*10)
+            # print(top_n_rest_cols, freq_cols)
+            # print("*"*10)
+            freq_cols += [[col] for col in top_n_rest_cols if col not in np.concatenate(freq_cols)]
 
         # get `groupby` items
         groupby_sugg = self.get_groupby(db_df_bin, freq_cols)
@@ -199,14 +215,21 @@ if __name__ == "__main__":
     qr = queryRecommender(test_table_cols)
     db_bin = qr.search_sim_dbs(test_topic.replace("_"," ").strip())
     # initial recommendation
-    freq_combo, groupby_sugg = qr.query_suggestion(db_bin)
+    freq_combo, groupby_sugg = qr.query_suggestion(db_bin, [], None)
     select_items = [freq_combo[0]]
-    print(f"select_items: {select_items}, \n groupby_sugg: {groupby_sugg}")
+    print(len(freq_combo), len(groupby_sugg))
+    print(f"select_items: {select_items}")
+    print(f"groupby_sugg: {groupby_sugg}")
     print()
     # next query suggestion
-    next_cols, groupby_sugg = qr.query_suggestion(db_bin, select_items)
-    print(f"next_cols: {next_cols}, \n groupby_sugg: {groupby_sugg}")
+    next_cols, groupby_sugg = qr.query_suggestion(db_bin, select_items, None)
+    print(len(next_cols), len(groupby_sugg))
+    print(f"select_items: {select_items+ [next_cols[0]]}")
+    print(f"next_cols: {next_cols}")
+    print(f"groupby_sugg: {groupby_sugg}")
     print()
     # next query suggestion
-    next_cols, groupby_sugg = qr.query_suggestion(db_bin, select_items + [next_cols[0]])
-    print(f"next_cols: {next_cols}, \n groupby_sugg: {groupby_sugg}")
+    next_cols, groupby_sugg = qr.query_suggestion(db_bin, select_items + [next_cols[0]], None)
+    print(len(next_cols), len(groupby_sugg))
+    print(f"next_cols: {next_cols}")
+    print(f"groupby_sugg: {groupby_sugg}")

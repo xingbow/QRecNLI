@@ -176,6 +176,7 @@ def decode_sql(sql_data, table):
         "union": union_data
     }
 
+# other utils
 def extract_select_names(select_decoded):
     select_names = []
     for s in select_decoded[1]:
@@ -187,6 +188,27 @@ def extract_select_names(select_decoded):
             col_string += ", " + col_unit2[1]
         select_names.append(col_string)
     return select_names
+
+def extract_agg_opts(select_decoded):
+    agg_opts = {"max":[], "min":[], "avg":[], "sum":[], "count":[]}
+    for s in select_decoded[1]:
+        agg_id = s[0]
+        unit_op, col_unit1, col_unit2 = s[1]
+        col_string = col_unit1[1]
+        col_agg1 = col_unit1[0]
+        if agg_id in agg_opts.keys():
+            agg_opts[agg_id].append(col_string)
+        elif col_agg1 in agg_opts.keys():
+            agg_opts[col_agg1].append(col_string)
+        if col_unit2 != None:
+            col_string = col_unit2[1]
+            col_agg2 = col_unit2[0]
+            if agg_id in agg_opts.keys():
+                agg_opts[agg_id].append(col_string)
+            elif col_agg2 in agg_opts.keys():
+                agg_opts[col_agg2].append(col_string)
+    return agg_opts
+
 
 def extract_groupby_names(groupby_decoded):
     return [gb[1] for gb in groupby_decoded]

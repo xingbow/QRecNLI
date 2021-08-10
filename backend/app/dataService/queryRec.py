@@ -40,7 +40,7 @@ test_table_cols = ['employee: employee id',
  'evaluation: *']
 
 class queryRecommender(object):
-    def __init__(self, search_cols, topic_sim_th = 0.4, item_sim = 0.4, alpha = 0.9, beta = 0.5, groupby_th = 0.4, agg_th = 0.4, ref_db_meta_path = os.path.join(GV.SPIDER_FOLDER, "train_spider.json")):
+    def __init__(self, search_cols, topic_sim_th = 0.4, item_sim = 0.4, alpha = 0.9, beta = 0.5, groupby_th = 0.4, agg_th = 0.4, sim =0.7, ref_db_meta_path = os.path.join(GV.SPIDER_FOLDER, "train_spider.json")):
         self.GV = GV
         self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
         # self.model = SentenceTransformer('paraphrase-MiniLM-L12-v2')
@@ -53,6 +53,7 @@ class queryRecommender(object):
         self.item_sim = item_sim
         self.groupby_th = groupby_th
         self.agg_th = agg_th
+        self.sim = sim
         self.alpha = alpha # relevance decay for seqeuential query
         self.beta = beta
         # --- reference database
@@ -125,7 +126,18 @@ class queryRecommender(object):
         agg_sugg = []
         
         # `groupby` and `agg` contexts 
-        groupby_contexts = [['shop: manager name'], [], ["shop: location"]]
+        groupby_contexts = np.hstack([['shop: manager name'], [], ["shop: district", "shop: location"]])
+        ##############################
+        # calculate `groupby` context relecance (between remaining cols and groupby contexts)
+        df_col_diff = df.columns.difference(set(groupby_contexts))
+        groupby_c_sim = np.max(self.cal_cosine_sim(groupby_contexts, df_col_diff), axis=0)
+        # print(f"groupby_c_sim: {groupby_c_sim}", groupby_c_sim.shape)
+        df_col_diff = df_col_diff[(-groupby_c_sim).argsort()]
+        groupby_c_sim = groupby_c_sim[(-groupby_c_sim).argsort()]
+        gb_sugg_context = [gb for gb in list(df_col_diff[groupby_c_sim>self.sim]) if "*" not in gb] # handle (table_name: *) situations
+        # print(f"gb_sugg_context: {gb_sugg_context}")
+        # print("*"*10)
+        ##############################
         agg_contexts = [{}, {}, {"count": ["evalution: *", 'shop: number products']}]
         # print(f"groupby_contexts = {groupby_contexts}, agg_contexts = {agg_contexts}")
 
@@ -149,16 +161,21 @@ class queryRecommender(object):
                     all_groupby_names.append(groupby_names)
             # `groupby` entity suggestion
             # TODO: Thresholds `groupby` confidence support and similarity
+            # TODO: Whether context/history `groupby` opts should be included in the next `groupby` opt? - Current: remove context/history opt
+            ################################################################
+            # calculate db `groupby` relevance
+            gb_sugg = []
             if len(col_mul_idx)>0:
                 if len(all_groupby_names) / len(col_mul_idx) >self.groupby_th: # confidence thresholds
+                    # print(all_groupby_names)
                     groupby_sim = np.max(self.cal_cosine_sim(np.concatenate(all_groupby_names), df.columns), axis=0)
                     groupby_cols = df.columns[(-groupby_sim).argsort()]
                     groupby_sim = groupby_sim[(-groupby_sim).argsort()]
-                    groupby_sugg.append(list(groupby_cols[groupby_sim > self.groupby_th])) # similarity thresholds
-                else:
-                    groupby_sugg.append([])
-            else:
-                groupby_sugg.append([])
+                    gb_sugg = list(groupby_cols[groupby_sim > self.groupby_th]) # similarity thresholds
+            gb_sugg += gb_sugg_context
+            # print(f"gb_sugg: {gb_sugg}")
+            groupby_sugg.append(gb_sugg)
+            ################################################################
             # `agg` entity suggestion
             # TODO: Thresholds `agg` confidence support and similarity
             agg_df = pd.DataFrame(agg_list).head()
@@ -224,7 +241,11 @@ class queryRecommender(object):
                 next_cols += cols_supp
             # get `groupby` and `agg_opt` items
             groupby_sugg, agg_sugg = self.get_opts(db_df_bin, next_cols, groupby_contexts, agg_contexts)
-            return next_cols, groupby_sugg, agg_sugg
+            return {
+                "select": next_cols,
+                "groupby": groupby_sugg,
+                "agg": agg_sugg,
+            }
         
         # recommendation considering the contexts information
         columns = db_df_bin.columns
@@ -261,7 +282,11 @@ class queryRecommender(object):
 
         # get `groupby` and `agg_opt` items
         groupby_sugg, agg_sugg = self.get_opts(db_df_bin, freq_cols, groupby_contexts, agg_contexts)
-        return freq_cols, groupby_sugg, agg_sugg
+        return {
+            "select": freq_cols,
+            "groupby": groupby_sugg,
+            "agg": agg_sugg
+        }
 
 
 if __name__ == "__main__":
@@ -273,26 +298,37 @@ if __name__ == "__main__":
         "groupby": [],
         "agg": []
     }
-    freq_combo, groupby_sugg, agg_sugg = qr.query_suggestion(db_bin, context_dict, None)
+    sugg_dict = qr.query_suggestion(db_bin, context_dict, None)
+    freq_combo = sugg_dict["select"]
+    groupby_sugg = sugg_dict["groupby"]
+    agg_sugg = sugg_dict["agg"]
     select_items = [freq_combo[0]]
-    # print(len(freq_combo), len(groupby_sugg))
+
     print(f"next_cols: {freq_combo}")
     print(f"groupby_sugg: {groupby_sugg}")
     print(f"agg_sugg: {agg_sugg}")
     print(f"select_items: {select_items}")
     print()
+
     # next query suggestion
     context_dict["select"] = select_items
-    next_cols, groupby_sugg, agg_sugg = qr.query_suggestion(db_bin, context_dict, None)
-    # print(len(next_cols), len(groupby_sugg))
+    sugg_dict = qr.query_suggestion(db_bin, context_dict, None)
+    next_cols = sugg_dict["select"]
+    groupby_sugg = sugg_dict["groupby"]
+    agg_sugg = sugg_dict["agg"]
+
     print(f"next_cols: {next_cols}")
     print(f"groupby_sugg: {groupby_sugg}")
     print(f"agg_sugg: {agg_sugg}")
     print(f"select_items: {select_items+ [next_cols[0]]}")
     print()
+
     # next query suggestion
     context_dict["select"] = select_items+ [next_cols[0]]
-    next_cols, groupby_sugg, agg_sugg = qr.query_suggestion(db_bin, context_dict, None)
+    sugg_dict = qr.query_suggestion(db_bin, context_dict, None)
+    next_cols = sugg_dict["select"]
+    groupby_sugg = sugg_dict["groupby"]
+    agg_sugg = sugg_dict["agg"]
     # print(len(next_cols), len(groupby_sugg))
     print(f"next_cols: {next_cols}")
     print(f"groupby_sugg: {groupby_sugg}")

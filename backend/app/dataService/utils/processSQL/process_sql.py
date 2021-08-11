@@ -65,8 +65,6 @@ class Schema:
     def _map(self, schema, table):
         column_names_original = table['column_names_original']
         table_names_original = table['table_names_original']
-        #print 'column_names_original: ', column_names_original
-        #print 'table_names_original: ', table_names_original
         for i, (tab_id, col) in enumerate(column_names_original):
             if tab_id == -1:
                 idMap = {'*': i}

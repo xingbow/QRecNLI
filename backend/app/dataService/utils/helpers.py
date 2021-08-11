@@ -100,7 +100,7 @@ def is_numeric(obj):
 
 
 def get_sql_identifiers(select_decoded):
-    return [select_unit2text(select_unit) for select_unit in select_decoded[1]]
+    return [select_unit2text(select_unit, with_style=False) for select_unit in select_decoded[1]]
 
 
 # TODO: this function cannot distinguish between O(rdinal) and Q(uantitative)

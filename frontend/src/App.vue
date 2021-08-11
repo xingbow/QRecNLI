@@ -100,12 +100,14 @@ export default {
           }
           console.log('user query result: ', sqlResult); /* eslint-disable-line */
           // send "sql" to settings and record sql history
-          if(sqlResult["sql"].length>0){
-            dataService.SQL2VL(sqlResult["sql"], this.dbselected, (data) => {
-              console.log('vl specification result: ', data["data"]); /* eslint-disable-line */
-              sqlResult.vlSpecs = data["data"];
-              pipeService.emitSql(sqlResult);
-            })
+          if (sqlResult["sql"].length > 0) {
+            dataService.SQL2text(sqlResult["sql"], this.dbselected, (data) => {
+              sqlResult.explanation = data["data"];
+              dataService.SQL2VL(sqlResult["sql"], this.dbselected, (data) => {
+                sqlResult.vlSpecs = data["data"];
+                pipeService.emitSQL(sqlResult);
+              });
+            });
           }
         });
       }else{

@@ -21,6 +21,8 @@ except ImportError:
     from app.dataService.utils.visRecos import vis_design_combos
     from app.dataService.vlgenie import VLGenie
 
+from app.dataService.utils.processSQL import decode_sql
+
 
 class DataService(object):
     def __init__(self, dataset="spider"):
@@ -181,7 +183,10 @@ class DataService(object):
         return vl_specs
     
     def sql2data(self, sql, db_id):
-        identifiers = helpers.get_sql_identifiers(sql)
+        sql_parsed = self.parsesql(sql, db_id)
+        sql_decoded = decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
+        identifiers = [ident.replace('\'s', '') \
+            for ident in helpers.get_sql_identifiers(sql_decoded["select"])]
 
         db_path = os.path.join(GV.SPIDER_FOLDER, f"database/{db_id}/{db_id}.sqlite")
         con = sqlite3.connect(db_path)
@@ -191,7 +196,6 @@ class DataService(object):
 
         data = pd.DataFrame(data, columns=identifiers)
         return data
-
     
     def sql2vl(self, sql, db_id):
         return self.data2vl(self.sql2data(sql, db_id))

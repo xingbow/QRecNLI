@@ -14,7 +14,7 @@ var pipeService = new Vue({
                 callback(msg)
             })
         },
-        emitSql: function(msg) {
+        emitSQL: function(msg) {
             this.$emit(this.GETSQL, msg)
         },
         onSQL: function(callback) {

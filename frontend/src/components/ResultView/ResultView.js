@@ -15,7 +15,7 @@ export default {
             containerId: 'resultContainer',
             nl: "",
             vlSpecs: [],
-            explanations: "",
+            explanation: "",
         }
     },
     watch: {},
@@ -24,6 +24,7 @@ export default {
         pipeService.onSQL(sql => {
             this.nl = sql["sql"];
             this.vlSpecs = sql["vlSpecs"];
+            this.explanation = sql["explanation"];
         })
     }
 }

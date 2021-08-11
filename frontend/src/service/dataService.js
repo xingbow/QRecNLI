@@ -61,6 +61,12 @@ function SQL2VL(sql, db_id, callback) {
     request(url, params, GET_REQUEST, callback);
 }
 
+function SQL2text(sql, db_id, callback) {
+    const url = `${dataServerUrl}/sql2text/${sql}/${db_id}`;
+    const params = {};
+    request(url, params, GET_REQUEST, callback);
+}
+
 export default {
     dataServerUrl,
     initialization,
@@ -68,5 +74,6 @@ export default {
     getTableCols,
     loadTablesContent,
     text2SQL,
-    SQL2VL
+    SQL2VL,
+    SQL2text
 }

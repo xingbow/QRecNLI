@@ -6,7 +6,10 @@
             </div>
             <ul id="sql-result" style="font-size: 14px;">
                 <li><span class="badge badge-info">SQL</span>: {{nl}}</li>
-                <li><span class="badge badge-info">Explanation</span>: {{explanation}}</li>
+                <li>
+                    <span class="badge badge-info">Explanation</span>:
+                    <span class="explanation-container" v-html="explanation"></span>
+                </li>
                 <li><span class="badge badge-info">Visualizations</span>:</li>
             </ul>
             <div id="vegaLiteContainer">

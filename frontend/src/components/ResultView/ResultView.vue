@@ -33,4 +33,12 @@
         overflow: scroll;
     }
 
+    .explanation-container >>> span.column-id {
+        background: gold;
+    }
+
+    .explanation-container >>> span.entity-id {
+        background: #aaa;
+    }
+
 </style>

@@ -10,6 +10,7 @@ import logging
 import mimetypes
 
 from flask import Blueprint, current_app, request, jsonify, Response
+from app.dataService.utils import processSQL
 
 LOG = logging.getLogger(__name__)
 
@@ -113,7 +114,19 @@ def text2sql(user_text="films and film prices that cost below 10 dollars", db_id
 @api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
 def sql2vis(sql_text, db_id="cinema"):
     specs = current_app.dataService.sql2vl(sql_text, db_id)
+    # TODO: vega-vue only supports the following mark types
+    specs = [s for s in specs if s['mark']['type'] in ["bar", "circle", "square", \
+        "tick", "line", "area", "point", "rule", "text"]]
     return json.dumps(specs)
+
+
+@api.route("/sql2text/<sql_text>/<db_id>", methods=['GET'])
+def sql2text(sql_text, db_id="cinema"):
+    sql_parsed = current_app.dataService.parsesql(sql_text, db_id)
+    sql_decoded = processSQL.decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
+    text = processSQL.sql2text(sql_decoded)
+    return json.dumps(text)
+
 
 if __name__ == '__main__':
     pass

@@ -25,7 +25,7 @@ except ImportError:
 class DataService(object):
     def __init__(self, dataset="spider"):
         print("=== begin loading model ===")
-        self.text2sql_model = sp.SmBop()
+        # self.text2sql_model = sp.SmBop()
         self.sql_parser = sp.SQLParser()
         self.dataset = dataset
         self.global_variable = GV
@@ -45,8 +45,19 @@ class DataService(object):
 
     def get_tables(self, db_id):
         self.db_id = db_id
-        table_names = self.db_meta_dict[db_id]["table_names_original"]
-        return table_names
+        db_info = self.db_meta_dict[db_id]
+        table_names = db_info["table_names"]
+        db_dict = {}
+        for colname, coltype in zip(db_info["column_names"], db_info["column_types"]):
+            cname = colname[1]
+            table_idx = colname[0]
+            if table_idx != -1:
+                table_name = table_names[table_idx]
+                if table_name not in db_dict:
+                    db_dict[table_name] = []
+                db_dict[table_name].append([cname, coltype])
+        # print(db_dict)
+        return db_dict
 
     def get_cols(self, table_name):
         table_names = self.db_meta_dict[self.db_id]["table_names_original"]
@@ -179,6 +190,8 @@ class DataService(object):
 if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
+    dataService.get_tables("cinema")
+    exit()
     # 1. text2sql
     result = dataService.text2sql("films and film prices that cost below 10 dollars", "cinema")
     print("test2sql: {}".format(result))

@@ -17,6 +17,7 @@ export default {
     },
     props: {
         tableLists: Array,
+        tables: {},
     },
     data() {
         return {
@@ -25,9 +26,30 @@ export default {
             tableCols: [],
             historyData: [],
             activeIdx: 0,
+            // TODO: organize metadata in tree layout
+            treedata: [],
+            defaultProps: {
+                children: 'children',
+                label: 'label'
+            }
         }
     },
     watch: {
+        tables: function(tables){
+            console.log("table changed in Setting View:", tables);
+            let tableL = []; 
+            for (const [key, value] of Object.entries(tables)) {
+                // console.log(key, value);
+                let children = value.map(v=>{return {"label": v[0]} });
+                tableL.push({
+                    "label": key,
+                    "children": children,
+                });
+            }
+            console.log("tableList: ", tableL);
+            this.treedata = tableL;
+
+        },
         tabselected: function(tabselected) {
             if (tabselected.length > 0) {
                 console.log("select table:", tabselected);
@@ -50,7 +72,10 @@ export default {
             this.activeIdx = Math.pow((this.activeIdx - 1), 2)
             $(`.nav-link`).removeClass("active");
             $(`.nav-link-`+this.activeIdx).addClass("active");
-        }
+        },
+        handleNodeClick(data) {
+            console.log(data);
+        },
     },
     mounted: function() {
         console.log("this is settings view");

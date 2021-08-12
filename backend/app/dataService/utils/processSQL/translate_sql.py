@@ -99,5 +99,4 @@ def sql2text(decoded_sql, with_style=True):
         sentence = "Find {}.".format(select_sentence)
     else:
         sentence = "Find {} where {}.".format(select_sentence, where_sentence)
-    # return "<p>{}</p>".format(sentence)
     return sentence

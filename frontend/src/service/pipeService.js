@@ -22,6 +22,14 @@ var pipeService = new Vue({
                 callback(msg)
             })
         },
+        emit: function(token, msg) {
+            this.$emit(this[token], msg)
+        },
+        on: function(token, callback) {
+            this.$on(this[token], function(msg) {
+                callback(msg)
+            })
+        },
     }
 })
 export default pipeService

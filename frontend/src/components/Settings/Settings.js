@@ -24,6 +24,7 @@ export default {
             tabselected: "",
             tableCols: [],
             historyData: [],
+            activeIdx: 0,
         }
     },
     watch: {
@@ -44,10 +45,16 @@ export default {
     methods: {
         onAfterChange(obj) {
             console.log("after update: ", obj.item.itemMap);
+        },
+        setActive(){
+            this.activeIdx = Math.pow((this.activeIdx - 1), 2)
+            $(`.nav-link`).removeClass("active");
+            $(`.nav-link-`+this.activeIdx).addClass("active");
         }
     },
     mounted: function() {
         console.log("this is settings view");
+        $('.nav-link-'+this.activeIdx).addClass("active");
         // 1. initialize table
         this.dataTable = new Tabulator("#data-table", {
             autoColumns: true, //create columns from data field names
@@ -56,7 +63,7 @@ export default {
         });
         // 2. draw flowchart
         let flowchartConfig = {
-            height: 370,
+            height: 630,
             betweenNodeDistance: 50,
             rect: {
                 radius: 5,

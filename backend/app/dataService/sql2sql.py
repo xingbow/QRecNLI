@@ -258,17 +258,16 @@ class SeqSpiderDataset(Dataset):
         REPLACE_NO_SPACE = re.compile("[.;:!\'?,\"()\[\]]")
         REPLACE_WITH_SPACE = re.compile("(<br\s*/><br\s*/>)|(\-)|(\/)")
 
-        print("len(self.sources): {}".format(len(self.source)))
+        keywords = ["*", "avg", "min", "max", "count", "+", "-", "/", "select", "groupby"]
     
         for rs, rt, rm in zip(self.source, self.target, self.meta):
-            rs_ = ", ".join(rs).strip().lower() + "</s>"
-            rt_ = ", ".join(rt).strip().lower() + "</s>"
-            rm_ = " *, " + ", ".join(rm).strip().lower() + "</s>"
+            rs_ = rs.strip().lower()+ "</s>"
+            rt_ = rt.strip().lower()+ "</s>"
+            rm_ = ", ".join(keywords) + ", " + ", ".join(rm).strip().lower() + "</s>"
             
-            # print(rs_ + rm_)
-            # print()
-            # print(rt_ + rm_)
-            # raise
+            # rs_ = ", ".join(rs).strip().lower() + "</s>"
+            # rt_ = ", ".join(rt).strip().lower() + "</s>"
+            # rm_ = ", ".join(keywords) + ", " + ", ".join(rm).strip().lower() + "</s>"
 
             # tokenize inputs
             tokenized_inputs = self.tokenizer.batch_encode_plus(
@@ -283,8 +282,8 @@ class SeqSpiderDataset(Dataset):
             self.targets.append(tokenized_targets)
 
 
-def get_spider_dataset(tokenizer):
-  with open( os.path.join(GV.SPIDER_FOLDER, "query_seq_train.json"), "r") as f:
+def get_spider_dataset(tokenizer, split="train"):
+  with open( os.path.join(GV.SPIDER_FOLDER, f"query_seq_{split}.json"), "r") as f:
     data = json.load(f)
   return SeqSpiderDataset(tokenizer, data)
 

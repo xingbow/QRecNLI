@@ -39,12 +39,12 @@ def decode_val_unit(val_unit, table):
     col_unit1_decoded = decode_col_unit(col_unit1, table)
     col_unit2 = val_unit[2]
     col_unit2_decoded = decode_col_unit(col_unit2, table)
-    return (unit_op, col_unit1_decoded, col_unit2_decoded)
+    return unit_op, col_unit1_decoded, col_unit2_decoded
 
 
 def decode_col_unit(col_unit, table):
     # col_unit: (agg_id, col_id, isDistinct(bool))
-    if col_unit == None:
+    if col_unit is None:
         return None
     else:
         agg_id = GV.AGG_OPS[col_unit[0]]
@@ -55,7 +55,7 @@ def decode_col_unit(col_unit, table):
         else:
             col_name = col[1]
         distinct_flag = "distinct" if col_unit[2] else ""
-        return (agg_id, col_name, distinct_flag)
+        return agg_id, col_name, distinct_flag
 
 
 def decode_val(val, table):
@@ -68,9 +68,9 @@ def decode_val(val, table):
 def decode_table_unit(table_unit, table):
     table_type = table_unit[0]
     if table_type == "table_unit":
-        return (table_type, table["table_names"][table_unit[1]])
+        return table_type, table["table_names"][table_unit[1]]
     elif table_type == "sql":
-        return (table_type, decode_sql(table_unit[1], table))
+        return table_type, decode_sql(table_unit[1], table)
 
 
 def decode_condition(cond, table):
@@ -81,7 +81,7 @@ def decode_condition(cond, table):
         val1 = decode_val(cond[3], table)
         val2 = decode_val(cond[4], table)
         # print(type(cond[3]), type(cond[4]), cond[3], cond[4])
-        return (not_op, op_id, val_unit, val1, val2)
+        return not_op, op_id, val_unit, val1, val2
     else:
         return cond
 
@@ -134,7 +134,7 @@ def decode_orderby(orderby_data, table):
     if len(orderby_data) > 0:
         order = orderby_data[0]
         val_units = [decode_val_unit(val_unit, table) for val_unit in orderby_data[1]]
-        return (order, val_units)
+        return order, val_units
     else:
         return []
 
@@ -221,7 +221,7 @@ def extract_agg_opts(select_decoded):
             agg_opts[agg_id].append(col_string)
         elif col_agg1 in agg_opts.keys():
             agg_opts[col_agg1].append(col_string)
-        if col_unit2 != None:
+        if col_unit2 is not None:
             col_string = col_unit2[1]
             col_agg2 = col_unit2[0]
             if agg_id in agg_opts.keys():

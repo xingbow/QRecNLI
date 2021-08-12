@@ -38,6 +38,7 @@
 
     #databaseMeta{
         height: 630px;
+        font-size: 13px;
     }
 
 </style>

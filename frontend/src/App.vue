@@ -27,7 +27,7 @@
       </div>
       <div class="d-flex flex-row rowele">
         <div class="p" style="width: 25%; text-align:start;">
-          <Settings :tableLists="tableLists"></Settings>
+          <Settings :tableLists="tableLists" :tables="tables"></Settings>
         </div>
         <div class="p" style="width: 75%; text-align:start;"><ResultView></ResultView></div>
       </div>     
@@ -56,6 +56,7 @@ export default {
         userText: "",
         dbselected: "cinema",
         dbLists: [],
+        tables: {},
         tableLists: [],
     }
   },
@@ -63,7 +64,8 @@ export default {
     dbselected: function(dbselected){
       console.log("selected db name:",dbselected);
       dataService.getTables(dbselected, (data)=>{
-        this.tableLists = data["data"];
+        this.tables = data["data"];
+        this.tableLists = Object.keys(data["data"]);
         console.log("tables: ", this.tableLists);
       });
     }
@@ -80,7 +82,8 @@ export default {
           _this.dbLists = data["data"];
           if(dbselected.length>0){
             dataService.getTables(dbselected, (data)=>{
-              _this.tableLists = data["data"];
+              _this.tables = data["data"]
+              _this.tableLists = Object.keys(data["data"]);
               console.log("tables: ", _this.tableLists)
             })
           }

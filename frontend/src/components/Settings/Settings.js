@@ -30,7 +30,7 @@ export default {
             treedata: [],
             defaultProps: {
                 children: 'children',
-                label: 'label'
+                label: 'label',
             }
         }
     },
@@ -40,8 +40,9 @@ export default {
             let tableL = []; 
             for (const [key, value] of Object.entries(tables)) {
                 // console.log(key, value);
-                let children = value.map(v=>{return {"label": v[0]} });
+                let children = value.map(v=>{return {"type": "column", "label": v[0], "ctype": v[1]} });
                 tableL.push({
+                    "type": "table",
                     "label": key,
                     "children": children,
                 });
@@ -76,6 +77,34 @@ export default {
         handleNodeClick(data) {
             console.log(data);
         },
+        renderContent(h, { node, data, store }) { /* eslint-disable-line */
+            console.log("data, node: ", node, data);
+            if(data.type=="table"){
+                return (
+                    <span class="custom-tree-node">
+                      <i class="fas fa-table"></i>
+                      <span style="margin-left:5px;">{node.label}</span>
+                    </span>
+                );
+            }else if (data.type=="column"){
+                if(data.ctype=="text"){
+                    return (
+                        <span class="custom-tree-node">
+                            <i class="fas fa-font"></i>
+                          <span style="margin-left:5px;">{node.label}</span>
+                        </span>
+                    );
+                }else if(data.ctype=="number"){
+                    return (
+                        <span class="custom-tree-node">
+                        <i class="fas fa-list-ol"></i>
+                          <span style="margin-left:5px;">{node.label}</span>
+                        </span>
+                    );
+                }
+               
+            }
+          }
     },
     mounted: function() {
         console.log("this is settings view");

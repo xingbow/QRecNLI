@@ -14,7 +14,7 @@ function request(url, params, type, callback) {
 
     func(url, params).then((response) => {
             if (response.status === 200) {
-                callback(response)
+                callback(response["data"])
             } else {
                 console.error(response) /* eslint-disable-line */
             }

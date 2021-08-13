@@ -54,8 +54,8 @@ export default {
     dbselected: function(dbselected){
       console.log("selected db name:",dbselected);
       dataService.getTables(dbselected, (data)=>{
-        this.tables = data["data"];
-        this.tableLists = Object.keys(data["data"]);
+        this.tables = data;
+        this.tableLists = Object.keys(data);
         console.log("tables: ", this.tableLists);
       });
     }
@@ -69,11 +69,11 @@ export default {
     const _this = this;
     this.$nextTick(()=>{
         dataService.initialization(dataset, (data)=>{
-          _this.dbLists = data["data"];
+          _this.dbLists = data;
           if(dbselected.length>0){
             dataService.getTables(dbselected, (data)=>{
-              _this.tables = data["data"]
-              _this.tableLists = Object.keys(data["data"]);
+              _this.tables = data;
+              _this.tableLists = Object.keys(data);
               console.log("tables: ", _this.tableLists)
             })
           }

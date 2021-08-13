@@ -19,6 +19,10 @@
         position: relative;
     }
 
+    .nav {
+        font-size: 13px;
+    }
+
     #settingsContainer {
         height: 670px;
     }
@@ -30,6 +34,11 @@
     #data-table {
         font-size:12px; 
         height:175px;
+    }
+
+    #databaseMeta{
+        height: 630px;
+        font-size: 13px;
     }
 
 </style>

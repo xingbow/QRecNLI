@@ -101,6 +101,13 @@ export default {
                           <span style="margin-left:5px;">{node.label}</span>
                         </span>
                     );
+                }else if(data.ctype=="key"){
+                    return (
+                        <span class="custom-tree-node">
+                        <i class="fas fa-key"></i>
+                          <span style="margin-left:5px;">{node.label}</span>
+                        </span>
+                    );
                 }
                
             }

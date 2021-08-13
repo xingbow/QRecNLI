@@ -6,7 +6,8 @@
     .card {
         margin-bottom: 10px;
         /* height: 400px; */
-        border-radius: 5px;
+        /* border-radius: 5px; */
+        border: none;
     }
 
     .card-block {
@@ -20,8 +21,15 @@
         font-size: 14px;
     }
 
+    .descriptions {
+        font-size: 14px;
+        color: gray;
+    }
+
     #resultContainer {
         height: 670px;
+        padding: 5px;
+        overflow-y: scroll;
     }
 
     .vis-container {
@@ -29,7 +37,11 @@
     }
 
     #vegaLiteContainer {
-        height: 550px;
+        height: 450px;
+        padding: 5px;
+        margin-top:5px;
+        overflow: scroll;
+        border: 1px solid gray;
         overflow: scroll;
     }
 
@@ -39,6 +51,19 @@
 
     .explanation-container >>> span.entity-id {
         background: #aaa;
+    }
+
+    .recommend {
+        height: 125px;
+        overflow: scroll;
+        padding:5px;
+        font-size: 12px;
+        border: 1px solid lightgray;
+    }
+
+    .rowitem {
+        font-size: 13px;
+        padding: 2px;
     }
 
 </style>

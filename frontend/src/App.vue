@@ -12,7 +12,7 @@
             <v-select v-model="dbselected" :options="dbLists"/>
             </div>
         </div>
-        <QueryPanel />
+        <QueryPanel :dbselected = "dbselected"/>
       </div>
       <div class="d-flex flex-row rowele">
         <div class="p" style="width: 25%; text-align:start;">

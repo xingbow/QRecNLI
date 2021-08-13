@@ -199,7 +199,7 @@ class DataService(object):
 if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
-    dataService.get_tables("cinema")
+    db_dict = dataService.get_tables("cinema")
     # 1. text2sql
     result = dataService.text2sql("films and film prices that cost below 10 dollars", "cinema")
     print("test2sql: {}".format(result))

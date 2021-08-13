@@ -9,6 +9,16 @@ export default {
     data() {
         return {
             userText: "",
+            form: {
+                name: '',
+                region: '',
+                date1: '',
+                date2: '',
+                delivery: false,
+                type: [],
+                resource: '',
+                desc: ''
+              }
         }
     },
     methods: {

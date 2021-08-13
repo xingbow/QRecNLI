@@ -6,7 +6,7 @@
           </div>
       </nav>
       <div class="d-flex flex-row rowele">
-        <div class="p border rounded rowchild" style="width: 25%;">
+        <div class="p border-bottom border-right rowchild" style="width: 25%;">
           <div class="align-self-center" style="margin-right:5px; width:30%"><h6>Databases:</h6></div>
           <div style="width:70%; font-size:15px;">
             <v-select v-model="dbselected" :options="dbLists"/>
@@ -15,7 +15,7 @@
         <QueryPanel :dbselected = "dbselected"/>
       </div>
       <div class="d-flex flex-row rowele">
-        <div class="p" style="width: 25%; text-align:start;">
+        <div class="p border-right" style="width: 25%; text-align:start;">
           <Settings :tableLists="tableLists" :tables="tables"></Settings>
         </div>
         <div class="p" style="width: 75%; text-align:start;"><ResultView /></div>

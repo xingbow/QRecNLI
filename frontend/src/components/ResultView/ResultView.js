@@ -16,6 +16,7 @@ export default {
             nl: "",
             vlSpecs: [],
             explanation: "",
+            count: 0,
         }
     },
     watch: {},
@@ -26,5 +27,10 @@ export default {
             this.vlSpecs = sql["vlSpecs"];
             this.explanation = sql["explanation"];
         })
-    }
+    },
+    methods: {
+        load () {
+          this.count += 2
+        }
+      }
 }

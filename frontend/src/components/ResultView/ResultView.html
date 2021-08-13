@@ -1,9 +1,9 @@
 <div id="resultview">
     <div class="card">
         <div class="card-block" id="resultContainer">
-            <el-collapse v-model="activeNames" @change="handleChange">
+            <el-collapse>
                 <el-collapse-item title="You may want to ask:" name="1">
-                    <div class="recommend"> 
+                    <div class="recommend">
                         <div class="list-group list-group-flush">
                             <a class="list-group-item list-group-item-action rowitem">
                               Cras justo odio
@@ -16,16 +16,24 @@
                     </div>
                 </el-collapse-item>
                 <el-collapse-item title="SQL results and explanations" name="2">
-                    <div class="rowitem"><el-tag type="success">SQL</el-tag> {{nl}}</div>
-                    <div class="rowitem"><el-tag type="success">NL Explanation</el-tag>  
+                    <div class="rowitem">
+                        <el-tag type="success">SQL</el-tag> {{nl}}</div>
+                    <div class="rowitem">
+                        <el-tag type="success">NL Explanation</el-tag>
                         <span class="explanation-container" v-html="explanation"></span>
                     </div>
                 </el-collapse-item>
             </el-collapse>
             <div id="sql-result" style="margin-top:5px;">
-                <div class="rowitem"><el-tag type="info" effect="plain">Select </el-tag></div>
-                <div class="rowitem"><el-tag type="info" effect="plain">Groupby </el-tag></div>
-                <div class="rowitem"><el-tag type="info" effect="plain">Filters </el-tag></div>
+                <div class="rowitem">
+                    <el-tag type="info" effect="plain">Select </el-tag>
+                </div>
+                <div class="rowitem">
+                    <el-tag type="info" effect="plain">Groupby </el-tag>
+                </div>
+                <div class="rowitem">
+                    <el-tag type="info" effect="plain">Filters </el-tag>
+                </div>
             </div>
             <div id="vegaLiteContainer">
                 <div class="vis-container" v-for="(spec, index) in vlSpecs" style="pointer-events: none;">

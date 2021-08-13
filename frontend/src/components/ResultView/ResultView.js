@@ -24,13 +24,17 @@ export default {
         this.drawResult = new DrawResult(this.containerId);
         pipeService.onSQL(sql => {
             this.nl = sql["sql"];
-            this.vlSpecs = sql["vlSpecs"];
-            this.explanation = sql["explanation"];
+        });
+        pipeService.onSQLTrans(SQLTrans => {
+            this.explanation = SQLTrans.text;
+        });
+        pipeService.onVLSpecs(vlSpecs => {
+            this.vlSpecs = vlSpecs;
         })
     },
     methods: {
-        load () {
-          this.count += 2
+        load() {
+            this.count += 2
         }
-      }
+    }
 }

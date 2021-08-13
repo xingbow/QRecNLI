@@ -85,8 +85,28 @@ class DataService(object):
 
     def get_tables(self, db_id):
         self.db_id = db_id
-        table_names = self.db_meta_dict[db_id]["table_names_original"]
-        return table_names
+        db_info = self.db_meta_dict[db_id]
+        # print(db_info.keys())
+        tkeys = set(db_info["primary_keys"]).union(set([k for kp in db_info["foreign_keys"] for k in kp]))
+        table_names = db_info["table_names"]
+        db_dict = {}
+        for cidx, (colname, coltype) in enumerate(zip(db_info["column_names"], db_info["column_types"])):
+            # print(cidx, colname, coltype)
+            cname = colname[1]
+            table_idx = colname[0]
+            if table_idx != -1:
+                table_name = table_names[table_idx]
+                if table_name not in db_dict:
+                    db_dict[table_name] = []
+                if cidx in tkeys:
+                    db_dict[table_name].append([cname, "key"])
+                else:
+                    db_dict[table_name].append([cname, coltype])
+        # sort column names according to column types
+        for dk in db_dict.keys():
+            db_dict[dk] = sorted(db_dict[dk], key=lambda x: x[1])
+        # print(db_dict)
+        return db_dict
 
     def get_cols(self, table_name):
         table_names = self.db_meta_dict[self.db_id]["table_names_original"]
@@ -223,6 +243,7 @@ class DataService(object):
 if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
+    dataService.get_tables("cinema")
     # 1. text2sql
     result = dataService.text2sql("films and film prices that cost below 10 dollars", "cinema")
     print("test2sql: {}".format(result))

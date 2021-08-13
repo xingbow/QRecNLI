@@ -21,12 +21,13 @@ except ImportError:
     from app.dataService.utils.visRecos import vis_design_combos
     from app.dataService.vlgenie import VLGenie
 
+from app.dataService.utils.processSQL import decode_sql
+
 
 class DataService(object):
     def __init__(self, dataset="spider"):
-        print("=== begin loading model ===")
-        self.text2sql_model = sp.SmBop()
-        self.sql_parser = sp.SQLParser()
+        self.text2sql_model_loaded = False
+        self.sql_parser_loaded = False
         self.dataset = dataset
         self.global_variable = GV
         if self.dataset == "spider":
@@ -40,8 +41,47 @@ class DataService(object):
             self.db_id = ""
         else:
             raise Exception("currently only support spider dataset")
-        print("=== finish loading model ===")
         return
+
+    def _load_text2sql_model(self, verbose=True):
+        if self.text2sql_model_loaded:
+            return
+        if verbose:
+            print("=== begin loading model ===")
+        self.text2sql_model = sp.SmBop()
+        self.text2sql_model_loaded = True
+        if verbose:
+            print("=== finish loading model ===")
+
+    def _load_sql_parser(self, verbose=True):
+        if self.sql_parser_loaded:
+            return
+        if verbose:
+            print("=== begin loading sql parser ===")
+        self.sql_parser = sp.SQLParser()
+        self.sql_parser_loaded = True
+        if verbose:
+            print("=== finish loading sql parser ===")
+
+    def get_db_info(self, db_id):
+        db_info = self.db_meta_dict[db_id]
+        table_info_list = []
+        for i, tabel_name in enumerate(db_info['table_names_original']):
+            table_info = {
+                'id': tabel_name,
+                'name': db_info['table_names'][i],
+                'primary_key': db_info['primary_keys'][i],
+                'columns': []
+            }
+            for col_i, col in enumerate(db_info['column_names_original']):
+                if col[0] == i:
+                    table_info['columns'].append({
+                        'id': col[1],
+                        'name': db_info['column_names'][col_i][1],
+                        'type': db_info['column_types'][col_i]
+                    })
+            table_info_list.append(table_info)
+        return table_info_list
 
     def get_tables(self, db_id):
         self.db_id = db_id
@@ -101,16 +141,18 @@ class DataService(object):
         return table_data
 
     def text2sql(self, q, db_id):
+        self._load_text2sql_model()
         sql = self.text2sql_model.predict(q, db_id)
         return sql
-    
-    def parsesql(self, sql="SELECT name ,  country ,  age FROM singer group by country having count(*) > 2", db_id="concert_singer"):
+
+    def parsesql(self, sql, db_id):
         """parse sql data based on spider database
         sql: sql query
         db_id: db name in Spider database
         return: {"sql_parse": sql_label, "table": table}
         """
         if self.dataset == "spider":
+            self._load_sql_parser()
             parsed = self.sql_parser.parse_sql(sql, db_id)
             return parsed
         else:
@@ -178,9 +220,12 @@ class DataService(object):
             vl_specs.append(vl_genie_instance.vl_spec)
 
         return vl_specs
-    
+
     def sql2data(self, sql, db_id):
-        identifiers = helpers.get_sql_identifiers(sql)
+        sql_parsed = self.parsesql(sql, db_id)
+        sql_decoded = decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
+        identifiers = [ident.replace('\'s', '') \
+                       for ident in helpers.get_sql_identifiers(sql_decoded["select"])]
 
         db_path = os.path.join(GV.SPIDER_FOLDER, f"database/{db_id}/{db_id}.sqlite")
         con = sqlite3.connect(db_path)
@@ -191,7 +236,6 @@ class DataService(object):
         data = pd.DataFrame(data, columns=identifiers)
         return data
 
-    
     def sql2vl(self, sql, db_id):
         return self.data2vl(self.sql2data(sql, db_id))
 

@@ -2,7 +2,7 @@
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css';
 import dataService from '../../service/dataService';
-import Tabulator from 'tabulator-tables';
+// import Tabulator from 'tabulator-tables';
 
 import "../../assets/historyQuery.css"
 
@@ -116,12 +116,7 @@ export default {
     mounted: function() {
         console.log("this is settings view");
         $('.nav-link-'+this.activeIdx).addClass("active");
-        // 1. initialize table
-        this.dataTable = new Tabulator("#data-table", {
-            autoColumns: true, //create columns from data field names
-            // pagination:"local",       //paginate the data
-            // paginationSize:5,
-        });
+        
         // 2. draw flowchart
         let flowchartConfig = {
             height: 630,

@@ -10,6 +10,7 @@ import logging
 import mimetypes
 
 from flask import Blueprint, current_app, request, jsonify, Response
+from app.dataService.utils import processSQL
 
 LOG = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ def get_range(request):
     else:
         return 0, None
 
+
 # ################################################################################ route
 @api.route('/')
 def index():
@@ -91,6 +93,11 @@ def get_tables(db_id):
     return json.dumps(current_app.dataService.get_tables(db_id))
 
 
+@api.route("/get_database_meta/<db_id>")
+def get_database_meta(db_id):
+    return json.dumps(current_app.dataService.get_db_info(db_id))
+
+
 @api.route("/get_cols/<table_name>")
 def get_cols(table_name):
     return json.dumps(current_app.dataService.get_cols(table_name))
@@ -102,18 +109,29 @@ def load_tables(table_name):
 
 
 @api.route("/text2sql/<user_text>/<db_id>", methods=['GET'])
-def text2sql(user_text="films and film prices that cost below 10 dollars", db_id="cinema", execuate=True):
+def text2sql(user_text="films and film prices that cost below 10 dollars", db_id="cinema"):
     sql = current_app.dataService.text2sql(user_text, db_id)
-    result = {'sql': sql}
-    if execuate:
-        result['data'] = current_app.dataService.sql2data(sql, db_id).values.tolist()
+    result = {'sql': sql, 'data': current_app.dataService.sql2data(sql, db_id).values.tolist()}
     return json.dumps(result)
 
 
 @api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
 def sql2vis(sql_text, db_id="cinema"):
     specs = current_app.dataService.sql2vl(sql_text, db_id)
+    # TODO: vega-vue only supports the following mark types
+    specs = [s for s in specs if s['mark']['type'] in ["bar", "circle", "square", "tick",
+                                                       "line", "area", "point", "rule", "text"]]
     return json.dumps(specs)
+
+
+@api.route("/sql2text/<sql_text>/<db_id>", methods=['GET'])
+def sql2text(sql_text, db_id="cinema"):
+    print("sql_text", sql_text)
+    sql_parsed = current_app.dataService.parsesql(sql_text, db_id)
+    sql_decoded = processSQL.decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
+    text = processSQL.sql2text(sql_decoded)
+    return json.dumps(text)
+
 
 if __name__ == '__main__':
     pass

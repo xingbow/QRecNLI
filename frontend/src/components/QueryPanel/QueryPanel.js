@@ -18,27 +18,30 @@ export default {
                 type: [],
                 resource: '',
                 desc: ''
-              }
+            }
         }
     },
     methods: {
         search: function() {
             if (this.userText.length > 0) {
-                let userText = this.userText;
+                const userText = this.userText;
                 dataService.text2SQL([this.userText, this.dbselected], (data) => {
-                    let sqlResult = {
-                            "sql": data["data"]["sql"].trim(),
-                            "data": data["data"]["data"],
-                            "nl": userText.trim()
-                        }
-                        // send "sql" to settings and record sql history
+                    const sqlResult = {
+                        "sql": data["data"]["sql"].trim(),
+                        "data": data["data"]["data"],
+                        "nl": userText.trim()
+                    }
+                    pipeService.emitSQL(sqlResult);
+                    // send "sql" to settings and record sql history
                     if (sqlResult["sql"].length > 0) {
                         dataService.SQL2text(sqlResult["sql"], this.dbselected, (data) => {
-                            sqlResult.explanation = data["data"];
-                            dataService.SQL2VL(sqlResult["sql"], this.dbselected, (data) => {
-                                sqlResult.vlSpecs = data["data"];
-                                pipeService.emitSQL(sqlResult);
-                            });
+                            const SQLTrans = {
+                                "text": data["data"]
+                            }
+                            pipeService.emitSQLTrans(SQLTrans);
+                        });
+                        dataService.SQL2VL(sqlResult["sql"], this.dbselected, (data) => {
+                            pipeService.emitVLSpecs(data["data"]);
                         });
                     }
                 });

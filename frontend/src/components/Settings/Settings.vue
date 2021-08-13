@@ -6,6 +6,7 @@
     .card {
         margin-bottom: 10px;
         border-radius: 5px;
+        border: none;
     }
 
     .card-header {

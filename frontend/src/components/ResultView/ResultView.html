@@ -1,22 +1,32 @@
 <div id="resultview">
     <div class="card">
         <div class="card-block" id="resultContainer">
-            <div style="margin:5px;">
-                <h6>Results</h6>
+            <el-collapse v-model="activeNames" @change="handleChange">
+                <el-collapse-item title="You may want to ask:" name="1">
+                    <div class="recommend"> 
+                        <div class="list-group list-group-flush">
+                            <a class="list-group-item list-group-item-action rowitem">
+                              Cras justo odio
+                            </a>
+                            <a class="list-group-item list-group-item-action rowitem">Dapibus ac facilisis in</a>
+                            <a class="list-group-item list-group-item-action rowitem">Morbi leo risus</a>
+                            <a class="list-group-item list-group-item-action rowitem">Porta ac consectetur ac</a>
+                            <a class="list-group-item list-group-item-action rowitem">Vestibulum at eros</a>
+                        </div>
+                    </div>
+                </el-collapse-item>
+                <el-collapse-item title="SQL results and explanations" name="2">
+                    <div class="rowitem"><el-tag type="success">SQL</el-tag> {{nl}}</div>
+                    <div class="rowitem"><el-tag type="success">NL Explanation</el-tag>  
+                        <span class="explanation-container" v-html="explanation"></span>
+                    </div>
+                </el-collapse-item>
+            </el-collapse>
+            <div id="sql-result" style="margin-top:5px;">
+                <div class="rowitem"><el-tag type="info" effect="plain">Select </el-tag></div>
+                <div class="rowitem"><el-tag type="info" effect="plain">Groupby </el-tag></div>
+                <div class="rowitem"><el-tag type="info" effect="plain">Filters </el-tag></div>
             </div>
-            <ul id="sql-result" style="font-size: 15px;">
-                <li><span class="badge badge-info">SQL</span>: {{nl}}</li>
-                <li>
-                    <span class="badge badge-info">Explanation</span>:
-                    <span class="explanation-container" v-html="explanation"></span>
-                </li>
-                <div style="display: inline-block;"><span class="badge" style="color:gray">Select:</span>
-                </div>
-                <div><span class="badge" style="color:gray">Group by:</span>
-                </div>
-                <div><span class="badge" style="color:gray">Filters:</span></div>
-                <li><span class="badge badge-info">Visualizations</span>:</li>
-            </ul>
             <div id="vegaLiteContainer">
                 <div class="vis-container" v-for="(spec, index) in vlSpecs" style="pointer-events: none;">
                     <vega-lite :spec="spec"></vega-lite>

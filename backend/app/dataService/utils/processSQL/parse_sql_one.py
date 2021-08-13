@@ -13,7 +13,7 @@ from os.path import isfile, isdir, join, split, exists, splitext
 
 from process_sql import get_sql
 
-    
+
 ################################
 # Assumptions:
 #   1. sql is correct
@@ -44,6 +44,7 @@ class Schema:
     """
     Simple schema which maps table&column to a unique identifier
     """
+
     def __init__(self, schema, table):
         self._schema = schema
         self._table = table
@@ -60,8 +61,8 @@ class Schema:
     def _map(self, schema, table):
         column_names_original = table['column_names_original']
         table_names_original = table['table_names_original']
-        #print 'column_names_original: ', column_names_original
-        #print 'table_names_original: ', table_names_original
+        # print 'column_names_original: ', column_names_original
+        # print 'table_names_original: ', table_names_original
         for i, (tab_id, col) in enumerate(column_names_original):
             if tab_id == -1:
                 idMap = {'*': i}
@@ -86,10 +87,11 @@ def get_schemas_from_json(fpath):
     schemas = {}
     for db in data:
         db_id = db['db_id']
-        schema = {} #{'table': [col.lower, ..., ]} * -> __all__
+        schema = {}  # {'table': [col.lower, ..., ]} * -> __all__
         column_names_original = db['column_names_original']
         table_names_original = db['table_names_original']
-        tables[db_id] = {'column_names_original': column_names_original, 'table_names_original': table_names_original}
+        tables[db_id] = {'column_names_original': column_names_original,
+                         'table_names_original': table_names_original}
         for i, tabn in enumerate(table_names_original):
             table = str(tabn.lower())
             cols = [str(col.lower()) for td, col in column_names_original if td == i]
@@ -100,13 +102,13 @@ def get_schemas_from_json(fpath):
 
 
 if __name__ == '__main__':
-    
     sql = "SELECT name ,  country ,  age FROM singer group by country having count(*) > 2"
     # ORDER BY age DESC"
     db_id = "concert_singer"
     # print(os.path.dirname(os.path.realpath(__file__)))
-    table_file = os.path.join(os.path.dirname(__file__), "../../../data/dataset/spider/tables.json")
-    
+    table_file = os.path.join(os.path.dirname(__file__),
+                              "../../../data/dataset/spider/tables.json")
+
     schemas, db_names, tables = get_schemas_from_json(table_file)
     schema = schemas[db_id]
     table = tables[db_id]
@@ -118,5 +120,3 @@ if __name__ == '__main__':
     print(table.keys())
     print(table["column_names_original"])
     print("sql_label: ", sql_label["select"])
-
-

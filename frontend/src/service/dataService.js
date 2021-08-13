@@ -31,6 +31,12 @@ function initialization(dataset, callback) {
     request(url, params, GET_REQUEST, callback)
 }
 
+function getDBInfo(db_id, callback) {
+    const url = `${dataServerUrl}/get_database_meta/${db_id}`
+    const params = {}
+    request(url, params, GET_REQUEST, callback)
+}
+
 function getTables(dbselected, callback) {
     const url = `${dataServerUrl}/get_tables/${dbselected}`
     const params = {}
@@ -61,12 +67,20 @@ function SQL2VL(sql, db_id, callback) {
     request(url, params, GET_REQUEST, callback);
 }
 
+function SQL2text(sql, db_id, callback) {
+    const url = `${dataServerUrl}/sql2text/${sql}/${db_id}`;
+    const params = {};
+    request(url, params, GET_REQUEST, callback);
+}
+
 export default {
     dataServerUrl,
     initialization,
+    getDBInfo,
     getTables,
     getTableCols,
     loadTablesContent,
     text2SQL,
-    SQL2VL
+    SQL2VL,
+    SQL2text
 }

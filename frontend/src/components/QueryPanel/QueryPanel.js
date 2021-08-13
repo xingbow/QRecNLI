@@ -3,6 +3,9 @@ import pipeService from '../../service/pipeService.js'
 
 export default {
     name: "QueryPanel",
+    props: {
+        dbselected: "",
+    },
     data() {
         return {
             userText: "",

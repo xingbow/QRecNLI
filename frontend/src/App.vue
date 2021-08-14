@@ -18,7 +18,9 @@
         <div class="p border-right" style="width: 25%; text-align:start;">
           <Settings :tableLists="tableLists" :tables="tables"></Settings>
         </div>
-        <div class="p" style="width: 75%; text-align:start;"><ResultView /></div>
+        <div class="p" style="width: 75%; text-align:start;">
+          <ResultView :tables="tables"/>
+        </div>
       </div>     
   </div>
 </template>
@@ -74,7 +76,7 @@ export default {
             dataService.getTables(dbselected, (data)=>{
               _this.tables = data;
               _this.tableLists = Object.keys(data);
-              console.log("tables: ", _this.tableLists)
+              console.log("tables: ", _this.tables);
             })
           }
       });

@@ -35,10 +35,7 @@ export default {
                     // send "sql" to settings and record sql history
                     if (sqlResult["sql"].length > 0) {
                         dataService.SQL2text(sqlResult["sql"], this.dbselected, (data) => {
-                            const SQLTrans = {
-                                "text": data
-                            }
-                            pipeService.emitSQLTrans(SQLTrans);
+                            pipeService.emitSQLTrans(data);
                         });
                         dataService.SQL2VL(sqlResult["sql"], this.dbselected, (data) => {
                             pipeService.emitVLSpecs(data);

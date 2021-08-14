@@ -64,6 +64,30 @@
     .rowitem {
         font-size: 13px;
         padding: 2px;
+        display: flex;
+        align-items: center;
+    }
+
+    .select-token {
+        font-size: 13px;
+        border: 1px solid lightgray;
+        height: 25px;
+        border-radius: 2px;
+        align-items: center;
+    }
+    .select-token:hover {
+        border: 1px solid gray;
+    }
+
+    .col-token {
+        align-items: center;
+        margin: 2px;
+        padding-left: 2px;
+        height: 25px;
+    }
+
+    .col-text {
+        margin-left: 4px;
     }
 
 </style>

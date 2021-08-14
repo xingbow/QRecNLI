@@ -74,10 +74,9 @@ export default {
             $(`.nav-link-`+this.activeIdx).addClass("active");
         },
         handleNodeClick(data) {
-            console.log(data);
+            // console.log(data);
         },
         renderContent(h, { node, data, store }) { /* eslint-disable-line */
-            console.log("data, node: ", node, data);
             if(data.type=="table"){
                 return (
                     <span class="custom-tree-node">
@@ -177,7 +176,7 @@ export default {
             let nodeData = [],
                 edges = [];
             this.historyData.map((h, hi) => {
-                console.log(hi, h);
+                // console.log(hi, h);
                 nodeData.push({
                     id: hi.toString(),
                     type: 'rect',

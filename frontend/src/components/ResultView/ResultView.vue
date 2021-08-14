@@ -68,14 +68,15 @@
         align-items: center;
     }
 
-    .select-token {
+    .select-token, .cond-unit-token {
         font-size: 13px;
         border: 1px solid lightgray;
         height: 25px;
         border-radius: 2px;
         align-items: center;
     }
-    .select-token:hover {
+    .select-token:hover, 
+    .cond-unit-token:hover {
         border: 1px solid gray;
     }
 

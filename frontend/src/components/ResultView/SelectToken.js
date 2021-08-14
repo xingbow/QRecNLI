@@ -11,7 +11,6 @@ export default {
     const aggToken = (aggId && aggId !== "none") ? aggId : "";
     const innerAggToken = (innerAggId && innerAggId !== "none") ? innerAggId : "";
 
-    console.log(getColumnType);
     const type = getColumnType(colToken, props.tables);
 
     return <div class="select-token">

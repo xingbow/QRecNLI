@@ -28,7 +28,7 @@
                 <div class="rowitem">
                     <el-tag type="info" effect="plain">Select </el-tag>
                     <div class="rowitem" v-for="(selectUnit, index) in selectDecoded">
-                        <SelectToken :selectUnit=selectUnit :tables=tables></SelectToken>
+                        <SelectToken :selectUnit=selectUnit :tables=tables />
                     </div>
                 </div>
                 <div class="rowitem">
@@ -36,6 +36,9 @@
                 </div>
                 <div class="rowitem">
                     <el-tag type="info" effect="plain">Filters </el-tag>
+                    <div class="rowitem" v-for="(condUnit, index) in whereDecoded">
+                        <CondUnitToken :condUnit=condUnit :tables=tables />
+                    </div>
                 </div>
             </div>
             <div id="vegaLiteContainer">

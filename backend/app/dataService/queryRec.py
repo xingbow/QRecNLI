@@ -13,9 +13,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 try:
     import globalVariable as GV
     from utils.processSQL import process_sql, decode_sql
+    from utils.processSQL.decode_sql import extract_select_names, extract_agg_opts, extract_groupby_names
 except ImportError:
     import app.dataService.globalVariable as GV
     from app.dataService.utils.processSQL import process_sql, decode_sql
+    from app.dataService.utils.processSQL.decode_sql import extract_select_names, extract_agg_opts, extract_groupby_names
 
 test_topic = "employee_hire_evaluation"
 test_table_cols = ['employee: employee id',
@@ -42,7 +44,7 @@ test_table_cols = ['employee: employee id',
 
 
 class queryRecommender(object):
-    def __init__(self, search_cols, topic_sim_th=0.4, item_sim=0.4, alpha=0.9, beta=0.5,
+    def __init__(self, topic_sim_th=0.4, item_sim=0.4, alpha=0.9, beta=0.5,
                  groupby_th=0.4, agg_th=0.4, sim=0.7,
                  ref_db_meta_path=os.path.join(GV.SPIDER_FOLDER, "train_spider.json")):
         self.GV = GV
@@ -67,7 +69,7 @@ class queryRecommender(object):
             ref_db_data = pd.DataFrame(json.load(f))
         self.dataset = ref_db_data
         # --- target table to search
-        self.search_cols = search_cols
+        # self.search_cols = search_cols
 
     def cal_cosine_sim(self, sen0, sen1):
         """
@@ -83,7 +85,16 @@ class queryRecommender(object):
         cosine_scores = util.pytorch_cos_sim(embedd0, embedd1).cpu().numpy()
         return cosine_scores
 
-    def search_sim_dbs(self, topic):
+    def search_sim_dbs(self, topic, search_cols):
+        """
+        - retrieve similar db according to query table names
+        - INPUT:
+          - topic: table/db name (str)
+          - search_cols: input table columns (list)
+        - OUTPUT:
+          - dataframe of similar dbs in the dataset
+        """
+        self.search_cols = search_cols
         sim_scores = self.cal_cosine_sim(topic, self.db_new_names)[0]
         related_db_names = [self.db_names[i] for i in np.where(sim_scores > self.topic_sim_th)[0]]
         print(f"related_db_names: {related_db_names}")
@@ -93,8 +104,9 @@ class queryRecommender(object):
             if row["db_id"] in related_db_names:
                 rowids.append(rowid)
                 # entity in `select` clause
-                select_decoded = decode_sql.decode_select(row["sql"], self.tables[row["db_id"]])
-                select_ents = decode_sql.extract_select_names(select_decoded)
+                # print(row["sql"])
+                select_decoded = decode_sql(row["sql"], self.tables[row["db_id"]])["select"]
+                select_ents = extract_select_names(select_decoded)
                 # calculate similarity between `select` items and `select` cols
                 row_sim = self.cal_cosine_sim(self.search_cols, select_ents)
                 row_sims.append(np.max(row_sim, axis=1))
@@ -162,11 +174,13 @@ class queryRecommender(object):
                 table = self.tables[db_id]
                 sql = row["sql"]
                 # extract `groupby` entities
-                groupby_decoded = decode_sql.decode_groupby(sql["groupBy"], table)
-                groupby_names = decode_sql.extract_groupby_names(groupby_decoded)
+                # groupby_decoded = decode_sql.decode_groupby(sql["groupBy"], table)
+                groupby_decoded = decode_sql(sql, table)["groupBy"]
+                groupby_names = extract_groupby_names(groupby_decoded)
                 # extract `agg` operations
-                select_decoded = decode_sql.decode_select(sql, table)
-                agg_dict = decode_sql.extract_agg_opts(select_decoded)
+                select_decoded = decode_sql(sql, table)["select"]
+                # select_decoded = decode_sql.decode_select(sql, table)
+                agg_dict = extract_agg_opts(select_decoded)
                 agg_list.append(agg_dict)
                 if len(groupby_names) > 0:
                     all_groupby_names.append(groupby_names)
@@ -313,8 +327,8 @@ class queryRecommender(object):
 
 
 if __name__ == "__main__":
-    qr = queryRecommender(test_table_cols)
-    db_bin = qr.search_sim_dbs(test_topic.replace("_", " ").strip())
+    qr = queryRecommender()
+    db_bin = qr.search_sim_dbs(test_topic.replace("_", " ").strip(), test_table_cols)
     # initial recommendation
     context_dict = {
         "select": [],

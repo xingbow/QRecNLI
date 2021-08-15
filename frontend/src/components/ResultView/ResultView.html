@@ -1,7 +1,7 @@
 <div id="resultview">
     <div class="card">
         <div class="card-block" id="resultContainer">
-            <el-collapse v-model="activeNames" @change="handleChange">
+            <el-collapse v-model="activeNames">
                 <el-collapse-item title="You may want to ask:" name="1">
                     <div class="recommend"> 
                         <div class="list-group list-group-flush">
@@ -23,9 +23,11 @@
                 </el-collapse-item>
             </el-collapse>
             <div id="sql-result" style="margin-top:5px;">
-                <div class="rowitem"><el-tag type="info" effect="plain">Select </el-tag></div>
-                <div class="rowitem"><el-tag type="info" effect="plain">Groupby </el-tag></div>
-                <div class="rowitem"><el-tag type="info" effect="plain">Filters </el-tag></div>
+                <el-row>
+                    <el-col :span="12"><div class="rowitem"><el-tag type="info" effect="plain">Select </el-tag></div></el-col>
+                    <el-col :span="12"><div class="rowitem"><el-tag type="info" effect="plain">Groupby </el-tag></div></el-col>
+                    <el-col :span="24"><div class="rowitem"><el-tag type="info" effect="plain">Filters </el-tag></div></el-col>
+                </el-row>
             </div>
             <div id="vegaLiteContainer">
                 <div class="vis-container" v-for="(spec, index) in vlSpecs" style="pointer-events: none;">

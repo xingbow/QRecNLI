@@ -42,7 +42,7 @@ export default {
             let tableL = []; 
             for (const [key, value] of Object.entries(tables)) {
                 // console.log(key, value);
-                let children = value.map(v=>{return {"type": "column", "label": v[0], "ctype": v[1]} });
+                const children = value.map(v=>{return {"type": "column", "label": v[0], "ctype": v[1]} });
                 tableL.push({
                     "type": "table",
                     "label": key,
@@ -57,11 +57,10 @@ export default {
             if (tabselected.length > 0) {
                 console.log("select table:", tabselected);
                 dataService.getTableCols(tabselected, data => {
-                    console.log("columns: ", data["data"]);
-                    let tableCols = data["data"];
+                    const tableCols = data;
                     dataService.loadTablesContent(tabselected, (data) => {
                         this.tableCols = tableCols
-                        this.dataTable.setData(data["data"].slice(0, (data["data"].length >= 5) ? 5 : data["data"].length));
+                        this.dataTable.setData(data.slice(0, (data.length >= 5) ? 5 : data.length));
                     })
                 })
             }
@@ -77,10 +76,9 @@ export default {
             $(`.nav-link-`+this.activeIdx).addClass("active");
         },
         handleNodeClick(data) {
-            console.log(data);
+            // console.log(data);
         },
         renderContent(h, { node, data, store }) { /* eslint-disable-line */
-            console.log("data, node: ", node, data);
             if(data.type=="table"){
                 return (
                     <span class="custom-tree-node">
@@ -180,7 +178,7 @@ export default {
             let nodeData = [],
                 edges = [];
             this.historyData.map((h, hi) => {
-                console.log(hi, h);
+                // console.log(hi, h);
                 nodeData.push({
                     id: hi.toString(),
                     type: 'rect',

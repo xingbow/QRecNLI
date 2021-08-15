@@ -10,11 +10,13 @@
                 </li>
               </ul>
             <div id="databaseMeta" v-show="activeIdx==0">
-                <!-- <div style="margin:5px; width:100%; display:inline-flex"><div class="align-self-center"  style="font-size: 14px;">Tables:</div>
-                    <v-select style="width:50%; margin-left:5px; font-size: 12px; padding:0px;" v-model="tabselected" :options="tableLists"/>
-                </div>
-                <div id="data-table" class="very compact"></div> -->
-                <el-tree :data="treedata" :props="defaultProps" @node-click="handleNodeClick" :render-content="renderContent"></el-tree>
+                <el-tree 
+                  :data="treedata" 
+                  :props="defaultProps" 
+                  default-expand-all 
+                  @node-click="handleNodeClick" 
+                  :render-content="renderContent">
+                </el-tree>
             </div>
             <div id="logicFlow" v-show="activeIdx==1" style="overflow-y:scroll;"></div>
         </div>

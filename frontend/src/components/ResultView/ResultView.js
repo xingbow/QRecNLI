@@ -17,6 +17,7 @@ export default {
             vlSpecs: [],
             explanation: "",
             count: 0,
+            activeNames: ["1"],
         }
     },
     watch: {},
@@ -29,8 +30,5 @@ export default {
         })
     },
     methods: {
-        load () {
-          this.count += 2
-        }
-      }
+    }
 }

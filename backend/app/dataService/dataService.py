@@ -11,12 +11,14 @@ import pandas as pd
 try:
     import globalVariable as GV
     import sqlParser as sp
+    import queryRec as qr
     from utils import helpers
     from utils.visRecos import vis_design_combos
     from vlgenie import VLGenie
 except ImportError:
     import app.dataService.globalVariable as GV
     import app.dataService.sqlParser as sp
+    import app.dataService.queryRec as qr
     from app.dataService.utils import helpers
     from app.dataService.utils.visRecos import vis_design_combos
     from app.dataService.vlgenie import VLGenie
@@ -28,6 +30,7 @@ class DataService(object):
     def __init__(self, dataset="spider"):
         self.text2sql_model_loaded = False
         self.sql_parser_loaded = False
+        self.sqlsugg_model_loaded = False
         self.dataset = dataset
         self.global_variable = GV
         if self.dataset == "spider":
@@ -62,6 +65,16 @@ class DataService(object):
         self.sql_parser_loaded = True
         if verbose:
             print("=== finish loading sql parser ===")
+
+    def _load_sqlsugg_model(self, query_table_cols, verbose=True):
+        if self.sqlsugg_model_loaded:
+            return
+        if verbose:
+            print("=== begin loading sql suggestion model ===")
+        self.sqlsugg_model = qr.queryRecommender(query_table_cols)
+        self.sqlsugg_model_loaded = True
+        if verbose:
+            print("=== finish loading sql suggestion model ===")
 
     def get_db_info(self, db_id):
         db_info = self.db_meta_dict[db_id]

@@ -132,6 +132,10 @@ def sql2text(sql_text, db_id="cinema"):
     response = {'sqlDecoded': sql_decoded, 'text': text}
     return json.dumps(response)
 
+@api.route("/sql_sugg/<sql_text>/<db_id>", methods=['GET'])
+def sql_sugg(sql_text, db_id):
+    return
+
 
 if __name__ == '__main__':
     pass

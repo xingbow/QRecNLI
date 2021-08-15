@@ -126,11 +126,11 @@ def sql2vis(sql_text, db_id="cinema"):
 
 @api.route("/sql2text/<sql_text>/<db_id>", methods=['GET'])
 def sql2text(sql_text, db_id="cinema"):
-    print("sql_text", sql_text)
     sql_parsed = current_app.dataService.parsesql(sql_text, db_id)
     sql_decoded = processSQL.decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
     text = processSQL.sql2text(sql_decoded)
-    return json.dumps(text)
+    response = {'sqlDecoded': sql_decoded, 'text': text}
+    return json.dumps(response)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,8 @@ var pipeService = new Vue({
     data: {
         TESTEVENT: 'test_event',
         GETSQL: "GET_SQL",
+        SQLTrans: "SQL_trans",
+        VLSpecs: "VL_specs"
     },
     methods: {
         emitTestEvent: function(msg) {
@@ -22,11 +24,19 @@ var pipeService = new Vue({
                 callback(msg)
             })
         },
-        emit: function(token, msg) {
-            this.$emit(this[token], msg)
+        emitSQLTrans: function(msg) {
+            this.$emit(this.SQLTrans, msg)
         },
-        on: function(token, callback) {
-            this.$on(this[token], function(msg) {
+        onSQLTrans: function(callback) {
+            this.$on(this.SQLTrans, function(msg) {
+                callback(msg)
+            })
+        },
+        emitVLSpecs: function(msg) {
+            this.$emit(this.VLSpecs, msg)
+        },
+        onVLSpecs: function(callback) {
+            this.$on(this.VLSpecs, function(msg) {
                 callback(msg)
             })
         },

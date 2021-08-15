@@ -33,3 +33,28 @@ TABLE_TYPE = {
 COND_OPS = ('and', 'or')
 SQL_OPS = ('intersect', 'union', 'except')
 ORDER_OPS = ('desc', 'asc')
+
+##################
+### test case for query suggestion
+test_topic = "employee_hire_evaluation"
+test_table_cols = ['employee: employee id',
+                   'employee: name',
+                   'employee: age',
+                   'employee: city',
+                   'shop: shop id',
+                   'shop: name',
+                   'shop: location',
+                   'shop: district',
+                   'shop: number products',
+                   'shop: manager name',
+                   'hiring: shop id',
+                   'hiring: employee id',
+                   'hiring: start from',
+                   'hiring: is full time',
+                   'evaluation: employee id',
+                   'evaluation: year awarded',
+                   'evaluation: bonus',
+                   'employee: *',
+                   'shop: *',
+                   'hiring: *',
+                   'evaluation: *']

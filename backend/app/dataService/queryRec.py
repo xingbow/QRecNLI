@@ -19,30 +19,6 @@ except ImportError:
     from app.dataService.utils.processSQL import process_sql, decode_sql
     from app.dataService.utils.processSQL.decode_sql import extract_select_names, extract_agg_opts, extract_groupby_names
 
-test_topic = "employee_hire_evaluation"
-test_table_cols = ['employee: employee id',
-                   'employee: name',
-                   'employee: age',
-                   'employee: city',
-                   'shop: shop id',
-                   'shop: name',
-                   'shop: location',
-                   'shop: district',
-                   'shop: number products',
-                   'shop: manager name',
-                   'hiring: shop id',
-                   'hiring: employee id',
-                   'hiring: start from',
-                   'hiring: is full time',
-                   'evaluation: employee id',
-                   'evaluation: year awarded',
-                   'evaluation: bonus',
-                   'employee: *',
-                   'shop: *',
-                   'hiring: *',
-                   'evaluation: *']
-
-
 class queryRecommender(object):
     def __init__(self, topic_sim_th=0.4, item_sim=0.4, alpha=0.9, beta=0.5,
                  groupby_th=0.4, agg_th=0.4, sim=0.7,
@@ -327,6 +303,9 @@ class queryRecommender(object):
 
 
 if __name__ == "__main__":
+    test_topic = GV.test_topic
+    test_table_cols = GV.test_table_cols
+
     qr = queryRecommender()
     db_bin = qr.search_sim_dbs(test_topic.replace("_", " ").strip(), test_table_cols)
     # initial recommendation

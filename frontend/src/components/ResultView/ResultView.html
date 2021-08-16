@@ -4,14 +4,10 @@
             <el-collapse v-model="activeNames">
                 <el-collapse-item title="You may want to ask:" name="1">
                     <div class="recommend">
-                        <div class="list-group list-group-flush" v-for="nl in querySugg['nl']">
-                            <a class="list-group-item list-group-item-action rowitem">
+                        <div class="list-group list-group-flush" v-for="(nl, nlidx) in querySugg['nl']">
+                            <a class="list-group-item list-group-item-action rowitem" v-on:click="selectQuery(nlidx)">
                               {{nl}}
                             </a>
-                            <!-- <a class="list-group-item list-group-item-action rowitem">Dapibus ac facilisis in</a>
-                            <a class="list-group-item list-group-item-action rowitem">Morbi leo risus</a>
-                            <a class="list-group-item list-group-item-action rowitem">Porta ac consectetur ac</a>
-                            <a class="list-group-item list-group-item-action rowitem">Vestibulum at eros</a> -->
                         </div>
                     </div>
                 </el-collapse-item>

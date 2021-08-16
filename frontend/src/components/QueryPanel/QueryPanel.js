@@ -20,6 +20,12 @@ export default {
                 desc: ''
             }
         }
+    }, 
+    mounted() {
+        pipeService.onSetQuery(nl=>{
+            console.log("nl in querypanel: ", nl)
+            this.userText = nl;
+        })
     },
     methods: {
         search: function() {

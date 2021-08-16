@@ -122,9 +122,10 @@ class queryRecommender(object):
         groupby_sugg = []
         agg_sugg = []
 
-        # `groupby` and `agg` contexts 
-        groupby_contexts = np.hstack(
-            [['shop: manager name'], [], ["shop: district", "shop: location"]])
+        # `groupby` and `agg` contexts
+        groupby_contexts = np.hstack(groupby_contexts)
+        # groupby_contexts = np.hstack(
+        #     [['shop: manager name'], [], ["shop: district", "shop: location"]])
         ##############################
         # calculate `groupby` context relecance (between remaining cols and groupby contexts)
         df_col_diff = df.columns.difference(set(groupby_contexts))
@@ -137,7 +138,8 @@ class queryRecommender(object):
         # print(f"gb_sugg_context: {gb_sugg_context}")
         # print("*"*10)
         ##############################
-        agg_contexts = [{}, {}, {"count": ["evalution: *", 'shop: number products']}]
+        # agg_contexts = [{}, {}, {"count": ["evalution: *", 'shop: number products']}]
+        
         # print(f"groupby_contexts = {groupby_contexts}, agg_contexts = {agg_contexts}")
 
         for _, col in enumerate(cols):

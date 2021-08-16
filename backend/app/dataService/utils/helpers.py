@@ -8,10 +8,12 @@ from flask.json import JSONDecoder
 
 try:
     from app.dataService.utils import constants
+    from app.dataService.utils.processSQL import select_unit2text
 except ImportError:
     from utils import constants
+    from utils.processSQL import select_unit2text
 
-from app.dataService.utils.processSQL import select_unit2text
+
 
 
 # Copied from NL4DV

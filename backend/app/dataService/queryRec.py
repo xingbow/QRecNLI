@@ -93,14 +93,16 @@ class queryRecommender(object):
         db_df_bin = db_df_bin[db_df_bin.columns[(-np.array(sim_sum)).argsort()]]
         return db_df_bin
 
-    def get_freq_combo(self, df, filter_set=set([]), support=None):
+    def get_freq_combo(self, df, filter_set=set([]), support=None, max_len = 3):
         """
         - input: dataframe (m * n) => binary values
         - output: frequent combo => columns: support, itemsets, itemlen
         """
+        # print("max_len: ", max_len)
+        # TODO: fpmax V.S. fpgrowth
         if support is None:
             support = self.item_sim
-        freq_combo = fpmax(df, min_support=support, use_colnames=True)
+        freq_combo = fpmax(df, min_support=support, use_colnames=True, max_len = max_len)
         freq_combo["itemlen"] = freq_combo["itemsets"].apply(len)
         # filter regarding to condition
         if len(filter_set) > 0:
@@ -123,21 +125,24 @@ class queryRecommender(object):
         agg_sugg = []
 
         # `groupby` and `agg` contexts
-        groupby_contexts = np.hstack(groupby_contexts)
-        # groupby_contexts = np.hstack(
-        #     [['shop: manager name'], [], ["shop: district", "shop: location"]])
-        ##############################
-        # calculate `groupby` context relecance (between remaining cols and groupby contexts)
-        df_col_diff = df.columns.difference(set(groupby_contexts))
-        groupby_c_sim = np.max(self.cal_cosine_sim(groupby_contexts, df_col_diff), axis=0)
-        # print(f"groupby_c_sim: {groupby_c_sim}", groupby_c_sim.shape)
-        df_col_diff = df_col_diff[(-groupby_c_sim).argsort()]
-        groupby_c_sim = groupby_c_sim[(-groupby_c_sim).argsort()]
-        gb_sugg_context = [gb for gb in list(df_col_diff[groupby_c_sim > self.sim]) if
-                           "*" not in gb]  # handle (table_name: *) situations
-        # print(f"gb_sugg_context: {gb_sugg_context}")
-        # print("*"*10)
-        ##############################
+        if len(groupby_contexts)>0:
+            groupby_contexts = np.hstack(groupby_contexts)
+            # groupby_contexts = np.hstack(
+            #     [['shop: manager name'], [], ["shop: district", "shop: location"]])
+            ##############################
+            # calculate `groupby` context relecance (between remaining cols and groupby contexts)
+            df_col_diff = df.columns.difference(set(groupby_contexts))
+            groupby_c_sim = np.max(self.cal_cosine_sim(groupby_contexts, df_col_diff), axis=0)
+            # print(f"groupby_c_sim: {groupby_c_sim}", groupby_c_sim.shape)
+            df_col_diff = df_col_diff[(-groupby_c_sim).argsort()]
+            groupby_c_sim = groupby_c_sim[(-groupby_c_sim).argsort()]
+            gb_sugg_context = [gb for gb in list(df_col_diff[groupby_c_sim > self.sim]) if
+                            "*" not in gb]  # handle (table_name: *) situations
+            # print(f"gb_sugg_context: {gb_sugg_context}")
+            # print("*"*10)
+            ##############################
+        else:
+            gb_sugg_context = []
         # agg_contexts = [{}, {}, {"count": ["evalution: *", 'shop: number products']}]
         
         # print(f"groupby_contexts = {groupby_contexts}, agg_contexts = {agg_contexts}")
@@ -178,7 +183,8 @@ class queryRecommender(object):
                     groupby_sim = groupby_sim[(-groupby_sim).argsort()]
                     gb_sugg = list(
                         groupby_cols[groupby_sim > self.groupby_th])  # similarity thresholds
-            gb_sugg += gb_sugg_context
+            if len(gb_sugg_context) >0:
+                gb_sugg += gb_sugg_context
             # print(f"gb_sugg: {gb_sugg}")
             groupby_sugg.append(gb_sugg)
             ################################################################
@@ -224,8 +230,9 @@ class queryRecommender(object):
         return groupby_sugg, agg_sugg
 
     def query_suggestion(self, db_df_bin, context_dict={"select": [], "groupby": [], "agg": []},
-                         min_support=None, top_n=3):
+                         min_support=None, top_n=3, max_len = 3):
         """
+        max_len: max query entity # per query
         TODO: 
         1. consider clustering input columns based on their semantics and operate cols on cluster levels
         2. consider user specified (combo of interest) that are not frequently seen in the db
@@ -240,7 +247,8 @@ class queryRecommender(object):
         groupby_contexts = context_dict["groupby"]
         # initial recommendation
         if len(sel_contexts) == 0:
-            freq_combo = self.get_freq_combo(db_df_bin, set([]), support)
+            freq_combo = self.get_freq_combo(db_df_bin, set([]), support, max_len = max_len)
+            # print("freq_combo: ", freq_combo)
             union_set = frozenset().union(*freq_combo["itemsets"].values)
             next_cols = [list(v) for v in freq_combo["itemsets"].values]
             if len(union_set) < top_n:
@@ -282,7 +290,7 @@ class queryRecommender(object):
         # print(f"support: {support}")
         # print(f"self.item_sim: {self.item_sim}")
         freq_combo = self.get_freq_combo(db_df_bin[list(context_cols) + list(top_n_rest_cols)],
-                                         filter_set=set(context_cols), support=support)
+                                         filter_set=set(context_cols), support=support, max_len = max_len)
         freq_cols = [list(v) for v in freq_combo["itemsets"].values if len(v) > 0]
         if len(freq_combo["itemsets"].values) < top_n:
             # print("*"*10)

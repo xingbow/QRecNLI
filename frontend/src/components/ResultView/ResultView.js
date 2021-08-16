@@ -11,7 +11,10 @@ Vue.use(VueVega);
 export default {
     name: 'ResultView',
     components: { SelectToken, CondUnitToken },
-    props: { tables: {} },
+    props: { 
+        tables: {}, 
+        querySugg: {}
+    },
     data() {
         return {
             containerId: 'resultContainer',
@@ -24,7 +27,13 @@ export default {
             activeNames: ["1"],
         }
     },
-    watch: {},
+    watch: {
+        querySugg: function(querySugg){
+            if(Object.keys(querySugg).length>0){
+                console.log("query suggestion in the results view: ", querySugg);
+            }
+        }
+    },
     mounted: function() {
         this.drawResult = new DrawResult(this.containerId);
         pipeService.onSQL(sql => {

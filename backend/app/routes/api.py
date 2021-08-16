@@ -111,6 +111,7 @@ def load_tables(table_name):
 @api.route("/text2sql/<user_text>/<db_id>", methods=['GET'])
 def text2sql(user_text="films and film prices that cost below 10 dollars", db_id="cinema"):
     sql = current_app.dataService.text2sql(user_text, db_id)
+    current_app.dataService.set_query_context(sql, db_id) # set query context
     result = {'sql': sql, 'data': current_app.dataService.sql2data(sql, db_id).values.tolist()}
     return json.dumps(result)
 
@@ -132,8 +133,10 @@ def sql2text(sql_text, db_id="cinema"):
     response = {'sqlDecoded': sql_decoded, 'text': text}
     return json.dumps(response)
 
-@api.route("/sql_sugg/<sql_text>/<db_id>", methods=['GET'])
-def sql_sugg(sql_text, db_id):
+@api.route("/sql_sugg/<db_id>", methods=['GET'])
+def sql_sugg(db_id):
+    table_cols = [col[1] for col in current_app.dataService.db_meta_dict[db_id]["column_names"] if col[0]!=-1]
+    # current_app.dataService.sql_suggest
     return
 
 

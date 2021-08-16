@@ -36,25 +36,32 @@ ORDER_OPS = ('desc', 'asc')
 
 ##################
 ### test case for query suggestion
-test_topic = "employee_hire_evaluation"
-test_table_cols = ['employee: employee id',
-                   'employee: name',
-                   'employee: age',
-                   'employee: city',
-                   'shop: shop id',
-                   'shop: name',
-                   'shop: location',
-                   'shop: district',
-                   'shop: number products',
-                   'shop: manager name',
-                   'hiring: shop id',
-                   'hiring: employee id',
-                   'hiring: start from',
-                   'hiring: is full time',
-                   'evaluation: employee id',
-                   'evaluation: year awarded',
-                   'evaluation: bonus',
-                   'employee: *',
-                   'shop: *',
-                   'hiring: *',
-                   'evaluation: *']
+# test_topic = "employee_hire_evaluation"
+# test_table_cols = ['employee: employee id',
+#                    'employee: name',
+#                    'employee: age',
+#                    'employee: city',
+#                    'shop: shop id',
+#                    'shop: name',
+#                    'shop: location',
+#                    'shop: district',
+#                    'shop: number products',
+#                    'shop: manager name',
+#                    'hiring: shop id',
+#                    'hiring: employee id',
+#                    'hiring: start from',
+#                    'hiring: is full time',
+#                    'evaluation: employee id',
+#                    'evaluation: year awarded',
+#                    'evaluation: bonus',
+#                    'employee: *',
+#                    'shop: *',
+#                    'hiring: *',
+#                    'evaluation: *']
+test_topic = "cinema"
+test_table_cols = ['film: rank in series', 'film: number in season', 
+'film: title', 'film: directed by', 'film: original air date', 'film: production code', 
+'cinema: name', 'cinema: openning year', 'cinema: capacity', 
+'cinema: location', 'schedule: date', 
+'schedule: show times per day', 'schedule: price']
+

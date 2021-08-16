@@ -84,6 +84,10 @@ export default {
             }
         },
 
+        onBlur: function() {
+            this.popoverVisible = false;
+        },
+
         rowClick: function(row, column, event) {
             let tokens = this.userText.split(' ');
             for (let i = 0; i < row.numToken; i++) {

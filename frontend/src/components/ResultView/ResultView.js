@@ -25,12 +25,16 @@ export default {
             whereDecoded: [],
             count: 0,
             activeNames: ["1"],
+            qSugg: {},
         }
+    },
+    computed: {
     },
     watch: {
         querySugg: function(querySugg){
             if(Object.keys(querySugg).length>0){
-                console.log("query suggestion in the results view: ", querySugg);
+                // console.log("query suggestion in the results view: ", querySugg);
+                this.qSugg = querySugg;
             }
         }
     },
@@ -47,12 +51,15 @@ export default {
         });
         pipeService.onVLSpecs(vlSpecs => {
             this.vlSpecs = vlSpecs;
+        });
+        pipeService.onQuerySugg(qs=>{
+            this.qSugg = qs;
         })
     },
     methods: {
         selectQuery: function(nlidx){
-            console.log("receive nl query:", nlidx, this.querySugg["nl"][nlidx]);
-            pipeService.emitSetQuery(this.querySugg["nl"][nlidx]);
+            console.log("receive nl query:", nlidx, this.qSugg["nl"][nlidx]);
+            pipeService.emitSetQuery(this.qSugg["nl"][nlidx]);
             // TODO: update sql and its explanation and visualization
 
         }

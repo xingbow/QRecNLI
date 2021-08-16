@@ -19,7 +19,7 @@
           <Settings :tableLists="tableLists" :tables="tables"></Settings>
         </div>
         <div class="p" style="width: 75%; text-align:start;">
-          <ResultView :tables="tables"/>
+          <ResultView :tables="tables" :querySugg="querySugg" />
         </div>
       </div>     
   </div>
@@ -50,15 +50,22 @@ export default {
         dbInfo: [],
         tables: {},
         tableLists: [],
+        querySugg: {},
     }
   },
   watch: {
     dbselected: function(dbselected){
       console.log("selected db name:",dbselected);
-      dataService.getTables(dbselected, (data)=>{
-        this.tables = data;
-        this.tableLists = Object.keys(data);
-        console.log("tables: ", this.tableLists);
+      const _this = this;
+      dataService.getTables(dbselected, (tableData)=>{
+          _this.tables = tableData;
+          _this.tableLists = Object.keys(tableData);
+        // get nl/sql suggestion from backend
+        dataService.SQLSugg(dbselected, (suggData)=>{
+          _this.querySugg = suggData
+          console.log("suggestion: ", suggData);
+        })
+        
       });
     }
   },
@@ -73,10 +80,14 @@ export default {
         dataService.initialization(dataset, (data)=>{
           _this.dbLists = data;
           if(dbselected.length>0){
-            dataService.getTables(dbselected, (data)=>{
-              _this.tables = data;
-              _this.tableLists = Object.keys(data);
-              console.log("tables: ", _this.tables);
+            dataService.getTables(dbselected, (tableData)=>{
+                  _this.tables = tableData;
+                  _this.tableLists = Object.keys(tableData);
+                // get nl/sql suggestion from backend
+                dataService.SQLSugg(dbselected, (suggData)=>{
+                  _this.querySugg = suggData
+                  console.log("suggestion: ", suggData);
+                })
             })
           }
       });

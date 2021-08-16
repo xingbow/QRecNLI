@@ -13,37 +13,16 @@ from sklearn.metrics.pairwise import cosine_similarity
 try:
     import globalVariable as GV
     from utils.processSQL import process_sql, decode_sql
+    from utils.processSQL.decode_sql import extract_select_names, extract_agg_opts, extract_groupby_names
 except ImportError:
     import app.dataService.globalVariable as GV
     from app.dataService.utils.processSQL import process_sql, decode_sql
-
-test_topic = "employee_hire_evaluation"
-test_table_cols = ['employee: employee id',
-                   'employee: name',
-                   'employee: age',
-                   'employee: city',
-                   'shop: shop id',
-                   'shop: name',
-                   'shop: location',
-                   'shop: district',
-                   'shop: number products',
-                   'shop: manager name',
-                   'hiring: shop id',
-                   'hiring: employee id',
-                   'hiring: start from',
-                   'hiring: is full time',
-                   'evaluation: employee id',
-                   'evaluation: year awarded',
-                   'evaluation: bonus',
-                   'employee: *',
-                   'shop: *',
-                   'hiring: *',
-                   'evaluation: *']
-
+    from app.dataService.utils.processSQL.decode_sql import extract_select_names, extract_agg_opts, extract_groupby_names
 
 class queryRecommender(object):
-    def __init__(self, search_cols, topic_sim_th=0.4, item_sim=0.4, alpha=0.9, beta=0.5,
-                 groupby_th=0.4, agg_th=0.4, sim=0.7,
+    def __init__(self, topic_sim_th=0.4, item_sim=0.4, alpha=0.9, beta=0.5,
+                 groupby_th=0.6, agg_th=0.6, sim=0.7,
+                 opt_n = 2,
                  ref_db_meta_path=os.path.join(GV.SPIDER_FOLDER, "train_spider.json")):
         self.GV = GV
         self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
@@ -62,12 +41,14 @@ class queryRecommender(object):
         self.sim = sim
         self.alpha = alpha  # relevance decay for seqeuential query
         self.beta = beta
+        self.opt_n = opt_n
         # --- reference database
         with open(ref_db_meta_path, "r") as f:
             ref_db_data = pd.DataFrame(json.load(f))
         self.dataset = ref_db_data
         # --- target table to search
-        self.search_cols = search_cols
+        # self.search_cols = search_cols
+        self.db_cache = {} # caching search results
 
     def cal_cosine_sim(self, sen0, sen1):
         """
@@ -83,7 +64,19 @@ class queryRecommender(object):
         cosine_scores = util.pytorch_cos_sim(embedd0, embedd1).cpu().numpy()
         return cosine_scores
 
-    def search_sim_dbs(self, topic):
+    def search_sim_dbs(self, topic, search_cols):
+        """
+        - retrieve similar db according to query table names
+        - INPUT:
+          - topic: table/db name (str)
+          - search_cols: input table columns (list)
+        - OUTPUT:
+          - dataframe of similar dbs in the dataset
+        """
+        if topic in self.db_cache.keys():
+            return self.db_cache[topic]
+            
+        self.search_cols = search_cols
         sim_scores = self.cal_cosine_sim(topic, self.db_new_names)[0]
         related_db_names = [self.db_names[i] for i in np.where(sim_scores > self.topic_sim_th)[0]]
         print(f"related_db_names: {related_db_names}")
@@ -93,8 +86,9 @@ class queryRecommender(object):
             if row["db_id"] in related_db_names:
                 rowids.append(rowid)
                 # entity in `select` clause
-                select_decoded = decode_sql.decode_select(row["sql"], self.tables[row["db_id"]])
-                select_ents = decode_sql.extract_select_names(select_decoded)
+                # print(row["sql"])
+                select_decoded = decode_sql(row["sql"], self.tables[row["db_id"]])["select"]
+                select_ents = extract_select_names(select_decoded)
                 # calculate similarity between `select` items and `select` cols
                 row_sim = self.cal_cosine_sim(self.search_cols, select_ents)
                 row_sims.append(np.max(row_sim, axis=1))
@@ -103,16 +97,21 @@ class queryRecommender(object):
         self.ref_db = (self.dataset.loc[rowids]).reset_index(drop=True)
         sim_sum = [sum(db_df_bin[col]) for col in db_df_bin.columns]
         db_df_bin = db_df_bin[db_df_bin.columns[(-np.array(sim_sum)).argsort()]]
+        
+        self.db_cache[topic] = db_df_bin
+
         return db_df_bin
 
-    def get_freq_combo(self, df, filter_set=set([]), support=None):
+    def get_freq_combo(self, df, filter_set=set([]), support=None, max_len = 3):
         """
         - input: dataframe (m * n) => binary values
         - output: frequent combo => columns: support, itemsets, itemlen
         """
+        # print("max_len: ", max_len)
+        # TODO: fpmax V.S. fpgrowth
         if support is None:
             support = self.item_sim
-        freq_combo = fpmax(df, min_support=support, use_colnames=True)
+        freq_combo = fpmax(df, min_support=support, use_colnames=True, max_len = max_len)
         freq_combo["itemlen"] = freq_combo["itemsets"].apply(len)
         # filter regarding to condition
         if len(filter_set) > 0:
@@ -123,33 +122,39 @@ class queryRecommender(object):
             drop=True)
         return freq_combo
 
-    def get_opts(self, df, cols, groupby_contexts=[], agg_contexts=[]):
+    def get_opts(self, df, cols, groupby_contexts=[], agg_contexts=[], top_n = 2):
         """
         recommend  `groupby` & `agg_opt` items
         `agg_opt` items: `avg`, `min`, `max`, `count`, `sum`
         - input: binary feature vectors (size: db_col_num * input_col_num) for input table cols
+              - top_n: limit return results
         - output: `groupby` cols ([col1, col2]), `agg_opt` lists ([{"opt": "col"}, {}])
         """
         agg_opts = ['max', 'min', 'count', 'sum', 'avg']
         groupby_sugg = []
         agg_sugg = []
 
-        # `groupby` and `agg` contexts 
-        groupby_contexts = np.hstack(
-            [['shop: manager name'], [], ["shop: district", "shop: location"]])
-        ##############################
-        # calculate `groupby` context relecance (between remaining cols and groupby contexts)
-        df_col_diff = df.columns.difference(set(groupby_contexts))
-        groupby_c_sim = np.max(self.cal_cosine_sim(groupby_contexts, df_col_diff), axis=0)
-        # print(f"groupby_c_sim: {groupby_c_sim}", groupby_c_sim.shape)
-        df_col_diff = df_col_diff[(-groupby_c_sim).argsort()]
-        groupby_c_sim = groupby_c_sim[(-groupby_c_sim).argsort()]
-        gb_sugg_context = [gb for gb in list(df_col_diff[groupby_c_sim > self.sim]) if
-                           "*" not in gb]  # handle (table_name: *) situations
-        # print(f"gb_sugg_context: {gb_sugg_context}")
-        # print("*"*10)
-        ##############################
-        agg_contexts = [{}, {}, {"count": ["evalution: *", 'shop: number products']}]
+        # `groupby` and `agg` contexts
+        # groupby_contexts = np.hstack(
+        #         [['shop: manager name'], [], ["shop: district", "shop: location"]])
+        gb_sugg_context = []
+        if len(groupby_contexts)>0:
+            groupby_contexts = np.hstack(groupby_contexts)
+            ##############################
+            # calculate `groupby` context relecance (between remaining cols and groupby contexts)
+            if len(groupby_contexts)>0:
+                df_col_diff = df.columns.difference(set(groupby_contexts))
+                groupby_c_sim = np.max(self.cal_cosine_sim(groupby_contexts, df_col_diff), axis=0)
+                # print(f"groupby_c_sim: {groupby_c_sim}", groupby_c_sim.shape)
+                df_col_diff = df_col_diff[(-groupby_c_sim).argsort()]
+                groupby_c_sim = groupby_c_sim[(-groupby_c_sim).argsort()]
+                gb_sugg_context = [gb for gb in list(df_col_diff[groupby_c_sim > self.sim]) if
+                                "*" not in gb]  # handle (table_name: *) situations
+                # print(f"gb_sugg_context: {gb_sugg_context}")
+                # print("*"*10)
+            ##############################
+        # agg_contexts = [{}, {}, {"count": ["evalution: *", 'shop: number products']}]
+        
         # print(f"groupby_contexts = {groupby_contexts}, agg_contexts = {agg_contexts}")
 
         for _, col in enumerate(cols):
@@ -162,11 +167,13 @@ class queryRecommender(object):
                 table = self.tables[db_id]
                 sql = row["sql"]
                 # extract `groupby` entities
-                groupby_decoded = decode_sql.decode_groupby(sql["groupBy"], table)
-                groupby_names = decode_sql.extract_groupby_names(groupby_decoded)
+                # groupby_decoded = decode_sql.decode_groupby(sql["groupBy"], table)
+                groupby_decoded = decode_sql(sql, table)["groupBy"]
+                groupby_names = extract_groupby_names(groupby_decoded)
                 # extract `agg` operations
-                select_decoded = decode_sql.decode_select(sql, table)
-                agg_dict = decode_sql.extract_agg_opts(select_decoded)
+                select_decoded = decode_sql(sql, table)["select"]
+                # select_decoded = decode_sql.decode_select(sql, table)
+                agg_dict = extract_agg_opts(select_decoded)
                 agg_list.append(agg_dict)
                 if len(groupby_names) > 0:
                     all_groupby_names.append(groupby_names)
@@ -186,12 +193,22 @@ class queryRecommender(object):
                     groupby_sim = groupby_sim[(-groupby_sim).argsort()]
                     gb_sugg = list(
                         groupby_cols[groupby_sim > self.groupby_th])  # similarity thresholds
-            gb_sugg += gb_sugg_context
+            # TODO: (DOING) limit return results of `groupby`
+            if len(gb_sugg_context) >0:
+                if len(gb_sugg_context) >= top_n:
+                    gb_sugg = gb_sugg_context[:top_n]
+                else:
+                    gb_sugg = gb_sugg[:(top_n - len(gb_sugg_context))] + gb_sugg_context
+                # gb_sugg += gb_sugg_context
+            else:
+                if len(gb_sugg)>=top_n:
+                    gb_sugg=gb_sugg[:top_n]
             # print(f"gb_sugg: {gb_sugg}")
             groupby_sugg.append(gb_sugg)
             ################################################################
             # `agg` entity suggestion
             # TODO: Thresholds `agg` confidence support and similarity
+            # TODO: (DOING) limit return results of `agg`
             agg_df = pd.DataFrame(agg_list).head()
             # print(agg_df.head())
             agg_sugg_dict = {}
@@ -232,8 +249,9 @@ class queryRecommender(object):
         return groupby_sugg, agg_sugg
 
     def query_suggestion(self, db_df_bin, context_dict={"select": [], "groupby": [], "agg": []},
-                         min_support=None, top_n=3):
+                         min_support=None, top_n=3, max_len = 3):
         """
+        max_len: max query entity # per query
         TODO: 
         1. consider clustering input columns based on their semantics and operate cols on cluster levels
         2. consider user specified (combo of interest) that are not frequently seen in the db
@@ -248,7 +266,8 @@ class queryRecommender(object):
         groupby_contexts = context_dict["groupby"]
         # initial recommendation
         if len(sel_contexts) == 0:
-            freq_combo = self.get_freq_combo(db_df_bin, set([]), support)
+            freq_combo = self.get_freq_combo(db_df_bin, set([]), support, max_len = max_len)
+            # print("freq_combo: ", freq_combo)
             union_set = frozenset().union(*freq_combo["itemsets"].values)
             next_cols = [list(v) for v in freq_combo["itemsets"].values]
             if len(union_set) < top_n:
@@ -257,7 +276,7 @@ class queryRecommender(object):
                 next_cols += cols_supp
             # get `groupby` and `agg_opt` items
             groupby_sugg, agg_sugg = self.get_opts(db_df_bin, next_cols, groupby_contexts,
-                                                   agg_contexts)
+                                                   agg_contexts, self.opt_n)
             return {
                 "select": next_cols,
                 "groupby": groupby_sugg,
@@ -290,7 +309,7 @@ class queryRecommender(object):
         # print(f"support: {support}")
         # print(f"self.item_sim: {self.item_sim}")
         freq_combo = self.get_freq_combo(db_df_bin[list(context_cols) + list(top_n_rest_cols)],
-                                         filter_set=set(context_cols), support=support)
+                                         filter_set=set(context_cols), support=support, max_len = max_len)
         freq_cols = [list(v) for v in freq_combo["itemsets"].values if len(v) > 0]
         if len(freq_combo["itemsets"].values) < top_n:
             # print("*"*10)
@@ -304,7 +323,7 @@ class queryRecommender(object):
 
         # get `groupby` and `agg_opt` items
         groupby_sugg, agg_sugg = self.get_opts(db_df_bin, freq_cols, groupby_contexts,
-                                               agg_contexts)
+                                               agg_contexts, self.opt_n)
         return {
             "select": freq_cols,
             "groupby": groupby_sugg,
@@ -313,8 +332,11 @@ class queryRecommender(object):
 
 
 if __name__ == "__main__":
-    qr = queryRecommender(test_table_cols)
-    db_bin = qr.search_sim_dbs(test_topic.replace("_", " ").strip())
+    test_topic = GV.test_topic
+    test_table_cols = GV.test_table_cols
+
+    qr = queryRecommender()
+    db_bin = qr.search_sim_dbs(test_topic.replace("_", " ").strip(), test_table_cols)
     # initial recommendation
     context_dict = {
         "select": [],

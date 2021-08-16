@@ -16,12 +16,19 @@ export default {
                 padding: 2
             }
         }
+    }, 
+    mounted() {
+        pipeService.onSetQuery(nl=>{
+            // console.log("nl in querypanel: ", nl)
+            this.userText = nl;
+        })
     },
     methods: {
         search: function() {
             if (this.userText.length > 0) {
                 const userText = this.userText;
-                dataService.text2SQL([this.userText, this.dbselected], (data) => {
+                let dbName = this.dbselected;
+                dataService.text2SQL([this.userText, dbName], (data) => {
                     const sqlResult = {
                         "sql": data["sql"].trim(),
                         "data": data["data"],
@@ -30,12 +37,17 @@ export default {
                     pipeService.emitSQL(sqlResult);
                     // send "sql" to settings and record sql history
                     if (sqlResult["sql"].length > 0) {
-                        dataService.SQL2text(sqlResult["sql"], this.dbselected, (data) => {
+                        dataService.SQL2text(sqlResult["sql"], dbName, (data) => {
                             pipeService.emitSQLTrans(data);
                         });
-                        dataService.SQL2VL(sqlResult["sql"], this.dbselected, (data) => {
+                        dataService.SQL2VL(sqlResult["sql"], dbName, (data) => {
                             pipeService.emitVLSpecs(data);
                         });
+                        // query suggestions
+                        dataService.SQLSugg(dbName, (data) => {
+                            console.log("query suggestion after submitting nl query: ", data);
+                            pipeService.emitQuerySugg(data);
+                        })
                     }
                 });
             } else {

@@ -11,7 +11,10 @@ Vue.use(VueVega);
 export default {
     name: 'ResultView',
     components: { SelectToken, CondUnitToken },
-    props: { tables: {} },
+    props: { 
+        tables: {}, 
+        querySugg: {}
+    },
     data() {
         return {
             containerId: 'resultContainer',
@@ -21,9 +24,20 @@ export default {
             selectDecoded: [],
             whereDecoded: [],
             count: 0,
+            activeNames: ["1"],
+            qSugg: {},
         }
     },
-    watch: {},
+    computed: {
+    },
+    watch: {
+        querySugg: function(querySugg){
+            if(Object.keys(querySugg).length>0){
+                // console.log("query suggestion in the results view: ", querySugg);
+                this.qSugg = querySugg;
+            }
+        }
+    },
     mounted: function() {
         this.drawResult = new DrawResult(this.containerId);
         pipeService.onSQL(sql => {
@@ -37,11 +51,15 @@ export default {
         });
         pipeService.onVLSpecs(vlSpecs => {
             this.vlSpecs = vlSpecs;
+        });
+        pipeService.onQuerySugg(qs=>{
+            this.qSugg = qs;
         })
     },
     methods: {
-        load() {
-            this.count += 2
+        selectQuery: function(nlidx){
+            console.log("receive nl query:", nlidx, this.qSugg["nl"][nlidx]);
+            pipeService.emitSetQuery(this.qSugg["nl"][nlidx]);
         }
     }
 }

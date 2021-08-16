@@ -75,6 +75,7 @@ class queryRecommender(object):
         """
         if topic in self.db_cache.keys():
             return self.db_cache[topic]
+            
         self.search_cols = search_cols
         sim_scores = self.cal_cosine_sim(topic, self.db_new_names)[0]
         related_db_names = [self.db_names[i] for i in np.where(sim_scores > self.topic_sim_th)[0]]

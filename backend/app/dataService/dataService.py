@@ -136,6 +136,28 @@ class DataService(object):
                 cols_info.append([col_name[1], all_col_types[col_idx]])
         return cols_info
 
+    def get_db_cols(self, db_id):
+        """
+        get all table cols in the database.
+        - Input: 
+            - db_id: database name
+        - Output: 
+            - table col names: ["table name: col names", ...]
+        """
+        db_info = self.db_meta_dict[db_id]
+        pk = db_info["primary_keys"] # primary keys
+        fk = db_info["foreign_keys"] # foreign keys
+        k_set = set(pk)
+        for f in fk:
+            for e in f:
+                k_set.add(e)
+        # print("k_set: ", k_set)
+        table_names = db_info["table_names"]
+        # remove columns that included in primary keys and foreign keys since they usually do not carry many meanings
+        table_cols = [table_names[col[0]] + ": " + col[1] for colidx, col in enumerate(db_info["column_names"]) if col[0]!=-1 and colidx not in list(k_set)]
+        # print(table_cols)
+        return table_cols
+
     def get_col_names(self, file_name, table_name):
         conn = sqlite3.connect(file_name)
         col_data = conn.execute(f'PRAGMA table_info({table_name});').fetchall()
@@ -182,6 +204,7 @@ class DataService(object):
         - sql: sql (str)
         - db_id: database name (str)
         """
+        # TODO: dont update context if already exists in the history
         sql_parse = self.parsesql(sql, db_id)
         sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
         select_ents = extract_select_names(sql_decoded["select"])

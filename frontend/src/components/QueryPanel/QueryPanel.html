@@ -6,7 +6,7 @@
     <div style="width:95%">
         <div class="input-group" style="font-size:14px;">
             <div class="input-body">
-                <el-input type="text" v-model="userText" v-on:input="onInput" placeholder="show me the film with the largest cost." />
+                <el-input type="text" v-model="userText" v-on:input="onInput" v-on:blur="onBlur" placeholder="show me the film with the largest cost." />
                 <el-popover placement="bottom" width="300" content="default" v-model="popoverVisible">
                     <el-table :data="textOptions" v-bind:show-header="false" max-height="300px" v-bind:cell-style="rowStyle" v-on:row-click="rowClick">
                         <el-table-column width="30" property="type" label="type">

@@ -135,18 +135,7 @@ def sql2text(sql_text, db_id="cinema"):
 
 @api.route("/sql_sugg/<db_id>", methods=['GET'])
 def sql_sugg(db_id):
-    db_info = current_app.dataService.db_meta_dict[db_id]
-    pk = db_info["primary_keys"] # primary keys
-    fk = db_info["foreign_keys"] # foreign keys
-    k_set = set(pk)
-    for f in fk:
-        for e in f:
-            k_set.add(e)
-    # print("k_set: ", k_set)
-    table_names = db_info["table_names"]
-    # remove columns that included in primary keys and foreign keys since they usually do not carry many meanings
-    table_cols = [table_names[col[0]] + ": " + col[1] for colidx, col in enumerate(db_info["column_names"]) if col[0]!=-1 and colidx not in list(k_set)]
-    # print(table_cols)
+    table_cols = current_app.dataService.get_db_cols(db_id)
     sugg = current_app.dataService.sql_suggest(db_id, table_cols)
     return json.dumps(sugg)
 

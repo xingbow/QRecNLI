@@ -62,6 +62,7 @@ export default {
             if (tokens.length > 3) {
                 tokens = tokens.slice(tokens.length - 3, tokens.length);
             }
+
             while (tokens.length > 0) {
                 const subString = tokens.join(' ');
                 for (let optionId in textOptions) {
@@ -78,6 +79,8 @@ export default {
             this.textOptions = validOptions;
             if (this.textOptions.length > 0) {
                 this.popoverVisible = true;
+            } else {
+                this.popoverVisible = false;
             }
         },
 

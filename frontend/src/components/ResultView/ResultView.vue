@@ -37,7 +37,7 @@
     }
 
     #vegaLiteContainer {
-        height: 450px;
+        height: 480px;
         padding: 5px;
         margin-top:5px;
         overflow: scroll;
@@ -54,7 +54,7 @@
     }
 
     .recommend {
-        height: 125px;
+        height: 95px;
         overflow: scroll;
         padding:5px;
         font-size: 12px;

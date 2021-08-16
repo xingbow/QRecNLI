@@ -4,7 +4,7 @@ agg_dict = {
     'min': 'the minimum of ',
     'count': 'the number of ',
     'sum': 'the sum of ',
-    'avg': 'the average number of '
+    'avg': 'the average of '
 }
 
 

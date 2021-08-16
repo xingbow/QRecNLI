@@ -7,7 +7,7 @@ import pandas as pd
 import math
 
 from sentence_transformers import SentenceTransformer, util
-from mlxtend.frequent_patterns import fpmax
+from mlxtend.frequent_patterns import fpmax, fpgrowth
 from sklearn.metrics.pairwise import cosine_similarity
 
 try:
@@ -21,7 +21,7 @@ except ImportError:
 
 class queryRecommender(object):
     def __init__(self, topic_sim_th=0.4, item_sim=0.4, alpha=0.9, beta=0.5,
-                 groupby_th=0.6, agg_th=0.6, sim=0.7,
+                 groupby_th=0.5, agg_th=0.5, sim=0.7,
                  opt_n = 2,
                  ref_db_meta_path=os.path.join(GV.SPIDER_FOLDER, "train_spider.json")):
         self.GV = GV
@@ -75,7 +75,7 @@ class queryRecommender(object):
         """
         if topic in self.db_cache.keys():
             return self.db_cache[topic]
-            
+
         self.search_cols = search_cols
         sim_scores = self.cal_cosine_sim(topic, self.db_new_names)[0]
         related_db_names = [self.db_names[i] for i in np.where(sim_scores > self.topic_sim_th)[0]]
@@ -108,18 +108,26 @@ class queryRecommender(object):
         - output: frequent combo => columns: support, itemsets, itemlen
         """
         # print("max_len: ", max_len)
-        # TODO: fpmax V.S. fpgrowth
+        # FIXED: fpmax V.S. fpgrowth 
+        # (choose `fpgrowth` for flexible itemset selection based on itemset lengths)
         if support is None:
             support = self.item_sim
-        freq_combo = fpmax(df, min_support=support, use_colnames=True, max_len = max_len)
+        # freq_combo = fpmax(df, min_support=support, use_colnames=True, max_len = max_len)
+        freq_combo = fpgrowth(df, min_support=support, use_colnames=True, max_len = max_len)
         freq_combo["itemlen"] = freq_combo["itemsets"].apply(len)
+        # (DONE): adjust ranking according to both itemset lengths AND itemsets support: (log2(item length)+1) * support
+        freq_combo["itemW"] = (np.log2(freq_combo["itemlen"]) +1) * freq_combo["support"]
         # filter regarding to condition
         if len(filter_set) > 0:
             freq_combo = freq_combo.iloc[
                 [rowid for rowid, row in enumerate(freq_combo["itemsets"]) if
                  row.issubset(filter_set) == False]]
-        freq_combo = freq_combo.sort_values(["itemlen", "support"], ascending=False).reset_index(
+        # freq_combo = freq_combo.sort_values(["itemlen", "support"], ascending=False).reset_index(
+        #     drop=True)
+        freq_combo = freq_combo.sort_values(["itemW", "support"], ascending=False).reset_index(
             drop=True)
+        # print(freq_combo.head())
+        # exit()
         return freq_combo
 
     def get_opts(self, df, cols, groupby_contexts=[], agg_contexts=[], top_n = 2):
@@ -148,7 +156,8 @@ class queryRecommender(object):
                 # print(f"groupby_c_sim: {groupby_c_sim}", groupby_c_sim.shape)
                 df_col_diff = df_col_diff[(-groupby_c_sim).argsort()]
                 groupby_c_sim = groupby_c_sim[(-groupby_c_sim).argsort()]
-                gb_sugg_context = [gb for gb in list(df_col_diff[groupby_c_sim > self.sim]) if
+                # TODO: original similarity: self.sim
+                gb_sugg_context = [gb for gb in list(df_col_diff[groupby_c_sim > self.groupby_th]) if
                                 "*" not in gb]  # handle (table_name: *) situations
                 # print(f"gb_sugg_context: {gb_sugg_context}")
                 # print("*"*10)
@@ -236,8 +245,8 @@ class queryRecommender(object):
                             a_l += agg
                     if agg_num / len(col_mul_idx) > self.agg_th:
                         # agg_sugg_dict[agg_opt] = []
-                        groupby_sim = np.max(self.cal_cosine_sim(a_l, col), axis=0)
-                        for g_sim, c in zip(groupby_sim, col):
+                        agg_c_sim = np.max(self.cal_cosine_sim(a_l, col), axis=0)
+                        for g_sim, c in zip(agg_c_sim, col):
                             if g_sim > self.agg_th:
                                 if agg_opt not in agg_sugg_dict.keys():
                                     agg_sugg_dict[agg_opt] = []
@@ -249,7 +258,7 @@ class queryRecommender(object):
         return groupby_sugg, agg_sugg
 
     def query_suggestion(self, db_df_bin, context_dict={"select": [], "groupby": [], "agg": []},
-                         min_support=None, top_n=3, max_len = 3):
+                         min_support=None, top_n=5, max_len = 3):
         """
         max_len: max query entity # per query
         TODO: 
@@ -274,9 +283,13 @@ class queryRecommender(object):
                 cols_supp = [[col] for col in db_df_bin.columns.difference(list(union_set))[
                                               :(top_n - len(union_set))]]
                 next_cols += cols_supp
+            else:
+                next_cols = [list(v) for vidx, v in enumerate(freq_combo["itemsets"].values) if vidx<top_n]
             # get `groupby` and `agg_opt` items
             groupby_sugg, agg_sugg = self.get_opts(db_df_bin, next_cols, groupby_contexts,
                                                    agg_contexts, self.opt_n)
+            # print("next_cols: ", next_cols)
+            # exit()
             return {
                 "select": next_cols,
                 "groupby": groupby_sugg,
@@ -320,7 +333,8 @@ class queryRecommender(object):
             else:
                 freq_cols += [[col] for col in top_n_rest_cols if
                               col not in np.concatenate(freq_cols)]
-
+        else:
+            freq_cols = freq_cols[:top_n]
         # get `groupby` and `agg_opt` items
         groupby_sugg, agg_sugg = self.get_opts(db_df_bin, freq_cols, groupby_contexts,
                                                agg_contexts, self.opt_n)

@@ -69,10 +69,13 @@ def compile_nl_from_sql_parts(s, g, a):
         opt_nls.extend(opt_nl)
     # print(opt_nls)
     sel_nl_l = [ent.replace(":", "") for ent in list(s_set)] + opt_nls
-    sel_nl = "find " + ", ".join(sel_nl_l)
-    g_nl = " of " + ", ".join(["each " + ent.replace(":", "") for ent in g])
+    sel_nl = "Find " + ", ".join(sel_nl_l)
+    if len(g) > 0:
+        g_nl = " of " + ", ".join(["each " + ent.replace(":", "") for ent in g])
     # print(sel_nl + g_nl)
-    return sel_nl + g_nl
+        return sel_nl + g_nl
+    else:
+        return sel_nl
 
 
 def compile_sql(nl_dict, db_meta):

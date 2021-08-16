@@ -224,6 +224,7 @@ class DataService(object):
 
         db_bin = self.sqlsugg_model.search_sim_dbs(db_id.replace("_", " ").strip(), table_cols)
         sugg_dict = self.sqlsugg_model.query_suggestion(db_bin, context_dict, None)
+        # print("sugg_dict: ", sugg_dict)
 
         nls = generate_sql.compile_sql(sugg_dict, db_meta)
         sqls = [self.text2sql(nl, db_id) for nl in nls]        
@@ -333,8 +334,12 @@ if __name__ == '__main__':
     
     # 3. query suggestion
     # print(dataService.db_meta_dict["cinema"])
-    print([col[1] for col in dataService.db_meta_dict["cinema"]["column_names"] if col[0]!=-1])
-    dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
-    # sql_suggest = dataService.sql_suggest(GV.test_topic, GV.test_table_cols)
-
+    db_info = dataService.db_meta_dict["cinema"]
+    print(db_info["primary_keys"], db_info["foreign_keys"])
+    table_names = db_info["table_names"]
+    table_cols = [table_names[col[0]] + ": " + col[1] for col in db_info["column_names"] if col[0]!=-1]
+    print(table_cols)
+    # dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
+    sql_suggest = dataService.sql_suggest("cinema", table_cols)
+    print("sql_suggest: ", sql_suggest)
 

@@ -11,23 +11,28 @@ import pandas as pd
 try:
     import globalVariable as GV
     import sqlParser as sp
+    import queryRec as qr
     from utils import helpers
     from utils.visRecos import vis_design_combos
     from vlgenie import VLGenie
+    from utils.processSQL import decode_sql, generate_sql
+    from utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names
 except ImportError:
     import app.dataService.globalVariable as GV
     import app.dataService.sqlParser as sp
+    import app.dataService.queryRec as qr
     from app.dataService.utils import helpers
     from app.dataService.utils.visRecos import vis_design_combos
     from app.dataService.vlgenie import VLGenie
-
-from app.dataService.utils.processSQL import decode_sql
+    from app.dataService.utils.processSQL import decode_sql, generate_sql
+    from app.dataService.utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names
 
 
 class DataService(object):
     def __init__(self, dataset="spider"):
         self.text2sql_model_loaded = False
         self.sql_parser_loaded = False
+        self.sqlsugg_model_loaded = False
         self.dataset = dataset
         self.global_variable = GV
         if self.dataset == "spider":
@@ -39,6 +44,8 @@ class DataService(object):
             self.db_lists = db_lists
             self.db_meta_dict = db_meta_dict
             self.db_id = ""
+            self.cur_q = None
+            self.h_q = {}
         else:
             raise Exception("currently only support spider dataset")
         return
@@ -62,6 +69,16 @@ class DataService(object):
         self.sql_parser_loaded = True
         if verbose:
             print("=== finish loading sql parser ===")
+
+    def _load_sqlsugg_model(self, verbose=True):
+        if self.sqlsugg_model_loaded:
+            return
+        if verbose:
+            print("=== begin loading sql suggestion model ===")
+        self.sqlsugg_model = qr.queryRecommender()
+        self.sqlsugg_model_loaded = True
+        if verbose:
+            print("=== finish loading sql suggestion model ===")
 
     def get_db_info(self, db_id):
         db_info = self.db_meta_dict[db_id]
@@ -119,6 +136,28 @@ class DataService(object):
                 cols_info.append([col_name[1], all_col_types[col_idx]])
         return cols_info
 
+    def get_db_cols(self, db_id):
+        """
+        get all table cols in the database.
+        - Input: 
+            - db_id: database name
+        - Output: 
+            - table col names: ["table name: col names", ...]
+        """
+        db_info = self.db_meta_dict[db_id]
+        pk = db_info["primary_keys"] # primary keys
+        fk = db_info["foreign_keys"] # foreign keys
+        k_set = set(pk)
+        for f in fk:
+            for e in f:
+                k_set.add(e)
+        # print("k_set: ", k_set)
+        table_names = db_info["table_names"]
+        # remove columns that included in primary keys and foreign keys since they usually do not carry many meanings
+        table_cols = [table_names[col[0]] + ": " + col[1] for colidx, col in enumerate(db_info["column_names"]) if col[0]!=-1 and colidx not in list(k_set)]
+        # print(table_cols)
+        return table_cols
+
     def get_col_names(self, file_name, table_name):
         conn = sqlite3.connect(file_name)
         col_data = conn.execute(f'PRAGMA table_info({table_name});').fetchall()
@@ -157,6 +196,66 @@ class DataService(object):
             return parsed
         else:
             raise Exception(f"Can not support {self.dataset} dataset")
+
+    def set_query_context(self, sql, db_id):
+        """
+        set query context
+        ### Input
+        - sql: sql (str)
+        - db_id: database name (str)
+        """
+        # TODO: dont update context if already exists in the history
+        sql_parse = self.parsesql(sql, db_id)
+        sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
+        select_ents = extract_select_names(sql_decoded["select"])
+        groupby_ents = extract_groupby_names(sql_decoded["groupBy"])
+        agg_dict = extract_agg_opts(sql_decoded["select"])
+        # print("select_ents: ", select_ents)
+        # print("groupby ents: ", groupby_ents)
+        # print("agg dict: ", agg_dict)
+
+        self.cur_q = [sql, db_id]
+        if db_id not in self.h_q.keys():
+            self.h_q[db_id] = {}
+            self.h_q[db_id]["select"] = []
+            self.h_q[db_id]["groupby"] = []
+            self.h_q[db_id]["agg"] = []
+        self.h_q[db_id]["select"].append(select_ents)
+        self.h_q[db_id]["groupby"].append(groupby_ents)
+        self.h_q[db_id]["agg"].append(agg_dict)
+
+        # print(json.dumps(self.h_q, indent=2))
+
+
+    def sql_suggest(self, db_id, table_cols, context_dict = {"select": [], "groupby": [], "agg": []}):
+        """
+        recommend sql queries based on sqls
+        ### Input
+        - db_id: database name (str)
+        - table_cols: column names of all tables in the selected database
+        - context_dict: history queries
+        ### Output:
+        - suggestion
+        """
+        if db_id in self.h_q.keys():
+            context_dict = self.h_q[db_id]
+
+        # database meta data
+        db_meta = self.db_meta_dict[db_id]
+        # load sql suggestion model
+        self._load_sqlsugg_model()
+
+        db_bin = self.sqlsugg_model.search_sim_dbs(db_id.replace("_", " ").strip(), table_cols)
+        sugg_dict = self.sqlsugg_model.query_suggestion(db_bin, context_dict, None)
+        # print("sugg_dict: ", sugg_dict)
+
+        nls = generate_sql.compile_sql(sugg_dict, db_meta)
+        sqls = [self.text2sql(nl, db_id) for nl in nls]        
+
+        return {
+            "nl": nls,
+            "sql": sqls
+        }
 
     def data2vl(self, data):
         """Get VegaLite specifications from tabular-style data.
@@ -240,18 +339,30 @@ class DataService(object):
         return self.data2vl(self.sql2data(sql, db_id))
 
 
+
 if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
     db_dict = dataService.get_tables("cinema")
+
     # 1. text2sql
-    result = dataService.text2sql("films and film prices that cost below 10 dollars", "cinema")
-    print("test2sql: {}".format(result))
+    # result = dataService.text2sql("films and film prices that cost below 10 dollars", "cinema")
+    # print("test2sql: {}".format(result))
+    
     # 2. db lists
     # print(dataService.db_lists)
     # dataService.get_tables("cinema")
     # print(dataService.get_cols("film"))
     # print(dataService.load_table_content("film"))
-    # 3. parse sql
-    parsed = dataService.parsesql()
-    print(parsed)
+    
+    # 3. query suggestion
+    # print(dataService.db_meta_dict["cinema"])
+    db_info = dataService.db_meta_dict["cinema"]
+    print(db_info["primary_keys"], db_info["foreign_keys"])
+    table_names = db_info["table_names"]
+    table_cols = [table_names[col[0]] + ": " + col[1] for col in db_info["column_names"] if col[0]!=-1]
+    print(table_cols)
+    # dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
+    sql_suggest = dataService.sql_suggest("cinema", table_cols)
+    print("sql_suggest: ", sql_suggest)
+

@@ -5,7 +5,8 @@ var pipeService = new Vue({
         TESTEVENT: 'test_event',
         GETSQL: "GET_SQL",
         SQLTrans: "SQL_trans",
-        VLSpecs: "VL_specs"
+        VLSpecs: "VL_specs",
+        setQuery: "set_query",
     },
     methods: {
         emitTestEvent: function(msg) {
@@ -37,6 +38,14 @@ var pipeService = new Vue({
         },
         onVLSpecs: function(callback) {
             this.$on(this.VLSpecs, function(msg) {
+                callback(msg)
+            })
+        },
+        emitSetQuery: function(msg) {
+            this.$emit(this.setQuery, msg)
+        },
+        onSetQuery: function(callback) {
+            this.$on(this.setQuery, function(msg) {
                 callback(msg)
             })
         },

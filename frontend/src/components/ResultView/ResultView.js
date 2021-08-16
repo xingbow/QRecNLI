@@ -50,5 +50,11 @@ export default {
         })
     },
     methods: {
+        selectQuery: function(nlidx){
+            console.log("receive nl query:", nlidx, this.querySugg["nl"][nlidx]);
+            pipeService.emitSetQuery(this.querySugg["nl"][nlidx]);
+            // TODO: update sql and its explanation and visualization
+
+        }
     }
 }

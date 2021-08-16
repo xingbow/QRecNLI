@@ -16,6 +16,7 @@ try:
     from utils.visRecos import vis_design_combos
     from vlgenie import VLGenie
     from utils.processSQL import decode_sql, generate_sql
+    from utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names
 except ImportError:
     import app.dataService.globalVariable as GV
     import app.dataService.sqlParser as sp
@@ -24,6 +25,7 @@ except ImportError:
     from app.dataService.utils.visRecos import vis_design_combos
     from app.dataService.vlgenie import VLGenie
     from app.dataService.utils.processSQL import decode_sql, generate_sql
+    from app.dataService.utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names
 
 
 class DataService(object):
@@ -42,6 +44,8 @@ class DataService(object):
             self.db_lists = db_lists
             self.db_meta_dict = db_meta_dict
             self.db_id = ""
+            self.cur_q = None
+            self.h_q = {}
         else:
             raise Exception("currently only support spider dataset")
         return
@@ -171,6 +175,35 @@ class DataService(object):
         else:
             raise Exception(f"Can not support {self.dataset} dataset")
 
+    def set_query_context(self, sql, db_id):
+        """
+        set query context
+        ### Input
+        - sql: sql (str)
+        - db_id: database name (str)
+        """
+        sql_parse = self.parsesql(sql, db_id)
+        sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
+        select_ents = extract_select_names(sql_decoded["select"])
+        groupby_ents = extract_groupby_names(sql_decoded["groupBy"])
+        agg_dict = extract_agg_opts(sql_decoded["select"])
+        # print("select_ents: ", select_ents)
+        # print("groupby ents: ", groupby_ents)
+        # print("agg dict: ", agg_dict)
+
+        self.cur_q = [sql, db_id]
+        if db_id not in self.h_q.keys():
+            self.h_q[db_id] = {}
+            self.h_q[db_id]["select"] = []
+            self.h_q[db_id]["groupby"] = []
+            self.h_q[db_id]["agg"] = []
+        self.h_q[db_id]["select"].append(select_ents)
+        self.h_q[db_id]["groupby"].append(groupby_ents)
+        self.h_q[db_id]["agg"].append(agg_dict)
+
+        # print(json.dumps(self.h_q, indent=2))
+
+
     def sql_suggest(self, db_id, table_cols, context_dict = {"select": [], "groupby": [], "agg": []}):
         """
         recommend sql queries based on sqls
@@ -181,6 +214,9 @@ class DataService(object):
         ### Output:
         - suggestion
         """
+        if db_id in self.h_q.keys():
+            context_dict = self.h_q[db_id]
+
         # database meta data
         db_meta = self.db_meta_dict[db_id]
         # load sql suggestion model
@@ -296,6 +332,9 @@ if __name__ == '__main__':
     # print(dataService.load_table_content("film"))
     
     # 3. query suggestion
-    sql_suggest = dataService.sql_suggest(GV.test_topic, GV.test_table_cols)
+    # print(dataService.db_meta_dict["cinema"])
+    print([col[1] for col in dataService.db_meta_dict["cinema"]["column_names"] if col[0]!=-1])
+    dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
+    # sql_suggest = dataService.sql_suggest(GV.test_topic, GV.test_table_cols)
 
 

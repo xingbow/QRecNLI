@@ -73,6 +73,12 @@ function SQL2text(sql, db_id, callback) {
     request(url, params, GET_REQUEST, callback);
 }
 
+function SQLSugg(db_id, callback) {
+    const url = `${dataServerUrl}/sql_sugg/${db_id}`;
+    const params = {};
+    request(url, params, GET_REQUEST, callback);
+}
+
 export default {
     dataServerUrl,
     initialization,
@@ -82,5 +88,6 @@ export default {
     loadTablesContent,
     text2SQL,
     SQL2VL,
-    SQL2text
+    SQL2text,
+    SQLSugg
 }

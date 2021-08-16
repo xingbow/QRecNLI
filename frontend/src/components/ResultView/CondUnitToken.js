@@ -1,4 +1,4 @@
-import { getColumnType } from './utils.js'
+import { getColumnType, type2icon } from './utils.js'
 
 export default {
     functional: true,
@@ -13,9 +13,9 @@ export default {
         const type = getColumnType(colToken, props.tables);
 
         return <div class="cond-unit-token">
-          <span>{innerAggToken}</span>
+          {innerAggToken && <span class="agg-text">{innerAggToken}</span>}
           <div class="col-token">
-            <i class={type == "text" ? "fas fa-font" : "fas fa-list-ol"} />
+            <i class={type2icon(type)} />
             <span class="col-text">{colToken}</span>
           </div>
         </div>;

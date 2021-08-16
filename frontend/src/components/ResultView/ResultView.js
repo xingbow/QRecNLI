@@ -60,8 +60,6 @@ export default {
         selectQuery: function(nlidx){
             console.log("receive nl query:", nlidx, this.qSugg["nl"][nlidx]);
             pipeService.emitSetQuery(this.qSugg["nl"][nlidx]);
-            // TODO: update sql and its explanation and visualization
-
         }
     }
 }

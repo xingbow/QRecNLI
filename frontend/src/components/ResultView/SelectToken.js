@@ -1,4 +1,4 @@
-import {getColumnType} from './utils.js'
+import { getColumnType, type2icon } from './utils.js'
 
 export default {
   functional: true,
@@ -8,16 +8,16 @@ export default {
     const [unitOp, colUnit1, colUnit2] = valUnit;
     const [innerAggId, colToken, isDistinct] = colUnit1
     // TODO: ignore col_unit2
-    const aggToken = (aggId && aggId !== "none") ? aggId : "";
-    const innerAggToken = (innerAggId && innerAggId !== "none") ? innerAggId : "";
+    const aggToken = (aggId && aggId !== "none") ? aggId : undefined;
+    const innerAggToken = (innerAggId && innerAggId !== "none") ? innerAggId : undefined;
 
     const type = getColumnType(colToken, props.tables);
 
     return <div class="select-token">
-      <span>{aggToken}</span>
-      <span>{innerAggToken}</span>
+      {aggToken && <span class="agg-text">{aggToken}</span>}
+      {innerAggToken && <span class="agg-text">{innerAggToken}</span>}
       <div class="col-token">
-        <i class={type == "text" ? "fas fa-font" : "fas fa-list-ol"} />
+        <i class={type2icon(type)} />
         <span class="col-text">{colToken}</span>
       </div>
     </div>;

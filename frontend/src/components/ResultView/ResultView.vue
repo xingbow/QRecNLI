@@ -74,6 +74,7 @@
         height: 25px;
         border-radius: 2px;
         align-items: center;
+        display: flex;
     }
     .select-token:hover, 
     .cond-unit-token:hover {
@@ -82,13 +83,17 @@
 
     .col-token {
         align-items: center;
-        margin: 2px;
+        margin: 5px 2px;
         padding-left: 2px;
-        height: 25px;
+        height: 20px;
     }
 
-    .col-text {
-        margin-left: 4px;
+    .col-text, .agg-text {
+        margin: 2px;
+    }
+
+    .agg-text {
+        text-decoration: underline;
     }
 
 </style>

@@ -96,4 +96,8 @@
         text-decoration: underline;
     }
 
+    .result-text {
+        font-size: 40px;
+    }
+
 </style>

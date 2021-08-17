@@ -8,9 +8,11 @@ import os
 import re
 import logging
 import mimetypes
+import pandas as pd
 
 from flask import Blueprint, current_app, request, jsonify, Response
 from app.dataService.utils import processSQL
+from app.dataService.utils.helpers import NpEncoder
 
 LOG = logging.getLogger(__name__)
 
@@ -105,7 +107,7 @@ def get_cols(table_name):
 
 @api.route("/load_tables/<table_name>")
 def load_tables(table_name):
-    return json.dumps(current_app.dataService.load_table_content(table_name))
+    return jsonify(current_app.dataService.load_table_content(table_name))
 
 
 @api.route("/text2sql/<user_text>/<db_id>", methods=['GET'])
@@ -118,11 +120,17 @@ def text2sql(user_text="films and film prices that cost below 10 dollars", db_id
 
 @api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
 def sql2vis(sql_text, db_id="cinema"):
-    specs = current_app.dataService.sql2vl(sql_text, db_id)
-    # TODO: vega-vue only supports the following mark types
-    specs = [s for s in specs if s['mark']['type'] in ["bar", "circle", "square", "tick",
-                                                       "line", "area", "point", "rule", "text"]]
-    return json.dumps(specs)
+    response = current_app.dataService.sql2vl(sql_text, db_id)
+    if isinstance(response, list):
+        # TODO: vega-vue only supports the following mark types
+        response = ([s for s in response if s['mark']['type'] in
+                    ["bar", "circle", "square", "tick", "line", "area", "point", "rule", "text"]],
+                    'vega-lite')
+    elif isinstance(response, pd.DataFrame):
+        response = (response.to_dict('records'), 'table')
+    else:
+        response = (response, 'data')
+    return jsonify(response)
 
 
 @api.route("/sql2text/<sql_text>/<db_id>", methods=['GET'])
@@ -132,6 +140,7 @@ def sql2text(sql_text, db_id="cinema"):
     text = processSQL.sql2text(sql_decoded)
     response = {'sqlDecoded': sql_decoded, 'text': text}
     return json.dumps(response)
+
 
 @api.route("/sql_sugg/<db_id>", methods=['GET'])
 def sql_sugg(db_id):

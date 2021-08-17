@@ -5,6 +5,7 @@ from app.routes.api import api
 from app.dataService.utils.helpers import NpEncoder
 from app.dataService.dataService import DataService
 
+
 def create_app():
     app = Flask(__name__)
 

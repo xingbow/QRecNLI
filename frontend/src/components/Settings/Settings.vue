@@ -27,6 +27,11 @@
     #settingsContainer {
         height: 670px;
     }
+
+    #databaseMeta {
+        height: 650px;
+        overflow: sscroll;
+    }
     
     #table-cols {
         font-size: 12px;

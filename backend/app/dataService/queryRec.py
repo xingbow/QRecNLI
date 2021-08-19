@@ -112,20 +112,21 @@ class queryRecommender(object):
         # (choose `fpgrowth` for flexible itemset selection based on itemset lengths)
         if support is None:
             support = self.item_sim
-        # freq_combo = fpmax(df, min_support=support, use_colnames=True, max_len = max_len)
-        freq_combo = fpgrowth(df, min_support=support, use_colnames=True, max_len = max_len)
+        freq_combo = fpmax(df, min_support=support, use_colnames=True)
+        # freq_combo = fpgrowth(df, min_support=support, use_colnames=True, max_len = max_len)
         freq_combo["itemlen"] = freq_combo["itemsets"].apply(len)
         # (DONE): adjust ranking according to both itemset lengths AND itemsets support: (log2(item length)+1) * support
-        freq_combo["itemW"] = (np.log2(freq_combo["itemlen"]) +1) * freq_combo["support"]
+        # freq_combo["itemW"] = (np.log2(freq_combo["itemlen"]) +1) * freq_combo["support"]
+        freq_combo["itemW"] = freq_combo["itemlen"] * np.square(freq_combo["support"])
         # filter regarding to condition
         if len(filter_set) > 0:
             freq_combo = freq_combo.iloc[
                 [rowid for rowid, row in enumerate(freq_combo["itemsets"]) if
                  row.issubset(filter_set) == False]]
-        # freq_combo = freq_combo.sort_values(["itemlen", "support"], ascending=False).reset_index(
-        #     drop=True)
-        freq_combo = freq_combo.sort_values(["itemW", "support"], ascending=False).reset_index(
+        freq_combo = freq_combo.sort_values(["itemlen", "support"], ascending=False).reset_index(
             drop=True)
+        # freq_combo = freq_combo.sort_values(["itemW", "support"], ascending=False).reset_index(
+        #     drop=True)
         # print(freq_combo.head())
         # exit()
         return freq_combo
@@ -318,7 +319,7 @@ class queryRecommender(object):
 
         top_n_rest_cols = rest_cols[(-all_sims).argsort()][:top_n]
         # TODO: pay attention to item similarity threshold change & reinitialization
-        support = self.item_sim * math.pow(self.alpha, len(sel_contexts))
+        # support = support * math.pow(self.alpha, len(sel_contexts))
         # print(f"support: {support}")
         # print(f"self.item_sim: {self.item_sim}")
         freq_combo = self.get_freq_combo(db_df_bin[list(context_cols) + list(top_n_rest_cols)],
@@ -357,7 +358,8 @@ if __name__ == "__main__":
         "groupby": [],
         "agg": []
     }
-    sugg_dict = qr.query_suggestion(db_bin, context_dict, None)
+    # sugg_dict = qr.query_suggestion(db_bin, context_dict, None)
+    sugg_dict = qr.query_suggestion(db_bin, context_dict, 0.6)
     freq_combo = sugg_dict["select"]
     groupby_sugg = sugg_dict["groupby"]
     agg_sugg = sugg_dict["agg"]
@@ -371,7 +373,7 @@ if __name__ == "__main__":
 
     # next query suggestion
     context_dict["select"] = select_items
-    sugg_dict = qr.query_suggestion(db_bin, context_dict, None)
+    sugg_dict = qr.query_suggestion(db_bin, context_dict, 0.6)
     next_cols = sugg_dict["select"]
     groupby_sugg = sugg_dict["groupby"]
     agg_sugg = sugg_dict["agg"]
@@ -384,7 +386,7 @@ if __name__ == "__main__":
 
     # next query suggestion
     context_dict["select"] = select_items + [next_cols[0]]
-    sugg_dict = qr.query_suggestion(db_bin, context_dict, None)
+    sugg_dict = qr.query_suggestion(db_bin, context_dict, 0.6)
     next_cols = sugg_dict["select"]
     groupby_sugg = sugg_dict["groupby"]
     agg_sugg = sugg_dict["agg"]

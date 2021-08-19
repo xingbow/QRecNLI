@@ -38,8 +38,26 @@
                 </div>
             </div>
             <div id="vegaLiteContainer">
-                <div class="vis-container" v-for="(spec, index) in vlSpecs" style="pointer-events: none;">
-                    <vega-lite :spec="spec"></vega-lite>
+                <div class="vis-container" v-if="resultType === 'vega-lite'">
+                    <div v-for="(spec, index) in results" style="pointer-events: none;">
+                        <vega-lite :spec="spec"></vega-lite>
+                    </div>
+                </div>
+                <div class="vis-container" v-else-if="resultType === 'table'">
+                    <template>
+                        <el-table :data="results"
+                              style="width: 100%">
+                            <el-table-column v-for="column in columns" 
+                                             :key="column"
+                                             :prop="column"
+                                             :label="column"
+                                             :min-width="150">
+                            </el-table-column>
+                        </el-table>
+                    </template>
+                </div>
+                <div class="vis-container" v-else-if="resultType === 'data'">
+                    <span class="result-text">{{results}}</span>
                 </div>
             </div>
         </div>

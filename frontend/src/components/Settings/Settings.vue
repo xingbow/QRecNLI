@@ -30,7 +30,7 @@
 
     #databaseMeta {
         height: 650px;
-        overflow: sscroll;
+        overflow: scroll;
     }
     
     #table-cols {

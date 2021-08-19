@@ -12,14 +12,14 @@
             <v-select v-model="dbselected" :options="dbLists"/>
             </div>
         </div>
-        <QueryPanel :dbselected = "dbselected" :tables="tables"/>
+        <QueryPanel :dbselected = "dbselected" :tables = "tables"/>
       </div>
       <div class="d-flex flex-row rowele">
         <div class="p border-right" style="width: 25%; text-align:start;">
-          <Settings :tableLists="tableLists" :tables="tables"></Settings>
+          <Settings :tables="tables"></Settings>
         </div>
         <div class="p" style="width: 75%; text-align:start;">
-          <ResultView :tables="tables" :querySugg="querySugg" />
+          <ResultView :dbselected = "dbselected" :tables = "tables"/>
         </div>
       </div>     
   </div>
@@ -49,8 +49,6 @@ export default {
         dbLists: [],
         dbInfo: [],
         tables: {},
-        tableLists: [],
-        querySugg: {},
     }
   },
   watch: {
@@ -61,12 +59,6 @@ export default {
       if(dbselected){
           dataService.getTables(dbselected, (tableData)=>{
             _this.tables = tableData;
-            _this.tableLists = Object.keys(tableData);
-          // get nl/sql suggestion from backend
-          dataService.SQLSugg(dbselected, (suggData)=>{
-            _this.querySugg = suggData
-            console.log("suggestion: ", suggData);
-          })
         });
       }
       
@@ -85,12 +77,6 @@ export default {
           if(dbselected.length>0){
             dataService.getTables(dbselected, (tableData)=>{
                   _this.tables = tableData;
-                  _this.tableLists = Object.keys(tableData);
-                // get nl/sql suggestion from backend
-                dataService.SQLSugg(dbselected, (suggData)=>{
-                  _this.querySugg = suggData
-                  console.log("suggestion: ", suggData);
-                })
             })
           }
       });

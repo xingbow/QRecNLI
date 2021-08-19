@@ -6,8 +6,8 @@ var pipeService = new Vue({
         GETSQL: "GET_SQL",
         SQLTrans: "SQL_trans",
         VLSpecs: "VL_specs",
-        setQuery: "set_query",
-        querySugg: "query_sugg"
+        SetQuery: "Set_query",
+        QuerySugg: "Query_sugg"
     },
     methods: {
         emitTestEvent: function(msg) {
@@ -43,18 +43,18 @@ var pipeService = new Vue({
             })
         },
         emitSetQuery: function(msg) {
-            this.$emit(this.setQuery, msg)
+            this.$emit(this.SetQuery, msg)
         },
         onSetQuery: function(callback) {
-            this.$on(this.setQuery, function(msg) {
+            this.$on(this.SetQuery, function(msg) {
                 callback(msg)
             })
         },
         emitQuerySugg: function(msg) {
-            this.$emit(this.querySugg, msg)
+            this.$emit(this.QuerySugg, msg)
         },
         onQuerySugg: function(callback) {
-            this.$on(this.querySugg, function(msg) {
+            this.$on(this.QuerySugg, function(msg) {
                 callback(msg)
             })
         },

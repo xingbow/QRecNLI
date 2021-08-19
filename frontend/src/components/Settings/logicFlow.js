@@ -3,7 +3,7 @@ import LogicFlow from '@logicflow/core';
 import '@logicflow/core/dist/style/index.css';
 
 
-export function createLogicFlowConfig(containerId) {
+export function createLogicFlowConfig(containerId, nodeClickCallback) {
 
     const flowchartConfig = {
         height: 630,
@@ -62,13 +62,18 @@ export function createLogicFlowConfig(containerId) {
         console.log("eventObject: ", eventObject);
     });
 
+    lf.on('node:click', (eventObject) => {
+        if (nodeClickCallback)
+            nodeClickCallback(eventObject);
+    })
+
     return { 'flowchartConfig': flowchartConfig, 'lf': lf };
 }
 
-export function renderLogicFlowChart(historyData, containerId = "logicFlowContainer") {
+export function renderLogicFlowChart(historyData, containerId = "logicFlowContainer", nodeClickCallback = undefined) {
     const nodeData = [];
     const edges = [];
-    const { flowchartConfig, lf } = createLogicFlowConfig(containerId)
+    const { flowchartConfig, lf } = createLogicFlowConfig(containerId, nodeClickCallback)
     historyData.map((h, hi) => {
         // console.log(hi, h);
         nodeData.push({

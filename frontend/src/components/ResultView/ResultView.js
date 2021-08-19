@@ -1,5 +1,6 @@
 // /* global d3 $ */
 import pipeService from '../../service/pipeService.js';
+import dataService from '../../service/dataService.js';
 import DrawResult from './drawResult.js';
 import SelectToken from './SelectToken.js';
 import CondUnitToken from './CondUnitToken.js';
@@ -12,8 +13,8 @@ export default {
     name: 'ResultView',
     components: { SelectToken, CondUnitToken },
     props: {
+        dbselected: "",
         tables: {},
-        querySugg: {}
     },
     data() {
         return {
@@ -28,18 +29,16 @@ export default {
             explanation: "",
             selectDecoded: [],
             whereDecoded: [],
-            count: 0,
             activeNames: ["1"],
             qSugg: {},
         }
     },
     computed: {},
     watch: {
-        querySugg: function(querySugg) {
-            if (Object.keys(querySugg).length > 0) {
-                // console.log("query suggestion in the results view: ", querySugg);
-                this.qSugg = querySugg;
-            }
+        dbselected: function(dbselected) {
+            dataService.SQLSugg(dbselected, (suggData) => {
+                this.qSugg = suggData["nl"];
+            });
         }
     },
     mounted: function() {
@@ -60,13 +59,21 @@ export default {
                 this.columns = Object.keys(this.results[0]);
         });
         pipeService.onQuerySugg(qs => {
-            this.qSugg = qs;
+            this.qSugg = qs['nl'];
         });
+        const vm = this;
+        this.$nextTick(() => {
+            dataService.SQLSugg(vm.dbselected, (suggData) => {
+                this.qSugg = suggData["nl"];
+            });
+        })
     },
     methods: {
         selectQuery: function(nlidx) {
-            console.log("receive nl query:", nlidx, this.qSugg["nl"][nlidx]);
-            pipeService.emitSetQuery(this.qSugg["nl"][nlidx]);
+            if (this.qSugg) {
+                console.log("receive nl query:", nlidx, this.qSugg[nlidx]);
+                pipeService.emitSetQuery(this.qSugg[nlidx]);
+            }
         }
     }
 }

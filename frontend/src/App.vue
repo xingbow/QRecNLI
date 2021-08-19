@@ -57,16 +57,19 @@ export default {
     dbselected: function(dbselected){
       console.log("selected db name:",dbselected);
       const _this = this;
-      dataService.getTables(dbselected, (tableData)=>{
-          _this.tables = tableData;
-          _this.tableLists = Object.keys(tableData);
-        // get nl/sql suggestion from backend
-        dataService.SQLSugg(dbselected, (suggData)=>{
-          _this.querySugg = suggData
-          console.log("suggestion: ", suggData);
-        })
-        
-      });
+
+      if(dbselected){
+          dataService.getTables(dbselected, (tableData)=>{
+            _this.tables = tableData;
+            _this.tableLists = Object.keys(tableData);
+          // get nl/sql suggestion from backend
+          dataService.SQLSugg(dbselected, (suggData)=>{
+            _this.querySugg = suggData
+            console.log("suggestion: ", suggData);
+          })
+        });
+      }
+      
     }
   },
   mounted: function () {

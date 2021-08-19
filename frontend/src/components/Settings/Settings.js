@@ -2,13 +2,10 @@
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css';
 import dataService from '../../service/dataService';
-// import Tabulator from 'tabulator-tables';
+import pipeService from '../../service/pipeService';
+import { renderLogicFlowChart } from './logicFlow'
 
 import "../../assets/historyQuery.css"
-
-import '@logicflow/core/dist/style/index.css';
-import pipeService from '../../service/pipeService';
-import {renderLogicFlowChart} from './logicFlow'
 
 export default {
     name: 'Settings',
@@ -63,6 +60,10 @@ export default {
                     })
                 })
             }
+        },
+        historyData: function(historyData) {
+            console.log("logic flow rendering.");
+            renderLogicFlowChart(historyData.map(d => d.SQL), this.containerId, this.handleNodeClick);
         }
     },
     methods: {
@@ -74,8 +75,20 @@ export default {
             $(`.nav-link`).removeClass("active");
             $(`.nav-link-` + this.activeIdx).addClass("active");
         },
-        handleNodeClick(data) {
-            // console.log(data);
+        handleNodeClick({ data, e, position }) {
+            const { text } = data;
+            for (let hisId in this.historyData) {
+                const history = this.historyData[hisId];
+                if (history.SQL.nl == text.value) {
+                    pipeService.emitSQL(history.SQL);
+                    pipeService.emitSQLTrans(history.SQLTrans);
+                    pipeService.emitVLSpecs(history.VLSpecs);
+                    // pipeService.emitSetQuery(history.SetQuery);
+                    pipeService.emitQuerySugg(history.QuerySugg);
+                    break;
+                }
+            }
+            this.historyData.pop();
         },
         renderContent(h, { node, data, store }) { /* eslint-disable-line */
             if (data.type == "table") {
@@ -110,15 +123,30 @@ export default {
                 }
 
             }
-        }
+        },
     },
     mounted: function () {
         console.log("this is settings view");
         $('.nav-link-' + this.activeIdx).addClass("active");
 
         pipeService.onSQL(sql => {
-            this.historyData.push(sql);
-            renderLogicFlowChart(this.historyData, this.containerId);
-        })
+            this.historyData.push({ 'SQL': sql });
+        });
+
+        pipeService.onSQLTrans(sqlTrans => {
+            this.historyData[this.historyData.length - 1].SQLTrans = sqlTrans;
+        });
+
+        pipeService.onVLSpecs(VLSpecs => {
+            this.historyData[this.historyData.length - 1].VLSpecs = VLSpecs;
+        });
+
+        // pipeService.onSetQuery(SetQuery => {
+        //     this.historyData[this.historyData.length - 1].SetQuery = SetQuery;
+        // });
+
+        pipeService.onQuerySugg(QuerySugg => {
+            this.historyData[this.historyData.length - 1].QuerySugg = QuerySugg;
+        });
     }
 }

@@ -1,21 +1,16 @@
 <div id="settings">
     <div class="card">
         <div class="card-block" id="settingsContainer">
-             <ul class="nav nav-tabs">
+            <ul class="nav nav-tabs">
                 <li class="nav-item">
-                  <a class="nav-link nav-link-0" v-on:click="setActive">Tables</a>
+                    <a class="nav-link nav-link-0" v-on:click="setActive">Tables</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link nav-link-1" v-on:click="setActive">History Queries</a>
+                    <a class="nav-link nav-link-1" v-on:click="setActive">History Queries</a>
                 </li>
-              </ul>
+            </ul>
             <div id="databaseMeta" v-show="activeIdx==0">
-                <el-tree 
-                  :data="treedata" 
-                  :props="defaultProps" 
-                  default-expand-all 
-                  @node-click="handleNodeClick" 
-                  :render-content="renderContent">
+                <el-tree :data="treedata" :props="defaultProps" default-expand-all :render-content="renderContent">
                 </el-tree>
             </div>
             <div id="logicFlow" v-show="activeIdx==1" style="overflow-y:scroll;"></div>

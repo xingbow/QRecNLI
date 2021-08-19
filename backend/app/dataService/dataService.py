@@ -3,7 +3,7 @@ import copy
 import time
 import json
 import os
-import sys
+import warnings
 
 import sqlite3
 import pandas as pd
@@ -336,8 +336,16 @@ class DataService(object):
         return data
 
     def sql2vl(self, sql, db_id):
-        return self.data2vl(self.sql2data(sql, db_id))
-
+        data = self.sql2data(sql, db_id)
+        if data.shape == (1, 1):
+            response = data.values[0][0]
+        else:
+            try:
+                response = self.data2vl(data)
+            except ValueError:
+                warnings.warn("Unsupported data type. Show the results in tables instead.")
+                response = data
+        return response
 
 
 if __name__ == '__main__':

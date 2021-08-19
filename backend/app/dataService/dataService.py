@@ -227,7 +227,7 @@ class DataService(object):
         # print(json.dumps(self.h_q, indent=2))
 
 
-    def sql_suggest(self, db_id, table_cols, context_dict = {"select": [], "groupby": [], "agg": []}):
+    def sql_suggest(self, db_id, table_cols, min_support = 0.6, context_dict = {"select": [], "groupby": [], "agg": []}):
         """
         recommend sql queries based on sqls
         ### Input
@@ -246,7 +246,7 @@ class DataService(object):
         self._load_sqlsugg_model()
 
         db_bin = self.sqlsugg_model.search_sim_dbs(db_id.replace("_", " ").strip(), table_cols)
-        sugg_dict = self.sqlsugg_model.query_suggestion(db_bin, context_dict, None)
+        sugg_dict = self.sqlsugg_model.query_suggestion(db_bin, context_dict, min_support)
         # print("sugg_dict: ", sugg_dict)
 
         nls = generate_sql.compile_sql(sugg_dict, db_meta)

@@ -37,7 +37,8 @@ def col_id2text(col_id, with_style=True):
         text = '<span class="entity-id">{}</span>\'s \
             <span class="column-id">{}</span>'.format(table_id, real_col_id)
     else:
-        text = '{}\'s {}'.format(table_id, real_col_id)
+        # text = '{}\'s {}'.format(table_id, real_col_id)
+        text = real_col_id
     return text
 
 

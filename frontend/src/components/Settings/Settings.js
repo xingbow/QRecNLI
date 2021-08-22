@@ -70,11 +70,6 @@ export default {
         onAfterChange(obj) {
             console.log("after update: ", obj.item.itemMap);
         },
-        setActive() {
-            this.activeIdx = Math.pow((this.activeIdx - 1), 2)
-            $(`.nav-link`).removeClass("active");
-            $(`.nav-link-` + this.activeIdx).addClass("active");
-        },
         handleNodeClick({ data, e, position }) {
             const { text } = data;
             for (let hisId in this.historyData) {

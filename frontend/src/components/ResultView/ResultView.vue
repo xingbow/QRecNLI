@@ -30,6 +30,7 @@
         height: 670px;
         padding: 5px;
         overflow-y: scroll;
+        margin: 5px 10px;
     }
 
     .vis-container {
@@ -41,7 +42,7 @@
         padding: 5px;
         margin-top:5px;
         overflow: scroll;
-        border: 1px solid gray;
+        /* border: 1px solid lightgray; */
         overflow: scroll;
     }
 
@@ -54,18 +55,28 @@
     }
 
     .recommend {
-        height: 95px;
+        /* height: 95px; */
         overflow: scroll;
-        padding:5px;
+        /* padding:5px; */
         font-size: 12px;
-        border: 1px solid lightgray;
+        /* border: 1px solid lightgray; */
     }
 
-    .rowitem {
+    .rowitem, .recommend-item {
         font-size: 13px;
         padding: 2px;
         display: flex;
         align-items: center;
+    }
+
+    .recommend-item {
+        border: 1px solid white;
+        border-radius: 5px;
+    }
+
+    .recommend-item:hover {
+        border: 1px solid #409EFF;
+        border-radius: 5px;
     }
 
     .select-token, .cond-unit-token {

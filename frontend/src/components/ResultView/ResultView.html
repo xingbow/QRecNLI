@@ -1,50 +1,50 @@
 <div id="resultview">
-    <div class="card">
-        <div class="card-block" id="resultContainer">
-            <el-collapse>
-                <el-collapse-item title="You may want to ask:" name="1">
-                    <div class="recommend">
-                        <div class="list-group list-group-flush" v-for="(nl, nlidx) in qSugg">
-                            <a class="list-group-item list-group-item-action rowitem" v-on:click="selectQuery(nlidx)">
-                              {{nl}}
-                            </a>
-                        </div>
-                    </div>
-                </el-collapse-item>
-                <el-collapse-item title="SQL results and explanations" name="2">
-                    <div class="rowitem">
-                        <el-tag type="success">SQL</el-tag> {{nl}}</div>
-                    <div class="rowitem">
-                        <el-tag type="success">NL Explanation</el-tag>
-                        <span class="explanation-container" v-html="explanation"></span>
-                    </div>
-                </el-collapse-item>
-            </el-collapse>
-            <div id="sql-result" style="margin-top:5px;">
-                <div class="rowitem">
-                    <el-tag type="info" effect="plain">Select </el-tag>
-                    <div class="rowitem" v-for="(selectUnit, index) in selectDecoded">
-                        <SelectToken :selectUnit=selectUnit :tables=tables />
+    <!-- <div class="card"> -->
+    <div class="card-block" id="resultContainer">
+        <el-collapse>
+            <el-collapse-item title="You may also want to ask:" name="1">
+                <div class="recommend">
+                    <div v-for="(nl, nlidx) in qSugg">
+                        <a class="recommend-item " v-on:click="selectQuery(nlidx)">
+                            <span style="margin: 0px 5px;">{{nl}}</span>
+                        </a>
                     </div>
                 </div>
+            </el-collapse-item>
+            <el-collapse-item title="SQL results and explanations" name="2">
                 <div class="rowitem">
-                    <el-tag type="info" effect="plain">Groupby </el-tag>
+                    <el-tag type="success">SQL</el-tag> {{nl}}</div>
+                <div class="rowitem">
+                    <el-tag type="success">NL Explanation</el-tag>
+                    <span class="explanation-container" v-html="explanation"></span>
                 </div>
-                <div class="rowitem">
-                    <el-tag type="info" effect="plain">Filters </el-tag>
-                    <div class="rowitem" v-for="(condUnit, index) in whereDecoded">
-                        <CondUnitToken :condUnit=condUnit :tables=tables />
-                    </div>
+            </el-collapse-item>
+        </el-collapse>
+        <div id="sql-result" style="margin-top:5px;">
+            <div class="rowitem">
+                <el-tag type="info" effect="plain">Select </el-tag>
+                <div class="rowitem" v-for="(selectUnit, index) in selectDecoded">
+                    <SelectToken :selectUnit=selectUnit :tables=tables />
                 </div>
             </div>
-            <div id="vegaLiteContainer">
-                <div class="vis-container" v-if="resultType === 'vega-lite'">
-                    <div v-for="(spec, index) in results" style="pointer-events: none;">
-                        <vega-lite :spec="spec"></vega-lite>
-                    </div>
+            <div class="rowitem">
+                <el-tag type="info" effect="plain">Groupby </el-tag>
+            </div>
+            <div class="rowitem">
+                <el-tag type="info" effect="plain">Filters </el-tag>
+                <div class="rowitem" v-for="(condUnit, index) in whereDecoded">
+                    <CondUnitToken :condUnit=condUnit :tables=tables />
                 </div>
-                <div class="vis-container" v-else-if="resultType === 'table'">
-                    <template>
+            </div>
+        </div>
+        <div id="vegaLiteContainer">
+            <div class="vis-container" v-if="resultType === 'vega-lite'">
+                <div v-for="(spec, index) in results" style="pointer-events: none;">
+                    <vega-lite :spec="spec"></vega-lite>
+                </div>
+            </div>
+            <div class="vis-container" v-else-if="resultType === 'table'">
+                <template>
                         <el-table :data="results"
                               style="width: 100%">
                             <el-table-column v-for="column in columns" 
@@ -55,11 +55,11 @@
                             </el-table-column>
                         </el-table>
                     </template>
-                </div>
-                <div class="vis-container" v-else-if="resultType === 'data'">
-                    <span class="result-text">{{results}}</span>
-                </div>
+            </div>
+            <div class="vis-container" v-else-if="resultType === 'data'">
+                <span class="result-text">{{results}}</span>
             </div>
         </div>
     </div>
+    <!-- </div> -->
 </div>

@@ -1,7 +1,7 @@
 <div id="resultview">
     <div class="card">
         <div class="card-block" id="resultContainer">
-            <el-collapse>
+            <el-collapse v-model="activeNames">
                 <el-collapse-item title="You may want to ask:" name="1">
                     <div class="recommend">
                         <div class="list-group list-group-flush" v-for="(nl, nlidx) in qSugg">

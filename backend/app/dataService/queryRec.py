@@ -263,6 +263,7 @@ class queryRecommender(object):
         """
         max_len: max query entity # per query
         TODO: 
+        0. drill down and up in existing query items
         1. consider clustering input columns based on their semantics and operate cols on cluster levels
         2. consider user specified (combo of interest) that are not frequently seen in the db
         3. IMPLICIT feedback: selection of recomended items, indicating items that are not selected is not of users' interest,

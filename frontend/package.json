@@ -23,6 +23,7 @@
         "vg-editor": "^2.7.2",
         "video.js": "^7.6.6",
         "vue": "^2.6.11",
+        "vue-draggable-resizable": "^2.3.0",
         "vue-select": "^3.11.2",
         "vue-tree-list": "^1.5.0",
         "vue-vega": "^1.0.0-alpha.13",

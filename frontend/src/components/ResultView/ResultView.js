@@ -1,9 +1,10 @@
-// /* global d3 $ */
+/* global d3 $ */
 import pipeService from '../../service/pipeService.js';
 import dataService from '../../service/dataService.js';
 import DrawResult from './drawResult.js';
 import SelectToken from './SelectToken.js';
 import CondUnitToken from './CondUnitToken.js';
+import VegaLiteChart from '../VegaLiteChart/VegaLiteChart.vue'
 import VueVega from 'vue-vega';
 import Vue from 'vue';
 
@@ -11,7 +12,7 @@ Vue.use(VueVega);
 
 export default {
     name: 'ResultView',
-    components: { SelectToken, CondUnitToken },
+    components: { SelectToken, CondUnitToken, VegaLiteChart },
     props: {
         dbselected: "",
         tables: {},
@@ -22,14 +23,11 @@ export default {
             nl: "",
 
             // data for query results
-            results: [],
-            resultType: "none",
-            columns: [],
+            queryReturns: [],
 
             explanation: "",
             selectDecoded: [],
             whereDecoded: [],
-            activeNames: ["1"],
             qSugg: {},
         }
     },
@@ -52,11 +50,8 @@ export default {
             this.selectDecoded = SQLTrans.sqlDecoded['select'][1];
             this.whereDecoded = SQLTrans.sqlDecoded['where'].filter((d, i) => i % 2 === 0);
         });
-        pipeService.onVLSpecs(vlSpecs => {
-            this.results = vlSpecs[0];
-            this.resultType = vlSpecs[1];
-            if (this.resultType === 'table' && this.results.length > 0)
-                this.columns = Object.keys(this.results[0]);
+        pipeService.onVLSpecs(queryReturns => {
+            this.queryReturns = queryReturns;
         });
         pipeService.onQuerySugg(qs => {
             this.qSugg = qs['nl'];

@@ -50,18 +50,6 @@
         </div>
       </el-col>
     </el-row>
-    <!-- <el-row>
-      <el-col :span="6">
-        <div class="p border-right" style="text-align: start;">
-          <Settings :tables="tables"></Settings>
-        </div>
-      </el-col>
-      <el-col :span="18">
-        <div class="p" style="text-align: start">
-          <ResultView :dbselected="dbselected" :tables="tables" />
-        </div>
-      </el-col>
-    </el-row> -->
   </div>
 </template>
 
@@ -71,7 +59,6 @@ import dataService from "./service/dataService.js";
 import Settings from "./components/Settings/Settings.vue";
 import ResultView from "./components/ResultView/ResultView.vue";
 import QueryPanel from "./components/QueryPanel/QueryPanel.vue";
-import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 
 export default {

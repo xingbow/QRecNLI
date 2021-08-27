@@ -5,14 +5,19 @@ import DrawResult from './drawResult.js';
 import SelectToken from './SelectToken.js';
 import CondUnitToken from './CondUnitToken.js';
 import VegaLiteChart from '../VegaLiteChart/VegaLiteChart.vue'
+import DraggableTable from './DraggableTable.vue'
+import draggable from "vuedraggable";
 import VueVega from 'vue-vega';
 import Vue from 'vue';
+
+import VueDraggableResizable from "vue-draggable-resizable";
+import "vue-draggable-resizable/dist/VueDraggableResizable.css";
 
 Vue.use(VueVega);
 
 export default {
     name: 'ResultView',
-    components: { SelectToken, CondUnitToken, VegaLiteChart },
+    components: { SelectToken, CondUnitToken, VegaLiteChart, draggable, DraggableTable, VueDraggableResizable },
     props: {
         dbselected: "",
         tables: {},
@@ -29,15 +34,17 @@ export default {
             selectDecoded: [],
             whereDecoded: [],
             qSugg: {},
+
+            visCounter: -1,
         }
     },
     computed: {},
     watch: {
-        dbselected: function(dbselected) {
-            dataService.SQLSugg(dbselected, (suggData) => {
-                this.qSugg = suggData["nl"];
-            });
-        }
+        // dbselected: function(dbselected) {
+        //     dataService.SQLSugg(dbselected, (suggData) => {
+        //         this.qSugg = suggData["nl"];
+        //     });
+        // },
     },
     mounted: function() {
         this.drawResult = new DrawResult(this.containerId);
@@ -51,17 +58,20 @@ export default {
             this.whereDecoded = SQLTrans.sqlDecoded['where'].filter((d, i) => i % 2 === 0);
         });
         pipeService.onVLSpecs(queryReturns => {
-            this.queryReturns = queryReturns;
+            this.queryReturns = queryReturns.map(query => {
+                this.visCounter += 1;
+                return [...query, `origin-${this.visCounter}`];
+            });
         });
         pipeService.onQuerySugg(qs => {
             this.qSugg = qs['nl'];
         });
-        const vm = this;
-        this.$nextTick(() => {
-            dataService.SQLSugg(vm.dbselected, (suggData) => {
-                this.qSugg = suggData["nl"];
-            });
-        })
+        // const vm = this;
+        // this.$nextTick(() => {
+        //     dataService.SQLSugg(vm.dbselected, (suggData) => {
+        //         this.qSugg = suggData["nl"];
+        //     });
+        // });
     },
     methods: {
         selectQuery: function(nlidx) {
@@ -69,6 +79,9 @@ export default {
                 console.log("receive nl query:", nlidx, this.qSugg[nlidx]);
                 pipeService.emitSetQuery(this.qSugg[nlidx]);
             }
+        },
+        onDelete: function(index) {
+            this.queryReturns.splice(index, 1);
         }
     }
 }

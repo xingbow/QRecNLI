@@ -1,3 +1,8 @@
 <vue-draggable-resizable :w="width" :h="height" @resizing="onResize">
-    <vega-lite :spec="vlSpec" v-bind:id="`vega-lite-chart-${innerKey}`"></vega-lite>
+    <div>
+        <el-row class="float-button-rol">
+            <el-button plain size="mini" icon="el-icon-delete" v-on:click="onDelete"></el-button>
+        </el-row>
+        <vega-lite :spec="vlSpec" v-bind:id="`vega-lite-chart-${innerKey}`"></vega-lite>
+    </div>
 </vue-draggable-resizable>

@@ -1,9 +1,12 @@
-import $ from 'jquery'
+/* global $*/
 import LogicFlow from '@logicflow/core';
 import '@logicflow/core/dist/style/index.css';
 
 
-export function createLogicFlowConfig(containerId, nodeClickCallback) {
+export function createLogicFlowConfig({
+    containerId,
+    nodeClickCallback
+}) {
 
     const flowchartConfig = {
         height: 630,
@@ -56,16 +59,24 @@ export function createLogicFlowConfig(containerId, nodeClickCallback) {
             nodeText: flowchartConfig["nodeText"],
             line: flowchartConfig["line"]
         },
+        adjustNodePosition: false,
+        stopMoveGraph: true
     });
     // --- listen to users' interactions
-    lf.on('history:change', (eventObject) => {
-        console.log("eventObject: ", eventObject);
-    });
+    // lf.on('history:change', (eventObject) => {
+    //     console.log("eventObject: ", eventObject);
+    // });
 
     lf.on('node:click', (eventObject) => {
+        console.log("click", eventObject)
         if (nodeClickCallback)
             nodeClickCallback(eventObject);
-    })
+    });
+
+    lf.on('node:dbclick', (eventObject) => {
+        console.log("dbclick", eventObject)
+    });
+
 
     return { 'flowchartConfig': flowchartConfig, 'lf': lf };
 }
@@ -73,7 +84,7 @@ export function createLogicFlowConfig(containerId, nodeClickCallback) {
 export function renderLogicFlowChart(historyData, containerId = "logicFlowContainer", nodeClickCallback = undefined) {
     const nodeData = [];
     const edges = [];
-    const { flowchartConfig, lf } = createLogicFlowConfig(containerId, nodeClickCallback)
+    const { flowchartConfig, lf } = createLogicFlowConfig({ containerId, nodeClickCallback })
     historyData.map((h, hi) => {
         // console.log(hi, h);
         nodeData.push({

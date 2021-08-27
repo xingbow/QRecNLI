@@ -1,27 +1,26 @@
-/* global $*/
+/* global _ $*/
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css';
-import dataService from '../../service/dataService';
 import pipeService from '../../service/pipeService';
-import { renderLogicFlowChart } from './logicFlow'
+import draggable from "vuedraggable";
+// import { renderLogicFlowChart } from './logicFlow'
 
 import "../../assets/historyQuery.css"
 
 export default {
     name: 'Settings',
     components: {
-        vSelect,
+        vSelect, draggable
     },
     props: {
         tables: {},
     },
     data() {
         return {
-            containerId: "settingsContainer",
-            tabselected: "",
+            // containerId: "settingsContainer",
             tableCols: [],
             historyData: [],
-            activeIdx: 0,
+            currentVl: [],
             // TODO: organize metadata in tree layout
             treedata: [],
             defaultProps: {
@@ -29,61 +28,55 @@ export default {
                 label: 'label',
             },
             rightButtonVisible: false,
-
+            visCounter: -1,
         }
     },
     watch: {
         tables: function (tables) {
             console.log("table changed in Setting View:", tables);
-            let tableL = [];
+            let treedata = [];
             for (const [key, value] of Object.entries(tables)) {
-                // console.log(key, value);
-                const children = value.map(v => { return { "type": "column", "label": v[0], "ctype": v[1] } });
-                tableL.push({
+                treedata.push({
                     "type": "table",
                     "label": key,
-                    "children": children,
+                    "children": value.map(v =>
+                        ({ "type": "column", "label": v[0], "ctype": v[1] })
+                    ),
                 });
             }
-            console.log("tableList: ", tableL);
-            this.treedata = tableL;
+            this.treedata = treedata;
 
-        },
-        tabselected: function (tabselected) {
-            if (tabselected.length > 0) {
-                console.log("select table:", tabselected);
-                dataService.getTableCols(tabselected, data => {
-                    const tableCols = data;
-                    dataService.loadTablesContent(tabselected, (data) => {
-                        this.tableCols = tableCols
-                        this.dataTable.setData(data.slice(0, (data.length >= 5) ? 5 : data.length));
-                    })
-                })
-            }
-        },
-        historyData: function(historyData) {
-            console.log("logic flow rendering.");
-            renderLogicFlowChart(historyData.map(d => d.SQL), this.containerId, this.handleNodeClick);
         }
     },
     methods: {
         onAfterChange(obj) {
             console.log("after update: ", obj.item.itemMap);
         },
-        handleNodeClick({ data, e, position }) {
-            const { text } = data;
+        findHistoryNodeByKey(key) {
             for (let hisId in this.historyData) {
                 const history = this.historyData[hisId];
-                if (history.SQL.nl == text.value) {
-                    pipeService.emitSQL(history.SQL);
-                    pipeService.emitSQLTrans(history.SQLTrans);
-                    pipeService.emitVLSpecs(history.VLSpecs);
-                    // pipeService.emitSetQuery(history.SetQuery);
-                    pipeService.emitQuerySugg(history.QuerySugg);
-                    break;
+                if (history.key == key) {
+                    return history;
                 }
             }
+            return undefined
+        },
+        // handleNodeClick({ data, e, position }) {
+        handleNodeClick(key) {
+            const history = this.findHistoryNodeByKey(key);
+            pipeService.emitSQL(history.SQL);
+            pipeService.emitSQLTrans(history.SQLTrans);
+            pipeService.emitVLSpecs(history.VLSpecs);
+            // pipeService.emitQuerySugg(history.QuerySugg);
             this.historyData.pop();
+        },
+        handleNodeClone({ key }) {
+            const history = this.findHistoryNodeByKey(key);
+            const specs = history.VLSpecs.map(spec => {
+                this.visCounter += 1;
+                return [...spec, `history-${this.visCounter}`];
+            });
+            return specs[0];
         },
         renderContent(h, { node, data, store }) { /* eslint-disable-line */
             if (data.type == "table") {
@@ -121,11 +114,8 @@ export default {
         },
     },
     mounted: function () {
-        console.log("this is settings view");
-        $('.nav-link-' + this.activeIdx).addClass("active");
-
         pipeService.onSQL(sql => {
-            this.historyData.push({ 'SQL': sql });
+            this.historyData.push({ 'SQL': sql, 'key': sql.nl });
         });
 
         pipeService.onSQLTrans(sqlTrans => {
@@ -134,6 +124,7 @@ export default {
 
         pipeService.onVLSpecs(VLSpecs => {
             this.historyData[this.historyData.length - 1].VLSpecs = VLSpecs;
+            this.currentVl = VLSpecs;
         });
 
         // pipeService.onSetQuery(SetQuery => {

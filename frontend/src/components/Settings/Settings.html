@@ -1,14 +1,21 @@
 <div id="settings">
     <!-- <div class="card"> -->
     <div class="card-block" id="settingsContainer" style="margin: 10px">
-        <el-tabs v-model="activeIdx" type="card">
+        <el-tabs type="card">
             <el-tab-pane label="Tables" name="0">
                 <div id="databaseMeta">
                     <el-tree :data="treedata" :props="defaultProps" default-expand-all :render-content="renderContent" />
                 </div>
             </el-tab-pane>
             <el-tab-pane label="History Queries" name="1">
-                <div id="logicFlow" style="overflow-y:scroll;"></div>
+                <!-- <div id="logicFlow" style="overflow-y:scroll;"></div> -->
+                <div id="historyList" style="overflow-y:scroll;">
+                    <draggable :list="historyData" class="list-group" ghost-class="ghost" :clone="handleNodeClone" :group="{ name: 'historyNode', pull: 'clone', put: false }">
+                        <div class="list-group-item" v-for="(element, index) in historyData" :key="`${element.key}-${index}`" v-on:click="() => handleNodeClick(element.key)">
+                            {{ element.key }}
+                        </div>
+                    </draggable>
+                </div>
             </el-tab-pane>
         </el-tabs>
     </div>

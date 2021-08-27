@@ -12,11 +12,14 @@ export default {
     props: {
         innerKey: "",
         vlSpecs: Array,
+        onDelete: Function,
     },
     data() {
         return {
             width: 150,
             height: 150,
+            innerWidth: 150,
+            innerHeight: 150,
             vlSpecRecords: {},
             vlFocalMark: "",
             vlSpec: {},
@@ -38,9 +41,12 @@ export default {
     methods: {
         initChartStyle: function() {
             this.$nextTick(() => {
-                const d = $(`#vega-lite-chart-${this.innerKey}`).children('svg');
-                this.width = d.width();
-                this.height = d.height();
+                const outerEle = $(`#vega-lite-chart-${this.innerKey}`).children('svg');
+                const innerEle = outerEle.find('path.background')[0];
+                this.width = outerEle.width();
+                this.height = outerEle.height();
+                this.innerWidth = innerEle.getBBox().width;
+                this.innerHeight = innerEle.getBBox().height;
             })
         },
         transferVlSpecs: function() {
@@ -65,9 +71,13 @@ export default {
             this.vlSpec = vlSpecRecords[vlFocalMark];
         },
         onResize: function(x, y, width, height) {
-            this.width = width
-            this.height = height
-            this.vlSpec = {...this.vlSpec, width: this.width - 60, height: this.height - 55 };
+            if (width !== this.width || height !== this.height) {
+                this.innerWidth += width - this.width;
+                this.innerHeight += height - this.height;
+                this.width = width;
+                this.height = height;
+                this.vlSpec = {...this.vlSpec, width: this.innerWidth, height: this.innerHeight };
+            }
         },
     }
 }

@@ -36,28 +36,28 @@
             </el-collapse-item>
         </el-collapse>
         <div id="vegaLiteContainer">
-            <div v-for="(qRet, index) in queryReturns">
-                <div class="vis-container" v-if="qRet[1] === 'vega-lite'">
-                    <VegaLiteChart :vlSpecs="qRet[0]" :innerKey="0" />
+            <draggable class="list-group" :list="queryReturns" group="historyNode">
+                <div class="list-group-item-invisible" v-for="(qRet, index) in queryReturns" :key="qRet[2]">
+                    <!-- {{qRet[2]}} -->
+                    <div class="vis-container" v-if="qRet[1] === 'vega-lite'">
+                        <VegaLiteChart :vlSpecs="qRet[0]" :innerKey="qRet[2]" :onDelete="()=>onDelete(index)" />
+                    </div>
+                    <div class="vis-container" v-else-if="qRet[1] === 'table'">
+                        <DraggableTable :dataContent="qRet[0]" :columnNames="Object.keys(qRet[0][0])" :onDelete="()=>onDelete(index)" />
+                    </div>
+                    <div class="vis-container" v-else-if="qRet[1] === 'data'">
+                        <vue-draggable-resizable :w="80" :h="50">
+                            <div>
+                                <el-row class="float-button-rol">
+                                    <el-button plain size="mini" icon="el-icon-delete" v-on:click="()=>onDelete(index)"></el-button>
+                                </el-row>
+                                <span class="result-text">{{qRet[0]}}</span>
+                            </div>
+                        </vue-draggable-resizable>
+                    </div>
                 </div>
-                <div class="vis-container" v-else-if="qRet[1] === 'table'">
-                    <template>
-                    <el-table :data="qRet[0]"
-                            style="width: 100%">
-                        <el-table-column v-for="column in Object.keys(qRet[0][0])" 
-                                            :key="column"
-                                            :prop="column"
-                                            :label="column"
-                                            :min-width="150">
-                        </el-table-column>
-                    </el-table>
-                </template>
-                </div>
-                <div class="vis-container" v-else-if="qRet[1] === 'data'">
-                    <span class="result-text">{{qRet[0]}}</span>
-                </div>
-            </div>
+            </draggable>
         </div>
     </div>
-    <!-- </div> -->
+</div>
 </div>

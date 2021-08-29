@@ -58,7 +58,8 @@ ORDER_OPS = ('desc', 'asc')
 #                    'shop: *',
 #                    'hiring: *',
 #                    'evaluation: *']
-test_topic = "cinema"
+# test_topic = "cinema"
+test_topic = "company employee"
 test_table_cols = ['film: rank in series', 'film: number in season', 
 'film: title', 'film: directed by', 'film: original air date', 'film: production code', 
 'cinema: name', 'cinema: openning year', 'cinema: capacity', 

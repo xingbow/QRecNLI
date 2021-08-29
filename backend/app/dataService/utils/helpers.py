@@ -138,4 +138,8 @@ class NpEncoder(json.JSONEncoder):
 
         elif isinstance(obj, np.void):
             return None
+
+        elif isinstance(obj, tuple):
+            return list(obj)
+            
         return json.JSONEncoder.default(self, obj)

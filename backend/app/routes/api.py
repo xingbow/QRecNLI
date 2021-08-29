@@ -85,24 +85,24 @@ def index():
 def initialization(dataset):
     if dataset == "spider":
         db_lists = current_app.dataService.db_lists
-        return json.dumps(db_lists)
+        return jsonify(db_lists)
     else:
         raise Exception("currently only support spider dataset")
 
 
 @api.route("/get_tables/<db_id>")
 def get_tables(db_id):
-    return json.dumps(current_app.dataService.get_tables(db_id))
+    return jsonify(current_app.dataService.get_tables(db_id))
 
 
 @api.route("/get_database_meta/<db_id>")
 def get_database_meta(db_id):
-    return json.dumps(current_app.dataService.get_db_info(db_id))
+    return jsonify(current_app.dataService.get_db_info(db_id))
 
 
 @api.route("/get_cols/<table_name>")
 def get_cols(table_name):
-    return json.dumps(current_app.dataService.get_cols(table_name))
+    return jsonify(current_app.dataService.get_cols(table_name))
 
 
 @api.route("/load_tables/<table_name>")
@@ -115,7 +115,7 @@ def text2sql(user_text="films and film prices that cost below 10 dollars", db_id
     sql = current_app.dataService.text2sql(user_text, db_id)
     current_app.dataService.set_query_context(sql, db_id) # set query context
     result = {'sql': sql, 'data': current_app.dataService.sql2data(sql, db_id).values.tolist()}
-    return json.dumps(result)
+    return jsonify(result)
 
 
 @api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
@@ -139,14 +139,15 @@ def sql2text(sql_text, db_id="cinema"):
     sql_decoded = processSQL.decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
     text = processSQL.sql2text(sql_decoded)
     response = {'sqlDecoded': sql_decoded, 'text': text}
-    return json.dumps(response)
+    return jsonify(response)
 
 
 @api.route("/sql_sugg/<db_id>", methods=['GET'])
 def sql_sugg(db_id):
     table_cols = current_app.dataService.get_db_cols(db_id)
     sugg = current_app.dataService.sql_suggest(db_id, table_cols)
-    return json.dumps(sugg)
+    # print(f"sugg: {sugg}")
+    return jsonify(sugg)
 
 
 if __name__ == '__main__':

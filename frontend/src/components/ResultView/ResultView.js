@@ -4,8 +4,9 @@ import dataService from '../../service/dataService.js';
 import DrawResult from './drawResult.js';
 import SelectToken from './SelectToken.js';
 import CondUnitToken from './CondUnitToken.js';
-import VegaLiteChart from '../VegaLiteChart/VegaLiteChart.vue'
+import VegaLiteChart from './VegaLiteChart.vue'
 import DraggableTable from './DraggableTable.vue'
+import DraggableChart from './DraggableChart.vue'
 import draggable from "vuedraggable";
 import VueVega from 'vue-vega';
 import Vue from 'vue';
@@ -17,7 +18,15 @@ Vue.use(VueVega);
 
 export default {
     name: 'ResultView',
-    components: { SelectToken, CondUnitToken, VegaLiteChart, draggable, DraggableTable, VueDraggableResizable },
+    components: {
+        SelectToken,
+        CondUnitToken,
+        VegaLiteChart,
+        draggable,
+        DraggableTable,
+        DraggableChart,
+        VueDraggableResizable
+    },
     props: {
         dbselected: "",
         tables: {},
@@ -40,11 +49,11 @@ export default {
     },
     computed: {},
     watch: {
-        // dbselected: function(dbselected) {
-        //     dataService.SQLSugg(dbselected, (suggData) => {
-        //         this.qSugg = suggData["nl"];
-        //     });
-        // },
+        dbselected: function(dbselected) {
+            dataService.SQLSugg(dbselected, (suggData) => {
+                this.qSugg = suggData["nl"];
+            });
+        },
     },
     mounted: function() {
         this.drawResult = new DrawResult(this.containerId);

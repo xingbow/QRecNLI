@@ -215,10 +215,10 @@ class DataService(object):
         groupby_ents = extract_groupby_names(sql_decoded["groupBy"])
         agg_dict = extract_agg_opts(sql_decoded["select"])
         table_cols = self.get_db_cols(db_id) # meaningful columns
-        print("select ents: ", select_ents)
-        print("groupby ents: ", groupby_ents)
-        print("agg dict: ", agg_dict)
-        print(f"table_cols: {table_cols}")
+        # print("select ents: ", select_ents)
+        # print("groupby ents: ", groupby_ents)
+        # print("agg dict: ", agg_dict)
+        # print(f"table_cols: {table_cols}")
 
         self.cur_q = [sql, db_id]
         if db_id not in self.h_q.keys():
@@ -227,10 +227,8 @@ class DataService(object):
             self.h_q[db_id]["groupby"] = []
             self.h_q[db_id]["agg"] = []
         # ensure entities are in the table columns (exclude the foreig/primary keys)
-        if select_ents in table_cols:
-            self.h_q[db_id]["select"].append(select_ents)
-        if groupby_ents in table_cols:
-            self.h_q[db_id]["groupby"].append(groupby_ents)
+        self.h_q[db_id]["select"].append([ent for ent in select_ents if ent in table_cols])
+        self.h_q[db_id]["groupby"].append([ent for ent in groupby_ents if ent in table_cols])
         for ag_opt in agg_dict.keys():
             agg_dict[ag_opt] = [attr for attr in agg_dict[ag_opt] if attr in table_cols]
         self.h_q[db_id]["agg"].append(agg_dict)

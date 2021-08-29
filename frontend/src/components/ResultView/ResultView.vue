@@ -33,16 +33,10 @@
         margin: 5px 10px;
     }
 
-    .vis-container {
-        display: inline-flex;
-    }
-
     #vegaLiteContainer {
         height: 480px;
         padding: 5px;
         margin-top:5px;
-        overflow: scroll;
-        /* border: 1px solid lightgray; */
         overflow: scroll;
     }
 
@@ -109,6 +103,34 @@
 
     .result-text {
         font-size: 40px;
+        margin: 10px;
+    }
+
+    .vis-container {
+        /* display: inline-flex; */
+        position: absolute;
+        top: 200px;
+    }
+
+    .list-group-item-invisible {
+        height: 500px;
+        border: none;
+    }
+
+    .vdr {
+        border: 1px solid lightgray;
+        border-radius: 5px;
+    }
+
+    .float-button-rol {
+        position: absolute;
+        /* top: -30px; */
+        top: 2px;
+        right: 2px;
+    }
+
+    .el-button--mini {
+        padding: 7px;
     }
 
 </style>

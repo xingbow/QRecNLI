@@ -22,4 +22,16 @@ text-decoration: none;
   align-items: center;
   justify-content: center;
 }
+
+.next-query-trigger {
+  position: absolute;
+  font-size: 10px; 
+  color: rgb(131, 127, 127);
+}
+
+.next-query-trigger:hover {
+  position: absolute;
+  font-weight: bold; 
+  color: rgb(131, 127, 127);
+}
 </style>

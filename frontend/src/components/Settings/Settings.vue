@@ -3,48 +3,52 @@
 <script src='./Settings.js'></script>
 
 <style scoped>
-    .card {
-        margin-bottom: 10px;
-        border-radius: 5px;
-        border: none;
-    }
+.card {
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: none;
+}
 
-    .card-header {
-        font-size: 12px;
-        padding: 5px 5px;
-        height: 36px;
-    }
+.card-header {
+  font-size: 12px;
+  padding: 5px 5px;
+  height: 36px;
+}
 
-    .card-block {
-        padding: 0px;
-        position: relative;
-    }
+.card-block {
+  padding: 0px;
+  position: relative;
+}
 
-    .nav {
-        font-size: 13px;
-    }
+.nav {
+  font-size: 13px;
+}
 
-    #settingsContainer {
-        height: 670px;
-    }
+#settingsContainer {
+  height: 670px;
+}
 
-    #databaseMeta {
-        height: 650px;
-        overflow: scroll;
-    }
-    
-    #table-cols {
-        font-size: 12px;
-    }
+#databaseMeta {
+  height: 650px;
+  overflow: scroll;
+}
 
-    #data-table {
-        font-size:12px; 
-        height:175px;
-    }
+#table-cols {
+  font-size: 12px;
+}
 
-    #databaseMeta{
-        height: 630px;
-        font-size: 13px;
-    }
+#data-table {
+  font-size: 12px;
+  height: 175px;
+}
 
+#databaseMeta {
+  height: 630px;
+  font-size: 13px;
+}
+
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
 </style>

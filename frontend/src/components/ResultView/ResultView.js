@@ -1,17 +1,23 @@
-// /* global d3 $ */
+/* global d3 $ */
 import pipeService from '../../service/pipeService.js';
 import dataService from '../../service/dataService.js';
 import DrawResult from './drawResult.js';
 import SelectToken from './SelectToken.js';
 import CondUnitToken from './CondUnitToken.js';
+import VegaLiteChart from '../VegaLiteChart/VegaLiteChart.vue'
+import DraggableTable from './DraggableTable.vue'
+import draggable from "vuedraggable";
 import VueVega from 'vue-vega';
 import Vue from 'vue';
+
+import VueDraggableResizable from "vue-draggable-resizable";
+import "vue-draggable-resizable/dist/VueDraggableResizable.css";
 
 Vue.use(VueVega);
 
 export default {
     name: 'ResultView',
-    components: { SelectToken, CondUnitToken },
+    components: { SelectToken, CondUnitToken, VegaLiteChart, draggable, DraggableTable, VueDraggableResizable },
     props: {
         dbselected: "",
         tables: {},
@@ -22,24 +28,23 @@ export default {
             nl: "",
 
             // data for query results
-            results: [],
-            resultType: "none",
-            columns: [],
+            queryReturns: [],
 
             explanation: "",
             selectDecoded: [],
             whereDecoded: [],
-            activeNames: ["1"],
             qSugg: {},
+
+            visCounter: -1,
         }
     },
     computed: {},
     watch: {
-        dbselected: function(dbselected) {
-            dataService.SQLSugg(dbselected, (suggData) => {
-                this.qSugg = suggData["nl"];
-            });
-        }
+        // dbselected: function(dbselected) {
+        //     dataService.SQLSugg(dbselected, (suggData) => {
+        //         this.qSugg = suggData["nl"];
+        //     });
+        // },
     },
     mounted: function() {
         this.drawResult = new DrawResult(this.containerId);
@@ -52,11 +57,11 @@ export default {
             this.selectDecoded = SQLTrans.sqlDecoded['select'][1];
             this.whereDecoded = SQLTrans.sqlDecoded['where'].filter((d, i) => i % 2 === 0);
         });
-        pipeService.onVLSpecs(vlSpecs => {
-            this.results = vlSpecs[0];
-            this.resultType = vlSpecs[1];
-            if (this.resultType === 'table' && this.results.length > 0)
-                this.columns = Object.keys(this.results[0]);
+        pipeService.onVLSpecs(queryReturns => {
+            this.queryReturns = queryReturns.map(query => {
+                this.visCounter += 1;
+                return [...query, `origin-${this.visCounter}`];
+            });
         });
         pipeService.onQuerySugg(qs => {
             this.qSugg = qs['nl'];
@@ -64,9 +69,10 @@ export default {
         const vm = this;
         this.$nextTick(() => {
             dataService.SQLSugg(vm.dbselected, (suggData) => {
+                console.log("suggestion data: ", suggData);
                 this.qSugg = suggData["nl"];
             });
-        })
+        });
     },
     methods: {
         selectQuery: function(nlidx) {
@@ -74,6 +80,9 @@ export default {
                 console.log("receive nl query:", nlidx, this.qSugg[nlidx]);
                 pipeService.emitSetQuery(this.qSugg[nlidx]);
             }
+        },
+        onDelete: function(index) {
+            this.queryReturns.splice(index, 1);
         }
     }
 }

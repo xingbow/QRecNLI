@@ -3,8 +3,10 @@ export function getColumnType(colToken, tables) {
     const colId = colToken.split(': ')[1];
     const cols = tables[tableId];
     const colIndex = cols.map(col => col[0]).indexOf(colId);
-    const type = cols[colIndex][1];
-    return type
+    if (colIndex >= 0)
+        return cols[colIndex][1];
+    else
+        return "none"
 }
 
 export function type2icon(type) {

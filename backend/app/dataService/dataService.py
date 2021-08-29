@@ -46,6 +46,7 @@ class DataService(object):
             self.db_id = ""
             self.cur_q = None
             self.h_q = {}
+            self.table_cols = []
         else:
             raise Exception("currently only support spider dataset")
         return
@@ -144,19 +145,22 @@ class DataService(object):
         - Output: 
             - table col names: ["table name: col names", ...]
         """
-        db_info = self.db_meta_dict[db_id]
-        pk = db_info["primary_keys"] # primary keys
-        fk = db_info["foreign_keys"] # foreign keys
-        k_set = set(pk)
-        for f in fk:
-            for e in f:
-                k_set.add(e)
-        # print("k_set: ", k_set)
-        table_names = db_info["table_names"]
-        # remove columns that included in primary keys and foreign keys since they usually do not carry many meanings
-        table_cols = [table_names[col[0]] + ": " + col[1] for colidx, col in enumerate(db_info["column_names"]) if col[0]!=-1 and colidx not in list(k_set)]
-        # print(table_cols)
-        return table_cols
+        if len(self.table_cols) == 0:
+            db_info = self.db_meta_dict[db_id]
+            pk = db_info["primary_keys"] # primary keys
+            fk = db_info["foreign_keys"] # foreign keys
+            k_set = set(pk)
+            for f in fk:
+                for e in f:
+                    k_set.add(e)
+            # print("k_set: ", k_set)
+            table_names = db_info["table_names"]
+            # remove columns that included in primary keys and foreign keys since they usually do not carry many meanings
+            table_cols = [table_names[col[0]] + ": " + col[1] for colidx, col in enumerate(db_info["column_names"]) if col[0]!=-1 and colidx not in list(k_set)]
+            self.table_cols = table_cols
+            # print(table_cols)
+            
+        return self.table_cols
 
     def get_col_names(self, file_name, table_name):
         conn = sqlite3.connect(file_name)
@@ -210,9 +214,11 @@ class DataService(object):
         select_ents = extract_select_names(sql_decoded["select"])
         groupby_ents = extract_groupby_names(sql_decoded["groupBy"])
         agg_dict = extract_agg_opts(sql_decoded["select"])
-        # print("select_ents: ", select_ents)
-        # print("groupby ents: ", groupby_ents)
-        # print("agg dict: ", agg_dict)
+        table_cols = self.get_db_cols(db_id) # meaningful columns
+        print("select ents: ", select_ents)
+        print("groupby ents: ", groupby_ents)
+        print("agg dict: ", agg_dict)
+        print(f"table_cols: {table_cols}")
 
         self.cur_q = [sql, db_id]
         if db_id not in self.h_q.keys():
@@ -220,8 +226,13 @@ class DataService(object):
             self.h_q[db_id]["select"] = []
             self.h_q[db_id]["groupby"] = []
             self.h_q[db_id]["agg"] = []
-        self.h_q[db_id]["select"].append(select_ents)
-        self.h_q[db_id]["groupby"].append(groupby_ents)
+        # ensure entities are in the table columns (exclude the foreig/primary keys)
+        if select_ents in table_cols:
+            self.h_q[db_id]["select"].append(select_ents)
+        if groupby_ents in table_cols:
+            self.h_q[db_id]["groupby"].append(groupby_ents)
+        for ag_opt in agg_dict.keys():
+            agg_dict[ag_opt] = [attr for attr in agg_dict[ag_opt] if attr in table_cols]
         self.h_q[db_id]["agg"].append(agg_dict)
 
         # print(json.dumps(self.h_q, indent=2))

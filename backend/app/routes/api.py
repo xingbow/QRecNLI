@@ -146,6 +146,7 @@ def sql2text(sql_text, db_id="cinema"):
 def sql_sugg(db_id):
     table_cols = current_app.dataService.get_db_cols(db_id)
     sugg = current_app.dataService.sql_suggest(db_id, table_cols)
+    # print(f"sugg: {sugg}")
     return jsonify(sugg)
 
 

@@ -16,9 +16,9 @@ export default {
                 padding: 2
             }
         }
-    }, 
+    },
     mounted() {
-        pipeService.onSetQuery(nl=>{
+        pipeService.onSetQuery(nl => {
             // console.log("nl in querypanel: ", nl)
             this.userText = nl;
         })
@@ -41,7 +41,7 @@ export default {
                             pipeService.emitSQLTrans(data);
                         });
                         dataService.SQL2VL(sqlResult["sql"], dbName, (data) => {
-                            pipeService.emitVLSpecs(data);
+                            pipeService.emitVLSpecs([data]);
                         });
                         // query suggestions
                         dataService.SQLSugg(dbName, (data) => {

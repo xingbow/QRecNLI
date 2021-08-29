@@ -20,6 +20,7 @@ except ImportError:
     from app.dataService.utils.processSQL.decode_sql import extract_select_names, extract_agg_opts, extract_groupby_names
 
 class queryRecommender(object):
+    # TODO: handle change of database
     def __init__(self, topic_sim_th=0.4, item_sim=0.4, alpha=0.9, beta=0.5,
                  groupby_th=0.5, agg_th=0.5, sim=0.7,
                  opt_n = 2,

@@ -66,12 +66,13 @@ export default {
         pipeService.onQuerySugg(qs => {
             this.qSugg = qs['nl'];
         });
-        // const vm = this;
-        // this.$nextTick(() => {
-        //     dataService.SQLSugg(vm.dbselected, (suggData) => {
-        //         this.qSugg = suggData["nl"];
-        //     });
-        // });
+        const vm = this;
+        this.$nextTick(() => {
+            dataService.SQLSugg(vm.dbselected, (suggData) => {
+                console.log("suggestion data: ", suggData);
+                this.qSugg = suggData["nl"];
+            });
+        });
     },
     methods: {
         selectQuery: function(nlidx) {

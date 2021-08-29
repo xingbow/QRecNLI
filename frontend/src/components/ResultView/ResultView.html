@@ -36,7 +36,7 @@
             </el-collapse-item>
         </el-collapse>
         <div id="vegaLiteContainer">
-            <draggable class="list-group" :list="queryReturns" group="historyNode">
+            <draggable class="list-group" :list="queryReturns" handle="none" group="historyNode">
                 <div class="list-group-item-invisible" v-for="(qRet, index) in queryReturns" :key="qRet[2]">
                     <!-- {{qRet[2]}} -->
                     <div class="vis-container" v-if="qRet[1] === 'vega-lite'">
@@ -45,15 +45,10 @@
                     <div class="vis-container" v-else-if="qRet[1] === 'table'">
                         <DraggableTable :dataContent="qRet[0]" :columnNames="Object.keys(qRet[0][0])" :onDelete="()=>onDelete(index)" />
                     </div>
-                    <div class="vis-container" v-else-if="qRet[1] === 'data'">
-                        <vue-draggable-resizable :w="80" :h="50">
-                            <div>
-                                <el-row class="float-button-rol">
-                                    <el-button plain size="mini" icon="el-icon-delete" v-on:click="()=>onDelete(index)"></el-button>
-                                </el-row>
-                                <span class="result-text">{{qRet[0]}}</span>
-                            </div>
-                        </vue-draggable-resizable>
+                    <div class="vis-container" v-else-if="qRet[1] === 'data'" @mousedown.stop="">
+                        <DraggableChart :w="80" :h="50" :onDelete="()=>onDelete(index)">
+                            <span class="result-text">{{qRet[0]}}</span>
+                        </DraggableChart>
                     </div>
                 </div>
             </draggable>

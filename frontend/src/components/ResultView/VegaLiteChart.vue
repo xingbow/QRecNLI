@@ -1,5 +1,11 @@
 <template>
-  <DraggableChart :w="width" :h="height" :onResize="onResize">
+  <DraggableChart
+    :w="width"
+    :h="height"
+    :onResize="onResize"
+    :onDelete="onDelete"
+    :defaultTitle="defaultTitle"
+  >
     <vega-lite
       :spec="vlSpec"
       v-bind:id="`vega-lite-chart-${innerKey}`"
@@ -22,6 +28,10 @@ export default {
     innerKey: String,
     vlSpecs: Array,
     onDelete: Function,
+    defaultTitle: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -82,7 +92,6 @@ export default {
       this.vlSpec = vlSpecRecords[vlFocalMark];
     },
     onResize: function (x, y, width, height) {
-      console.log(width, height);
       if (width !== this.width || height !== this.height) {
         this.innerWidth += width - this.width;
         this.innerHeight += height - this.height;

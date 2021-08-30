@@ -74,7 +74,7 @@ export default {
             const history = this.findHistoryNodeByKey(key);
             const specs = history.VLSpecs.map(spec => {
                 this.visCounter += 1;
-                return [...spec, `history-${this.visCounter}`];
+                return {...spec, id: `history-${this.visCounter}`, title: key};
             });
             return specs[0];
         },
@@ -124,6 +124,9 @@ export default {
 
         pipeService.onVLSpecs(VLSpecs => {
             this.historyData[this.historyData.length - 1].VLSpecs = VLSpecs;
+            if (VLSpecs.length > 0) {
+                this.historyData[this.historyData.length - 1].type = VLSpecs[0].type;
+            }
             this.currentVl = VLSpecs;
         });
 

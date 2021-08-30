@@ -307,17 +307,19 @@ class queryRecommender(object):
 
         all_sims = np.zeros(len(rest_cols))
         for contextid, context in enumerate(sel_contexts):
-            # 1. consider semantic similarity
-            semantic_sim_scores = np.max(self.cal_cosine_sim(rest_cols, context),
-                                         axis=1) * math.pow(self.alpha,
-                                                            len(sel_contexts) - contextid - 1)
-            # 2. consider cosine similarity between feature vectors (relevance vector to the database)
-            db_col_feat = db_df_bin[rest_cols].T
-            context_feat = db_df_bin[context].T
-            db_relevance = np.max(cosine_similarity(db_col_feat, context_feat), axis=1) * math.pow(
-                self.alpha, len(sel_contexts) - contextid - 1)
-            # 3. average similarity based on semantic similarity and db relevance
-            all_sims += semantic_sim_scores + self.beta * db_relevance
+            # print("context: ", context)
+            if len(context)>0:
+                # 1. consider semantic similarity
+                semantic_sim_scores = np.max(self.cal_cosine_sim(rest_cols, context),
+                                            axis=1) * math.pow(self.alpha,
+                                                                len(sel_contexts) - contextid - 1)
+                # 2. consider cosine similarity between feature vectors (relevance vector to the database)
+                db_col_feat = db_df_bin[rest_cols].T
+                context_feat = db_df_bin[context].T
+                db_relevance = np.max(cosine_similarity(db_col_feat, context_feat), axis=1) * math.pow(
+                    self.alpha, len(sel_contexts) - contextid - 1)
+                # 3. average similarity based on semantic similarity and db relevance
+                all_sims += semantic_sim_scores + self.beta * db_relevance
 
         top_n_rest_cols = rest_cols[(-all_sims).argsort()][:top_n]
         # TODO: pay attention to item similarity threshold change & reinitialization

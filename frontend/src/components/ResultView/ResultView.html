@@ -13,7 +13,7 @@
             </el-collapse-item>
             <el-collapse-item title="SQL results and explanations" name="2">
                 <div class="rowitem">
-                    <el-tag type="success">SQL</el-tag> {{nl}}</div>
+                    <el-tag type="success">SQL</el-tag> {{sqlQuery}}</div>
                 <div class="rowitem">
                     <el-tag type="success">NL Explanation</el-tag>
                     <span class="explanation-container" v-html="explanation"></span>
@@ -37,17 +37,17 @@
         </el-collapse>
         <div id="vegaLiteContainer">
             <draggable class="list-group" :list="queryReturns" handle="none" group="historyNode">
-                <div class="list-group-item-invisible" v-for="(qRet, index) in queryReturns" :key="qRet[2]">
+                <div class="list-group-item-invisible" v-for="(qRet, index) in queryReturns" :key="qRet.id">
                     <!-- {{qRet[2]}} -->
-                    <div class="vis-container" v-if="qRet[1] === 'vega-lite'">
-                        <VegaLiteChart :vlSpecs="qRet[0]" :innerKey="qRet[2]" :onDelete="()=>onDelete(index)" />
+                    <div class="vis-container" v-if="qRet.type === 'vega-lite'">
+                        <VegaLiteChart :vlSpecs="qRet.content" :innerKey="qRet.id" :defaultTitle="qRet.title" :onDelete="()=>onDelete(index)" />
                     </div>
-                    <div class="vis-container" v-else-if="qRet[1] === 'table'">
-                        <DraggableTable :dataContent="qRet[0]" :columnNames="Object.keys(qRet[0][0])" :onDelete="()=>onDelete(index)" />
+                    <div class="vis-container" v-else-if="qRet.type === 'table'">
+                        <DraggableTable :dataContent="qRet.content" :columnNames="Object.keys(qRet.content[0])" :defaultTitle="qRet.title" :onDelete="()=>onDelete(index)" />
                     </div>
-                    <div class="vis-container" v-else-if="qRet[1] === 'data'" @mousedown.stop="">
-                        <DraggableChart :w="80" :h="50" :onDelete="()=>onDelete(index)">
-                            <span class="result-text">{{qRet[0]}}</span>
+                    <div class="vis-container" v-else-if="qRet.type === 'data'" @mousedown.stop="">
+                        <DraggableChart :w="80" :h="50" :onDelete="()=>onDelete(index)" :defaultTitle="qRet.title">
+                            <span class="result-text">{{qRet.content}}</span>
                         </DraggableChart>
                     </div>
                 </div>

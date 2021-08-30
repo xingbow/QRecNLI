@@ -34,7 +34,8 @@ export default {
     data() {
         return {
             containerId: 'resultContainer',
-            nl: "",
+            nlQuery: "",
+            sqlQuery: "",
 
             // data for query results
             queryReturns: [],
@@ -58,18 +59,22 @@ export default {
     mounted: function() {
         this.drawResult = new DrawResult(this.containerId);
         pipeService.onSQL(sql => {
-            this.nl = sql["sql"];
+            this.sqlQuery = sql["sql"];
+            this.nlQuery = sql["nl"];
         });
+
         pipeService.onSQLTrans(SQLTrans => {
             this.explanation = SQLTrans.text;
             // this.sqlDecoded = SQLTrans.sqlDecoded;
             this.selectDecoded = SQLTrans.sqlDecoded['select'][1];
             this.whereDecoded = SQLTrans.sqlDecoded['where'].filter((d, i) => i % 2 === 0);
         });
+
         pipeService.onVLSpecs(queryReturns => {
             this.queryReturns = queryReturns.map(query => {
                 this.visCounter += 1;
-                return [...query, `origin-${this.visCounter}`];
+                // return [...query, `origin-${this.visCounter}`];
+                return {...query, id: `origin-${this.visCounter}`, title: this.nlQuery };
             });
         });
         pipeService.onQuerySugg(qs => {

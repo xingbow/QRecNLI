@@ -2,7 +2,8 @@
   <DraggableChart
     :w="width"
     :h="height"
-    onResize="onResize"
+    :onResize="onResize"
+    :defaultTitle="defaultTitle"
     class="draggable-table-container"
   >
     <el-table :data="dataContent" style="width: width" size="small">
@@ -30,6 +31,10 @@ export default {
     dataContent: Array,
     columnNames: Array,
     onDelete: Function,
+    defaultTitle: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {

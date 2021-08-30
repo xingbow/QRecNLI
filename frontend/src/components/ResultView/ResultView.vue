@@ -112,10 +112,6 @@
         top: 200px;
     }
 
-    .vis-inner-container {
-        position: absolute;
-    }
-
     .list-group-item-invisible {
         height: 500px;
         border: none;

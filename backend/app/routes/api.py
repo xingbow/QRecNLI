@@ -120,17 +120,18 @@ def text2sql(user_text="films and film prices that cost below 10 dollars", db_id
 
 @api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
 def sql2vis(sql_text, db_id="cinema"):
-    response = current_app.dataService.sql2vl(sql_text, db_id)
-    if isinstance(response, list):
+    content = current_app.dataService.sql2vl(sql_text, db_id)
+    if isinstance(content, list):
         # TODO: vega-vue only supports the following mark types
-        response = ([s for s in response if s['mark']['type'] in
-                    ["bar", "circle", "square", "tick", "line", "area", "point", "rule", "text"]],
-                    'vega-lite')
-    elif isinstance(response, pd.DataFrame):
-        response = (response.to_dict('records'), 'table')
+        content = [s for s in content if s['mark']['type'] in 
+                    ["bar", "circle", "square", "tick", "line", "area", "point", "rule", "text"]]
+        returnType = 'vega-lite'
+    elif isinstance(content, pd.DataFrame):
+        content = content.to_dict('records')
+        returnType = 'table'
     else:
-        response = (response, 'data')
-    return jsonify(response)
+        returnType = 'data'
+    return jsonify({'type': returnType, 'content': content})
 
 
 @api.route("/sql2text/<sql_text>/<db_id>", methods=['GET'])

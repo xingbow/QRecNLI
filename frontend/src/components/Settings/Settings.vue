@@ -51,4 +51,15 @@
   opacity: 0.5;
   background: #c8ebfb;
 }
+
+.history-item-icon,.number-icon {
+  position: relative;
+  float: right;
+  margin-top: 5px;
+}
+
+.number-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
 </style>

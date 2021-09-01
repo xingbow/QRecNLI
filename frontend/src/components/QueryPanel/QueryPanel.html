@@ -32,7 +32,16 @@
                     <button class="btn btn-outline-secondary btn-sm" type="button" v-on:click="search">Search</button>
                 </div>
             </div>
-            <!-- <span class="next-query-trigger">You may also want to ask</span> -->
+        </div>
+    </div>
+    <div class="p rowchild" style="width: 100%; margin-left: 80px">
+        <span class="next-query-trigger" v-on:click="showSugg = !showSugg">You may also want to ask</span>
+        <div class="recommend" v-if="showSugg">
+            <div v-for="(nl, nlidx) in qSugg">
+                <a class="recommend-item " v-on:click="selectQuery(nlidx)">
+                    <span style="margin: 0px 5px;">{{nl}}</span>
+                </a>
+            </div>
         </div>
     </div>
 </div>

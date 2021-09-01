@@ -20,7 +20,7 @@
     <el-row>
       <el-col :span="6">
         <div
-          class="p border-bottom border-right rowchild"
+          class="p border-right rowchild"
           style="display: flex"
         >
           <div class="align-self-center" style="margin: 10px; width: 30%">

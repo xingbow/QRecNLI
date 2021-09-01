@@ -12,8 +12,8 @@
 }
 
 .speaker:hover {
-/* color: #fff !important; */
-text-decoration: none;
+  /* color: #fff !important; */
+  text-decoration: none;
 }
 
 .table-name-cell {
@@ -25,13 +25,44 @@ text-decoration: none;
 
 .next-query-trigger {
   position: absolute;
-  font-size: 10px; 
-  color: rgb(131, 127, 127);
+  top: 55px;
+  font-size: 12px;
+  font-weight: bold;
+  color: rgb(148, 145, 145);
 }
 
 .next-query-trigger:hover {
   position: absolute;
-  font-weight: bold; 
   color: rgb(131, 127, 127);
+}
+
+.recommend {
+  /* height: 95px; */
+  overflow: scroll;
+  /* padding:5px; */
+  margin-top: 10px;
+  /* border: 1px solid lightgray; */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.rowitem,
+.recommend-item {
+  font-size: 13px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.recommend-item {
+  border: 1px solid white;
+  border-radius: 5px;
+  text-decoration: underline;
+}
+
+.recommend-item:hover {
+  border: 1px solid #409eff;
+  border-radius: 5px;
 }
 </style>

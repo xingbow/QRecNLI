@@ -2,8 +2,7 @@
 import pipeService from '../../service/pipeService.js';
 import dataService from '../../service/dataService.js';
 import DrawResult from './drawResult.js';
-import SelectToken from './SelectToken.js';
-import CondUnitToken from './CondUnitToken.js';
+import { CondUnitToken, SelectToken, ColUnitToken } from './SQLToken.js';
 import VegaLiteChart from './VegaLiteChart.vue'
 import DraggableTable from './DraggableTable.vue'
 import DraggableChart from './DraggableChart.vue'
@@ -21,6 +20,7 @@ export default {
     components: {
         SelectToken,
         CondUnitToken,
+        ColUnitToken,
         VegaLiteChart,
         draggable,
         DraggableTable,
@@ -43,6 +43,7 @@ export default {
             explanation: "",
             selectDecoded: [],
             whereDecoded: [],
+            groupbyDecoded: [],
             qSugg: {},
 
             visCounter: -1,
@@ -68,6 +69,7 @@ export default {
             // this.sqlDecoded = SQLTrans.sqlDecoded;
             this.selectDecoded = SQLTrans.sqlDecoded['select'][1];
             this.whereDecoded = SQLTrans.sqlDecoded['where'].filter((d, i) => i % 2 === 0);
+            this.groupbyDecoded = SQLTrans.sqlDecoded['groupBy'];
         });
 
         pipeService.onVLSpecs(queryReturns => {

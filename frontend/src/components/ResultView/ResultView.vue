@@ -133,4 +133,8 @@
         padding: 7px;
     }
 
+    .ex-table-item {
+        width: 120px;
+    }
+
 </style>

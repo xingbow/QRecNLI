@@ -2,7 +2,7 @@
     <!-- <div class="card"> -->
     <div class="card-block" id="resultContainer">
         <el-collapse>
-            <el-collapse-item title="You may also want to ask:" name="1">
+            <!-- <el-collapse-item title="You may also want to ask:" name="1">
                 <div class="recommend">
                     <div v-for="(nl, nlidx) in qSugg">
                         <a class="recommend-item " v-on:click="selectQuery(nlidx)">
@@ -10,25 +10,35 @@
                         </a>
                     </div>
                 </div>
-            </el-collapse-item>
+            </el-collapse-item> -->
             <el-collapse-item title="SQL results and explanations" name="2">
                 <div class="rowitem">
-                    <el-tag type="success">SQL</el-tag> {{sqlQuery}}</div>
+                    <!-- <el-tag type="success">SQL</el-tag> {{sqlQuery}} -->
+                    <div class="ex-table-item">SQL</div>
+                    <span>{{sqlQuery}}</span>
+                </div>
                 <div class="rowitem">
-                    <el-tag type="success">NL Explanation</el-tag>
+                    <!-- <el-tag type="success">NL Explanation</el-tag> -->
+                    <div class="ex-table-item">NL Explanation</div>
                     <span class="explanation-container" v-html="explanation"></span>
                 </div>
                 <div class="rowitem">
-                    <el-tag type="info" effect="plain">Select </el-tag>
+                    <!-- <el-tag type="info" effect="plain">Select </el-tag> -->
+                    <div class="ex-table-item">Select </div>
                     <div class="rowitem" v-for="(selectUnit, index) in selectDecoded">
                         <SelectToken :selectUnit=selectUnit :tables=tables />
                     </div>
                 </div>
                 <div class="rowitem">
-                    <el-tag type="info" effect="plain">Groupby </el-tag>
+                    <!-- <el-tag type="info" effect="plain">Groupby </el-tag> -->
+                    <div class="ex-table-item">Groupby </div>
+                    <div class="rowitem" v-for="(colUnit, index) in groupbyDecoded">
+                        <ColUnitToken :colUnit=colUnit :tables=tables />
+                    </div>
                 </div>
                 <div class="rowitem">
-                    <el-tag type="info" effect="plain">Filters </el-tag>
+                    <!-- <el-tag type="info" effect="plain">Filters </el-tag> -->
+                    <div class="ex-table-item">Filters </div>
                     <div class="rowitem" v-for="(condUnit, index) in whereDecoded">
                         <CondUnitToken :condUnit=condUnit :tables=tables />
                     </div>

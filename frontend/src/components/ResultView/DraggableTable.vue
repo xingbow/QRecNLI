@@ -3,6 +3,7 @@
     :w="width"
     :h="height"
     :onResize="onResize"
+    :onDelete="onDelete"
     :defaultTitle="defaultTitle"
     class="draggable-table-container"
   >

@@ -14,14 +14,30 @@ export default {
             textOptions: [],
             rowStyle: {
                 padding: 2
-            }
+            },
+            showSugg: false,
+            qSugg: {},
         }
+    },
+    watch: {
+        dbselected: function(dbselected) {
+            dataService.SQLSugg(dbselected, (suggData) => {
+                this.qSugg = suggData["nl"];
+            });
+        },
     },
     mounted() {
         pipeService.onSetQuery(nl => {
             // console.log("nl in querypanel: ", nl)
             this.userText = nl;
         })
+        const vm = this;
+        this.$nextTick(() => {
+            dataService.SQLSugg(vm.dbselected, (suggData) => {
+                console.log("suggestion data: ", suggData);
+                this.qSugg = suggData["nl"];
+            });
+        });
     },
     methods: {
         search: function() {
@@ -107,6 +123,13 @@ export default {
             }
             tokens.push(row.colName);
             this.userText = tokens.join(' ');
-        }
+        },
+
+        selectQuery: function(nlidx) {
+            if (this.qSugg) {
+                console.log("receive nl query:", nlidx, this.qSugg[nlidx]);
+                pipeService.emitSetQuery(this.qSugg[nlidx]);
+            }
+        },
     }
 }

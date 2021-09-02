@@ -11,14 +11,14 @@
                 <div class="list-group-item-invisible" v-for="(qRet, index) in queryReturns" :key="qRet.id">
                     <DraggableTop :qRet="qRet" :onDelete="()=>onDelete(index)">
                         <template v-slot:info-popover>
-                                <SQLExplanation 
-                                :sqlQuery="qRet.sqlQuery" 
-                                :nlExplanation="qRet.nlExplanation" 
-                                :selectDecoded="qRet.sqlDecoded['select'][1]" 
-                                :whereDecoded="qRet.sqlDecoded['where'].filter((d, i) => i % 2 === 0)" 
-                                :groupbyDecoded="qRet.sqlDecoded['groupBy']"
-                                :tables="tables" />
-                            </template>
+                            <SQLExplanation 
+                            :sqlQuery="qRet.sqlQuery" 
+                            :nlExplanation="qRet.nlExplanation" 
+                            :selectDecoded="qRet.sqlDecoded['select'][1]" 
+                            :whereDecoded="qRet.sqlDecoded['where'].filter((d, i) => i % 2 === 0)" 
+                            :groupbyDecoded="qRet.sqlDecoded['groupBy']"
+                            :tables="tables" />
+                        </template>
                     </DraggableTop>
                 </div>
             </draggable>

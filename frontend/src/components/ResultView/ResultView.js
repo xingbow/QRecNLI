@@ -60,9 +60,6 @@ export default {
                 };
             });
         });
-        pipeService.onQuerySugg(qs => {
-            this.qSugg = qs['nl'];
-        });
     },
     methods: {
         selectQuery: function(nlidx) {

@@ -26,7 +26,7 @@
 .next-query-trigger {
   position: absolute;
   top: 55px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   color: rgb(148, 145, 145);
 }
@@ -49,7 +49,7 @@
 
 .rowitem,
 .recommend-item {
-  font-size: 13px;
+  font-size: 16px;
   padding: 2px;
   display: flex;
   align-items: center;

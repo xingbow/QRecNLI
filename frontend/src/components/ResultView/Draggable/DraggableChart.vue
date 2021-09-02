@@ -130,7 +130,6 @@ export default {
     },
   },
   mounted() {
-    console.log(this.defaultTitle);
     this.title = this.defaultTitle;
   },
   methods: {

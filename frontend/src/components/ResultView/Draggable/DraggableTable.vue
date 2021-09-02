@@ -31,6 +31,8 @@
 /* global _ $*/
 import DraggableChart from "./DraggableChart.vue";
 
+const maxWidth = 200;
+
 export default {
   name: "DraggableTable",
   components: { DraggableChart },
@@ -65,7 +67,6 @@ export default {
         this.dataContent.map((col) => `${col[name]}`.length)
       );
       const letterWidth = 10;
-      const maxWidth = 150;
       return _.min([_.max([tokenLength, name.length]) * letterWidth, maxWidth]);
     },
     buildColumns: function () {
@@ -82,6 +83,11 @@ export default {
     },
     onResize: function (x, y, width, height) {
       if (width !== this.width || height !== this.height) {
+        const sudoWidth = _.sum(this.columns.map(col => col.width));
+        this.columns = this.columns.map(col => ({
+          ...col,
+          width: _.min([col.width * width / sudoWidth, maxWidth])
+        }))
         this.width = width;
         this.height = height;
       }

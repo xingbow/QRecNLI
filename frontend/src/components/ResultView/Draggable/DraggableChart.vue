@@ -12,6 +12,12 @@
         <el-button
           plain
           size="mini"
+          icon="el-icon-info"
+          v-on:click="infoVisible = !infoVisible"
+        ></el-button>
+        <el-button
+          plain
+          size="mini"
           icon="el-icon-edit"
           v-on:click="inputVisible = true"
         ></el-button>
@@ -19,7 +25,7 @@
           plain
           size="mini"
           icon="el-icon-setting"
-          v-on:click="settingVisible = true"
+          v-on:click="settingVisible = !settingVisible"
         ></el-button>
         <el-button
           plain
@@ -42,7 +48,7 @@
       <el-popover
         class="popover-setting"
         placement="right"
-        width="100"
+        width="450"
         trigger="manual"
         v-model="settingVisible"
       >
@@ -54,6 +60,24 @@
           class="popover-close"
           v-on:click="settingVisible = false"
         ></el-button>
+        <slot name="setting-popover"></slot>
+      </el-popover>
+      <el-popover
+        class="popover-info"
+        placement="right"
+        width="450"
+        trigger="manual"
+        v-model="infoVisible"
+      >
+        <el-button
+          plain
+          size="mini"
+          type="text"
+          icon="el-icon-close"
+          class="popover-close"
+          v-on:click="infoVisible = false"
+        ></el-button>
+        <slot name="info-popover"></slot>
       </el-popover>
       <slot></slot>
     </div>
@@ -71,6 +95,7 @@ export default {
   data() {
     return {
       settingVisible: false,
+      infoVisible: false,
       inputVisible: false,
       titleVisible: true,
       title: "title",
@@ -105,7 +130,7 @@ export default {
     },
   },
   mounted() {
-      console.log(this.defaultTitle);
+    console.log(this.defaultTitle);
     this.title = this.defaultTitle;
   },
   methods: {
@@ -146,6 +171,7 @@ export default {
   padding: 8px;
 }
 
+.popover-info,
 .popover-setting {
   position: absolute;
   top: -50px;

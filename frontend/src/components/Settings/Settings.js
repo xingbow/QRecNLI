@@ -20,7 +20,6 @@ export default {
             // containerId: "settingsContainer",
             tableCols: [],
             historyData: [],
-            currentVl: [],
             // TODO: organize metadata in tree layout
             treedata: [],
             defaultProps: {
@@ -65,18 +64,13 @@ export default {
         handleNodeClick(key) {
             const history = this.findHistoryNodeByKey(key);
             pipeService.emitSQL(history.SQL);
-            pipeService.emitSQLTrans(history.SQLTrans);
-            pipeService.emitVLSpecs(history.VLSpecs);
             // pipeService.emitQuerySugg(history.QuerySugg);
             this.historyData.pop();
         },
         handleNodeClone({ key }) {
-            const history = this.findHistoryNodeByKey(key);
-            const specs = history.VLSpecs.map(spec => {
-                this.visCounter += 1;
-                return {...spec, id: `history-${this.visCounter}`, title: key};
-            });
-            return specs[0];
+            this.visCounter += 1;
+            const VLSpecs = this.findHistoryNodeByKey(key).VLSpecs;
+            return { ...VLSpecs, id: `history-${this.visCounter}` };
         },
         renderContent(h, { node, data, store }) { /* eslint-disable-line */
             if (data.type == "table") {
@@ -114,28 +108,35 @@ export default {
         },
     },
     mounted: function () {
-        pipeService.onSQL(sql => {
-            this.historyData.push({ 'SQL': sql, 'key': sql.nl });
-        });
-
-        pipeService.onSQLTrans(sqlTrans => {
-            this.historyData[this.historyData.length - 1].SQLTrans = sqlTrans;
-        });
-
-        pipeService.onVLSpecs(VLSpecs => {
-            this.historyData[this.historyData.length - 1].VLSpecs = VLSpecs;
-            if (VLSpecs.length > 0) {
-                this.historyData[this.historyData.length - 1].type = VLSpecs[0].type;
+        pipeService.onSQL(sqlRet => {
+            const { sql, nl, SQLTrans, VLSpecs } = sqlRet;
+            const histNode = {
+                'SQL': sqlRet,
+                'key': nl,
+                'SQLTrans': SQLTrans
             }
-            this.currentVl = VLSpecs;
+
+            if (VLSpecs.length > 0) {
+                histNode.type = VLSpecs[0].type;
+                histNode.VLSpecs = {
+                    ...VLSpecs[0],
+                    title: nl,
+                    sqlQuery: sql,
+                    nlQuery: nl,
+                    nlExplanation: SQLTrans.text,
+                    sqlDecoded: SQLTrans.sqlDecoded,
+                };
+            }
+
+            this.historyData.push(histNode);
         });
 
         // pipeService.onSetQuery(SetQuery => {
         //     this.historyData[this.historyData.length - 1].SetQuery = SetQuery;
         // });
 
-        pipeService.onQuerySugg(QuerySugg => {
-            this.historyData[this.historyData.length - 1].QuerySugg = QuerySugg;
-        });
+        // pipeService.onQuerySugg(QuerySugg => {
+        //     this.historyData[this.historyData.length - 1].QuerySugg = QuerySugg;
+        // });
     }
 }

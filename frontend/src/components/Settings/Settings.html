@@ -16,7 +16,7 @@
                             <!-- <i class="el-icon-data-analysis history-item-icon" v-if="element.type === `vega-lite`" /> -->
                             <i class="fas fa-chart-bar history-item-icon" v-if="element.type === `vega-lite`"></i>
                             <i class="fas fa-table history-item-icon" v-if="element.type === `table`"></i>
-                            <span v-if="element.type === `data`" class="number-icon">{{ element.VLSpecs[0].content }}</span>
+                            <span v-if="element.type === `data`" class="number-icon">{{ element.VLSpecs.content }}</span>
                         </div>
                     </draggable>
                 </div>

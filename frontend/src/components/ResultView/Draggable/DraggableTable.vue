@@ -21,8 +21,8 @@
     <template v-slot:setting-popover>
       <slot name="setting-popover"></slot>
     </template>
-    <template v-slot:explanation-popover>
-      <slot name="explanation-popover"></slot>
+    <template v-slot:info-popover>
+      <slot name="info-popover"></slot>
     </template>
   </DraggableChart>
 </template>

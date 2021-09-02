@@ -62,12 +62,6 @@ export default {
         });
     },
     methods: {
-        selectQuery: function(nlidx) {
-            if (this.qSugg) {
-                console.log("receive nl query:", nlidx, this.qSugg[nlidx]);
-                pipeService.emitSetQuery(this.qSugg[nlidx]);
-            }
-        },
         onDelete: function(index) {
             this.queryReturns.splice(index, 1);
         }

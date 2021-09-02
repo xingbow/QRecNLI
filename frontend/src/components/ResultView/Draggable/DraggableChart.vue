@@ -147,7 +147,7 @@ export default {
 
 <style scoped>
 .draggable-chart-container {
-  overflow: hidden;
+  overflow: scroll;
   width: 100%;
   height: 100%;
   justify-content: center;

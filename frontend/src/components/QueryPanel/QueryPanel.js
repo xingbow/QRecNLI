@@ -64,7 +64,8 @@ export default {
                         // query suggestions
                         dataService.SQLSugg(dbName, (data) => {
                             console.log("query suggestion after submitting nl query: ", data);
-                            pipeService.emitQuerySugg(data);
+                            // pipeService.emitQuerySugg(data);
+                            this.qSugg = data['nl'];
                         })
                     } else {
                         alert("sql returns is empty");

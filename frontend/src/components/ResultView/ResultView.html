@@ -1,65 +1,25 @@
 <div id="resultview">
     <!-- <div class="card"> -->
     <div class="card-block" id="resultContainer">
-        <el-collapse>
-            <!-- <el-collapse-item title="You may also want to ask:" name="1">
-                <div class="recommend">
-                    <div v-for="(nl, nlidx) in qSugg">
-                        <a class="recommend-item " v-on:click="selectQuery(nlidx)">
-                            <span style="margin: 0px 5px;">{{nl}}</span>
-                        </a>
-                    </div>
-                </div>
-            </el-collapse-item> -->
+        <!-- <el-collapse>
             <el-collapse-item title="SQL results and explanations" name="2">
-                <div class="rowitem">
-                    <!-- <el-tag type="success">SQL</el-tag> {{sqlQuery}} -->
-                    <div class="ex-table-item">SQL</div>
-                    <span>{{sqlQuery}}</span>
-                </div>
-                <div class="rowitem">
-                    <!-- <el-tag type="success">NL Explanation</el-tag> -->
-                    <div class="ex-table-item">NL Explanation</div>
-                    <span class="explanation-container" v-html="explanation"></span>
-                </div>
-                <div class="rowitem">
-                    <!-- <el-tag type="info" effect="plain">Select </el-tag> -->
-                    <div class="ex-table-item">Select </div>
-                    <div class="rowitem" v-for="(selectUnit, index) in selectDecoded">
-                        <SelectToken :selectUnit=selectUnit :tables=tables />
-                    </div>
-                </div>
-                <div class="rowitem">
-                    <!-- <el-tag type="info" effect="plain">Groupby </el-tag> -->
-                    <div class="ex-table-item">Groupby </div>
-                    <div class="rowitem" v-for="(colUnit, index) in groupbyDecoded">
-                        <ColUnitToken :colUnit=colUnit :tables=tables />
-                    </div>
-                </div>
-                <div class="rowitem">
-                    <!-- <el-tag type="info" effect="plain">Filters </el-tag> -->
-                    <div class="ex-table-item">Filters </div>
-                    <div class="rowitem" v-for="(condUnit, index) in whereDecoded">
-                        <CondUnitToken :condUnit=condUnit :tables=tables />
-                    </div>
-                </div>
+                <SQLExplanation :sqlQuery="sqlQuery" :nlExplanation="explanation" :selectDecoded="selectDecoded" :groupbyDecoded="groupbyDecoded" :whereDecoded="whereDecoded" :tables="tables" />
             </el-collapse-item>
-        </el-collapse>
+        </el-collapse> -->
         <div id="vegaLiteContainer">
             <draggable class="list-group" :list="queryReturns" handle="none" group="historyNode">
                 <div class="list-group-item-invisible" v-for="(qRet, index) in queryReturns" :key="qRet.id">
-                    <!-- {{qRet[2]}} -->
-                    <div class="vis-container" v-if="qRet.type === 'vega-lite'">
-                        <VegaLiteChart :vlSpecs="qRet.content" :innerKey="qRet.id" :defaultTitle="qRet.title" :onDelete="()=>onDelete(index)" />
-                    </div>
-                    <div class="vis-container" v-else-if="qRet.type === 'table'">
-                        <DraggableTable :dataContent="qRet.content" :columnNames="Object.keys(qRet.content[0])" :defaultTitle="qRet.title" :onDelete="()=>onDelete(index)" />
-                    </div>
-                    <div class="vis-container" v-else-if="qRet.type === 'data'" @mousedown.stop="">
-                        <DraggableChart :w="80" :h="50" :onDelete="()=>onDelete(index)" :defaultTitle="qRet.title">
-                            <span class="result-text">{{qRet.content}}</span>
-                        </DraggableChart>
-                    </div>
+                    <DraggableTop :qRet="qRet" :onDelete="()=>onDelete(index)">
+                        <template v-slot:info-popover>
+                                <SQLExplanation 
+                                :sqlQuery="qRet.sqlQuery" 
+                                :nlExplanation="qRet.nlExplanation" 
+                                :selectDecoded="qRet.sqlDecoded['select'][1]" 
+                                :whereDecoded="qRet.sqlDecoded['where'].filter((d, i) => i % 2 === 0)" 
+                                :groupbyDecoded="qRet.sqlDecoded['groupBy']"
+                                :tables="tables" />
+                            </template>
+                    </DraggableTop>
                 </div>
             </draggable>
         </div>

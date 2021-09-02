@@ -10,6 +10,12 @@
       :spec="vlSpec"
       v-bind:id="`vega-lite-chart-${innerKey}`"
     ></vega-lite>
+    <template v-slot:setting-popover>
+      <slot name="setting-popover"></slot>
+    </template>
+    <template v-slot:explanation-popover>
+      <slot name="explanation-popover"></slot>
+    </template>
   </DraggableChart>
 </template>
 

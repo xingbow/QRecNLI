@@ -1,31 +1,20 @@
 /* global d3 $ */
 import pipeService from '../../service/pipeService.js';
-import dataService from '../../service/dataService.js';
 import DrawResult from './drawResult.js';
-import { CondUnitToken, SelectToken, ColUnitToken } from './SQLToken.js';
-import VegaLiteChart from './VegaLiteChart.vue'
-import DraggableTable from './DraggableTable.vue'
-import DraggableChart from './DraggableChart.vue'
+import DraggableTop from './Draggable/DraggableTop.vue'
+import SQLExplanation from './SQLExplanation.vue'
 import draggable from "vuedraggable";
 import VueVega from 'vue-vega';
 import Vue from 'vue';
-
-import VueDraggableResizable from "vue-draggable-resizable";
-import "vue-draggable-resizable/dist/VueDraggableResizable.css";
 
 Vue.use(VueVega);
 
 export default {
     name: 'ResultView',
     components: {
-        SelectToken,
-        CondUnitToken,
-        ColUnitToken,
-        VegaLiteChart,
+        SQLExplanation,
         draggable,
-        DraggableTable,
-        DraggableChart,
-        VueDraggableResizable
+        DraggableTop,
     },
     props: {
         dbselected: "",
@@ -44,50 +33,35 @@ export default {
             selectDecoded: [],
             whereDecoded: [],
             groupbyDecoded: [],
-            qSugg: {},
 
             visCounter: -1,
         }
     },
-    computed: {},
-    watch: {
-        dbselected: function(dbselected) {
-            dataService.SQLSugg(dbselected, (suggData) => {
-                this.qSugg = suggData["nl"];
-            });
-        },
-    },
     mounted: function() {
         this.drawResult = new DrawResult(this.containerId);
-        pipeService.onSQL(sql => {
-            this.sqlQuery = sql["sql"];
-            this.nlQuery = sql["nl"];
-        });
-
-        pipeService.onSQLTrans(SQLTrans => {
+        pipeService.onSQL(sqlRet => {
+            const { sql, nl, SQLTrans, VLSpecs } = sqlRet;
+            this.sqlQuery = sql;
+            this.nlQuery = nl;
             this.explanation = SQLTrans.text;
-            // this.sqlDecoded = SQLTrans.sqlDecoded;
             this.selectDecoded = SQLTrans.sqlDecoded['select'][1];
             this.whereDecoded = SQLTrans.sqlDecoded['where'].filter((d, i) => i % 2 === 0);
             this.groupbyDecoded = SQLTrans.sqlDecoded['groupBy'];
-        });
-
-        pipeService.onVLSpecs(queryReturns => {
-            this.queryReturns = queryReturns.map(query => {
+            this.queryReturns = VLSpecs.map(query => {
                 this.visCounter += 1;
                 // return [...query, `origin-${this.visCounter}`];
-                return {...query, id: `origin-${this.visCounter}`, title: this.nlQuery };
+                return {...query,
+                    id: `origin-${this.visCounter}`,
+                    title: nl,
+                    sqlQuery: sql,
+                    nlQuery: nl,
+                    nlExplanation: SQLTrans.text,
+                    sqlDecoded: SQLTrans.sqlDecoded,
+                };
             });
         });
         pipeService.onQuerySugg(qs => {
             this.qSugg = qs['nl'];
-        });
-        const vm = this;
-        this.$nextTick(() => {
-            dataService.SQLSugg(vm.dbselected, (suggData) => {
-                console.log("suggestion data: ", suggData);
-                this.qSugg = suggData["nl"];
-            });
         });
     },
     methods: {

@@ -101,11 +101,6 @@ def get_database_meta(db_id):
     return jsonify(current_app.dataService.get_db_info(db_id))
 
 
-@api.route("/get_cols/<table_name>")
-def get_cols(table_name):
-    return jsonify(current_app.dataService.get_cols(table_name))
-
-
 @api.route("/load_tables/<table_name>")
 def load_tables(table_name):
     return jsonify(current_app.dataService.load_table_content(table_name))

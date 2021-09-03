@@ -43,12 +43,6 @@ function getTables(dbselected, callback) {
     request(url, params, GET_REQUEST, callback)
 }
 
-function getTableCols(tableName, callback) {
-    const url = `${dataServerUrl}/get_cols/${tableName}`
-    const params = {}
-    request(url, params, GET_REQUEST, callback)
-}
-
 function loadTablesContent(tableName, callback) {
     const url = `${dataServerUrl}/load_tables/${tableName}`
     const params = {}
@@ -90,7 +84,6 @@ export default {
     initialization,
     getDBInfo,
     getTables,
-    getTableCols,
     loadTablesContent,
     text2SQL,
     SQL2VL,

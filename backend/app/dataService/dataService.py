@@ -145,7 +145,7 @@ class DataService(object):
         - Output: 
             - table col names: ["table name: col names", ...]
         """
-        if len(self.table_cols) == 0:
+        if db_id not in self.h_q.keys():
             db_info = self.db_meta_dict[db_id]
             pk = db_info["primary_keys"] # primary keys
             fk = db_info["foreign_keys"] # foreign keys
@@ -253,8 +253,9 @@ class DataService(object):
         db_meta = self.db_meta_dict[db_id]
         # load sql suggestion model
         self._load_sqlsugg_model()
-
+        # print("db id, table_cols: ", db_id.replace("_", " ").strip(), table_cols)
         db_bin = self.sqlsugg_model.search_sim_dbs(db_id.replace("_", " ").strip(), table_cols)
+        # print(db_bin.head())
         sugg_dict = self.sqlsugg_model.query_suggestion(db_bin, context_dict, min_support)
         # print("sugg_dict: ", sugg_dict)
 

@@ -122,7 +122,7 @@ export default {
   data() {
     return {
       dataset: "spider",
-      dbselected: "cinema",
+      dbselected: "",
       dbLists: [],
       dbInfo: [],
       tables: {},
@@ -156,6 +156,7 @@ export default {
   mounted: function () {
     console.log("d3: ", d3); /* eslint-disable-line */
     console.log("$: ", $); /* eslint-disable-line */
+    console.log("this: ", this, this.components);
     console.log(
       "_",
       _.partition([1, 2, 3, 4], (n) => n % 2)
@@ -196,6 +197,18 @@ export default {
       this.start = !this.start;
       let currtime = new Date().getTime();
       console.log("currtime (end): ", currtime, (currtime-this.curTime)/1000);
+      let userQueryData = this.$children[5].$children[1].$children[0]._data.historySugg
+      console.log("collect history query data", userQueryData);
+      dataService.sendUserData({
+        "userid": this.userid,
+        "username": this.username,
+        "starttime": this.curTime,
+        "endtime": currtime,
+        "systype": this.sysval,
+        "userdata": userQueryData
+      },res=>{
+        console.log("response: ",res);
+      });
       
     }
   }

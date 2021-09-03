@@ -16,6 +16,11 @@ MODEL_FOLDER = os.path.join(DATA_FOLDER, 'model')
 SMBOP_PATH = os.path.join(DATA_FOLDER, 'model/smbop.tar.gz')
 SMBOP_FOLDER = os.path.join(MODEL_FOLDER, "SmBop")
 
+#################### Save user data
+USER_DATA_FOLDER = os.path.join(DATA_FOLDER, 'user')
+if not os.path.isdir(USER_DATA_FOLDER):
+    os.mkdir(USER_DATA_FOLDER)
+
 #################### SQL parser variables
 split_symbol = " ; "
 ##### adopted from https://github.com/taoyds/spider/blob/88c04b7ee43a4cc58984369de7d8196f55a84fbf/process_sql.py

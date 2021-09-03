@@ -79,6 +79,12 @@ function SQLSugg(db_id, callback) {
     request(url, params, GET_REQUEST, callback);
 }
 
+function sendUserData(userdata, callback){
+    const url = `${dataServerUrl}/user_data`;
+    const params = userdata;
+    request(url, params, POST_REQUEST, callback);
+}
+
 export default {
     dataServerUrl,
     initialization,
@@ -89,5 +95,6 @@ export default {
     text2SQL,
     SQL2VL,
     SQL2text,
-    SQLSugg
+    SQLSugg,
+    sendUserData
 }

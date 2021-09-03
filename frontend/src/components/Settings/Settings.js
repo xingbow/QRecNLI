@@ -127,7 +127,6 @@ export default {
                     sqlDecoded: SQLTrans.sqlDecoded,
                 };
             }
-
             this.historyData.push(histNode);
         });
 

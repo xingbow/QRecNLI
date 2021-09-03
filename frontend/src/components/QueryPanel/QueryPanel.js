@@ -21,9 +21,13 @@ export default {
     },
     watch: {
         dbselected: function(dbselected) {
-            dataService.SQLSugg(dbselected, (suggData) => {
-                this.qSugg = suggData["nl"];
-            });
+            // console.log("watch dbselected change!")
+            if(dbselected.length>0){
+                dataService.SQLSugg(dbselected, (suggData) => {
+                    this.qSugg = suggData["nl"];
+                    console.log("suggData: ", dbselected, suggData)
+                });
+            }
         },
     },
     mounted() {
@@ -33,10 +37,12 @@ export default {
         })
         const vm = this;
         this.$nextTick(() => {
-            dataService.SQLSugg(vm.dbselected, (suggData) => {
-                console.log("suggestion data: ", suggData);
-                this.qSugg = suggData["nl"];
-            });
+            if(vm.dbselected.length > 0){
+                dataService.SQLSugg(vm.dbselected, (suggData) => {
+                    console.log("suggestion data: ", suggData);
+                    this.qSugg = suggData["nl"];
+                });
+            } 
         });
     },
     methods: {

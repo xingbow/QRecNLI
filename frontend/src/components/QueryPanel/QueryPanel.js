@@ -17,13 +17,21 @@ export default {
             },
             showSugg: false,
             qSugg: {},
+            historySugg: [],
         }
     },
     watch: {
         dbselected: function(dbselected) {
-            dataService.SQLSugg(dbselected, (suggData) => {
-                this.qSugg = suggData["nl"];
-            });
+            // initial suggestions
+            if(dbselected.length>0){
+                dataService.SQLSugg(dbselected, (suggData) => {
+                    this.qSugg = suggData["nl"];
+                    this.historySugg.push({
+                        "query": this.userText,
+                        "sugg": suggData
+                    });
+                });
+            }  
         },
     },
     mounted() {
@@ -33,10 +41,15 @@ export default {
         })
         const vm = this;
         this.$nextTick(() => {
-            dataService.SQLSugg(vm.dbselected, (suggData) => {
-                console.log("suggestion data: ", suggData);
-                this.qSugg = suggData["nl"];
-            });
+            if(vm.dbselected.length>0){
+                dataService.SQLSugg(vm.dbselected, (suggData) => {
+                    console.log("suggestion data: ", suggData);
+                    this.historySugg.push({
+                        "query": this.userText,
+                        "sugg": suggData
+                    });
+                });
+            }
         });
     },
     methods: {
@@ -66,6 +79,10 @@ export default {
                             console.log("query suggestion after submitting nl query: ", data);
                             // pipeService.emitQuerySugg(data);
                             this.qSugg = data['nl'];
+                            this.historySugg.push({
+                                "query": this.userText,
+                                "sugg": data
+                            });
                         })
                     } else {
                         alert("sql returns is empty");

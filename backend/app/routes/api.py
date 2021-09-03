@@ -9,6 +9,7 @@ import re
 import logging
 import mimetypes
 import pandas as pd
+from time import time
 
 from flask import Blueprint, current_app, request, jsonify, Response
 from app.dataService.utils import processSQL
@@ -150,6 +151,19 @@ def sql_sugg(db_id):
     # print(f"sugg: {sugg}")
     return jsonify(sugg)
 
+@api.route("/user_data", methods=['POST'])
+def get_user_data():
+    user_data = request.json
+    print(f"user_data: {user_data}")
+    user_data_folder = current_app.dataService.global_variable.USER_DATA_FOLDER
+    userid = user_data["userid"]
+    username = user_data["username"]
+    systype = user_data["systype"]
+    timestamp = int(time())
+    print(os.path.join(user_data_folder, f"{userid}-{username}-{systype}-{timestamp}.json"))
+    with open(os.path.join(user_data_folder, f"{userid}-{username}-{systype}-{timestamp}.json"), "w") as f:
+        json.dump(user_data, f)
+    return jsonify("successfully save user data!")
 
 if __name__ == '__main__':
     pass

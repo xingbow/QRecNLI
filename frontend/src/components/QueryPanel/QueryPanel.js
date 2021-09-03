@@ -17,7 +17,7 @@ export default {
             },
             showSugg: false,
             qSugg: {},
-            historySugg: [],
+            historySugg: {},
         }
     },
     watch: {
@@ -26,7 +26,10 @@ export default {
             if(dbselected.length>0){
                 dataService.SQLSugg(dbselected, (suggData) => {
                     this.qSugg = suggData["nl"];
-                    this.historySugg.push({
+                    if(!this.historySugg.hasOwnProperty(dbselected)){
+                        this.historySugg[dbselected] = [];
+                    }
+                    this.historySugg[dbselected].push({
                         "query": this.userText,
                         "sugg": suggData
                     });
@@ -44,7 +47,10 @@ export default {
             if(vm.dbselected.length>0){
                 dataService.SQLSugg(vm.dbselected, (suggData) => {
                     console.log("suggestion data: ", suggData);
-                    this.historySugg.push({
+                    if(!vm.historySugg.hasOwnProperty(vm.dbselected)){
+                        vm.historySugg[vm.dbselected] = [];
+                    }
+                    vm.historySugg[vm.dbselected].push({
                         "query": this.userText,
                         "sugg": suggData
                     });
@@ -79,7 +85,10 @@ export default {
                             console.log("query suggestion after submitting nl query: ", data);
                             // pipeService.emitQuerySugg(data);
                             this.qSugg = data['nl'];
-                            this.historySugg.push({
+                            if(!this.historySugg.hasOwnProperty(this.dbselected)){
+                                this.historySugg[this.dbselected] = []
+                            }
+                            this.historySugg[this.dbselected].push({
                                 "query": this.userText,
                                 "sugg": data
                             });

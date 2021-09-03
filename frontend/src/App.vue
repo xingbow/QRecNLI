@@ -4,7 +4,7 @@
       class="navbar sticky-top navbar-dark bg-dark"
       style="padding-top: 1px; padding-bottom: 1px; margin-bottom: 5px"
     >
-      <div style="margin-top: 5px; margin-left: 5px">
+      <div style="margin-top: 5px; margin-left: 5px; display:inline-flex;">
         <span
           style="
             color: white;
@@ -13,8 +13,59 @@
             user-select: none;
             font-size: 30px;
           "
-          >seqNLI</span
-        >
+          >seqNLI</span>
+          <!-- user id -->
+          <div style="
+          margin-left: 5px;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 500;
+            user-select: none;
+            font-size: 15px;
+          ">ID: </div>
+          <el-input
+          style="width:200px;"
+            placeholder="Please input user id"
+            v-model="userid"
+            clearable>
+          </el-input>
+          <!-- user name -->
+          <div style="
+          margin-left: 5px;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 500;
+            user-select: none;
+            font-size: 13px;
+          ">Name: </div>
+          <el-input
+            style="width:200px;"
+            placeholder="Please input name"
+            v-model="username"
+            clearable>
+          </el-input>
+          <!-- system selection -->
+          <div style="
+          margin-left: 5px;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 500;
+            user-select: none;
+            font-size: 13px;
+          ">System type: </div>
+          <el-select v-model="sysval" clearable placeholder="Select">
+            <el-option
+            style="width:200px;"
+              v-for="item in sysType"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+      </div>
+      <div style="float:right;color:white">
+        <el-button plain v-show="start" v-on:click="beginQuery">Begin Query</el-button>
+        <el-button plain v-show="!start" v-on:click="endQuery">End Query</el-button>
       </div>
     </nav>
     <el-row>
@@ -75,6 +126,19 @@ export default {
       dbLists: [],
       dbInfo: [],
       tables: {},
+      // user study info
+      userid: "",
+      username: "",
+      sysType: [{
+        value: "base mode",
+        label: "base mode"
+      }, {
+        value: "recommendation mode",
+        label: "recommendation mode"
+      }],
+      sysval: "",
+      start: true,
+      curTime: 0,
     };
   },
   watch: {
@@ -110,6 +174,31 @@ export default {
       });
     });
   },
+  methods: {
+    beginQuery: function(){
+      if( (this.userid.length>0) && (this.username.length>0) ){
+        this.start = !this.start;
+        let currtime = new Date().getTime()
+        this.curTime = currtime;
+        console.log("currtime: ", currtime);
+        if(this.sysval == "base mode"){
+          $(".next-query-trigger").hide();
+          $(".recommend").hide();
+        }else{
+          $(".next-query-trigger").show();
+          $(".recommend").show();
+        }
+      }else{
+        alert("please input userid and username!");
+      }
+    },
+    endQuery: function(){
+      this.start = !this.start;
+      let currtime = new Date().getTime();
+      console.log("currtime (end): ", currtime, (currtime-this.curTime)/1000);
+      
+    }
+  }
 };
 </script>
 

@@ -259,7 +259,7 @@ class DataService(object):
         sugg_dict = self.sqlsugg_model.query_suggestion(db_bin, context_dict, min_support)
         # print("sugg_dict: ", sugg_dict)
 
-        nls = generate_sql.compile_sql(sugg_dict, db_meta)
+        nls = generate_sql.compile_sql(sugg_dict)
         sqls = [self.text2sql(nl, db_id) for nl in nls]        
 
         return {
@@ -362,7 +362,9 @@ if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
     db_dict = dataService.get_tables("cinema")
-
+    db_cols = dataService.get_db_cols("customers_and_addresses")
+    print("db_cols: ", db_cols)
+    exit()
     # 1. text2sql
     # result = dataService.text2sql("films and film prices that cost below 10 dollars", "cinema")
     # print("test2sql: {}".format(result))

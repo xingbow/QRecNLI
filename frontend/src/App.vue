@@ -122,7 +122,7 @@ export default {
   data() {
     return {
       dataset: "spider",
-      dbselected: "",
+      dbselected: "customers_and_addresses",
       dbLists: [],
       dbInfo: [],
       tables: {},

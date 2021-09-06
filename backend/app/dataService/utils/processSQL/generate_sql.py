@@ -68,7 +68,8 @@ def compile_nl_from_sql_parts(s, g, a):
         opt_nl = [agg_opts_to_nl[opt] + ent.replace(":", "") for ent in a[opt]]
         opt_nls.extend(opt_nl)
     # print(opt_nls)
-    sel_nl_l = [ent.replace(":", "") for ent in list(s_set)] + opt_nls
+    # sel_nl_l = [ent.replace(":", "") for ent in list(s_set)] + opt_nls
+    sel_nl_l = [ent.split(":")[1] + " of " + ent.split(":")[0] for ent in list(s_set)] + opt_nls
     sel_nl = "Find " + ", ".join(sel_nl_l)
     if len(g) > 0:
         g_nl = " of " + ", ".join(["each " + ent.replace(":", "") for ent in g])
@@ -78,7 +79,7 @@ def compile_nl_from_sql_parts(s, g, a):
         return sel_nl
 
 
-def compile_sql(nl_dict, db_meta):
+def compile_sql(nl_dict):
     """
     generate sql based on sql suggestions
     - input: 

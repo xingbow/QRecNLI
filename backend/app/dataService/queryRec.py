@@ -22,7 +22,7 @@ except ImportError:
 class queryRecommender(object):
     # TODO: handle change of database
     def __init__(self, topic_sim_th=0.4, item_sim=0.4, alpha=0.9, beta=0.5,
-                 groupby_th=0.4, agg_th=0.4, sim=0.7,
+                 groupby_th=0.6, agg_th=0.4, sim=0.7,
                  opt_n = 2,
                  agg_freq = 10,
                  ref_db_meta_path=os.path.join(GV.SPIDER_FOLDER, "train_spider.json")):
@@ -161,6 +161,9 @@ class queryRecommender(object):
 
         # `groupby` and `agg` contexts
         # groupby_contexts = np.hstack(
+        #     [['shop: manager name'], [], ["shop: district", "shop: location"]]
+        # )
+        # groupby_contexts = np.hstack(
         #         [['shop: manager name'], [], ["shop: district", "shop: location"]])
         gb_sugg_context = []
         if len(groupby_contexts)>0:
@@ -240,7 +243,7 @@ class queryRecommender(object):
             agg_sugg_dict = {}
             if len(col_mul_idx) > 0:
                 for agg_opt in agg_opts:
-                    print("agg_opt: ", agg_opt)
+                    # print("agg_opt: ", agg_opt)
                     # calculate `agg` context relevance
                     ################################################################
                     agg_l = [agg_c[agg_opt] for agg_c in agg_contexts if agg_opt in agg_c.keys()]
@@ -354,13 +357,22 @@ class queryRecommender(object):
 
         ########################################################################
         # get `groupby` and `agg_opt` items (NEW)
+        opt_flag = False
         if len(sel_contexts) > 0:
             if len(sel_contexts[-1]) > 0:
                 groupby_sugg, agg_sugg = self.get_opts(db_df_bin, [sel_contexts[-1]], groupby_contexts,
                                                     agg_contexts, self.opt_n)
-                print("---"*10)
-                print("prev cols, groupby_sugg, agg_sugg: ", sel_contexts[-1], groupby_sugg, agg_sugg)
-                print("---"*10)
+                if len(groupby_sugg[0]) > 0 or bool(agg_sugg[0]):
+                    opt_flag = True
+                    if bool(agg_sugg[0]):
+                        sel_pre = [[]]
+                    else:
+                        sel_pre = [sel_contexts[-1]]
+                    # print("---"*10)
+                    # print("prev cols, groupby_sugg, agg_sugg: ", sel_contexts[-1], groupby_sugg, agg_sugg)
+                    # print("---"*10)
+
+
         ########################################################################
 
         for contextid, context in enumerate(sel_contexts):
@@ -424,12 +436,19 @@ class queryRecommender(object):
         # get `groupby` and `agg_opt` items (OLD)
         # groupby_sugg, agg_sugg = self.get_opts(db_df_bin, freq_cols, groupby_contexts,
         #                                        agg_contexts, self.opt_n)
-
-        return {
-            "select": freq_cols,
-            "groupby": [[] for fc in freq_cols],#groupby_sugg,
-            "agg":  [{} for fc in freq_cols]#agg_sugg
-        }
+        if opt_flag:
+            opt_flag = False
+            return {
+                "select": sel_pre + freq_cols,
+                "groupby": groupby_sugg + [[] for fc in freq_cols],
+                "agg":  agg_sugg + [{} for fc in freq_cols]
+            }
+        else:
+            return {
+                "select": freq_cols,
+                "groupby": [[] for fc in freq_cols],#groupby_sugg,
+                "agg": [{} for fc in freq_cols] #agg_sugg
+            }
 
 
 if __name__ == "__main__":
@@ -455,7 +474,6 @@ if __name__ == "__main__":
     # select_items = [freq_combo[2]]
     select_items = [freq_combo[0]]
 
-
     print(f"next_cols: {freq_combo}")
     print(f"groupby_sugg: {groupby_sugg}")
     print(f"agg_sugg: {agg_sugg}")
@@ -465,6 +483,8 @@ if __name__ == "__main__":
     # next query suggestion
     context_dict["select"] = select_items
     sugg_dict = qr.query_suggestion(db_bin, context_dict, 0.6)
+    nls = generate_sql.compile_sql(sugg_dict)
+    print("nl for sugg_dict: ", nls)
     next_cols = sugg_dict["select"]
     groupby_sugg = sugg_dict["groupby"]
     agg_sugg = sugg_dict["agg"]
@@ -473,13 +493,15 @@ if __name__ == "__main__":
     print(f"groupby_sugg: {groupby_sugg}")
     print(f"agg_sugg: {agg_sugg}")
     # print(f"select_items: {select_items + [next_cols[3]]}")
-    print(f"select_items: {select_items + [next_cols[1]]}")
+    print(f"select_items: {select_items + [next_cols[0]]}")
     print()
 
     # next query suggestion
     # context_dict["select"] = select_items + [next_cols[3]]
-    context_dict["select"] = select_items + [next_cols[1]]
+    context_dict["select"] = select_items + [next_cols[0]]
     sugg_dict = qr.query_suggestion(db_bin, context_dict, 0.6)
+    nls = generate_sql.compile_sql(sugg_dict)
+    print("nl for sugg_dict: ", nls)
     next_cols = sugg_dict["select"]
     groupby_sugg = sugg_dict["groupby"]
     agg_sugg = sugg_dict["agg"]

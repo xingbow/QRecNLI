@@ -437,7 +437,6 @@ class queryRecommender(object):
         # groupby_sugg, agg_sugg = self.get_opts(db_df_bin, freq_cols, groupby_contexts,
         #                                        agg_contexts, self.opt_n)
         if opt_flag:
-            opt_flag = False
             return {
                 "select": sel_pre + freq_cols,
                 "groupby": groupby_sugg + [[] for fc in freq_cols],

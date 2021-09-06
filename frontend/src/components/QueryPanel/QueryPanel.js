@@ -47,6 +47,7 @@ export default {
             if(vm.dbselected.length>0){
                 dataService.SQLSugg(vm.dbselected, (suggData) => {
                     console.log("suggestion data: ", suggData);
+                    this.qSugg = suggData["nl"];
                     if(!vm.historySugg.hasOwnProperty(vm.dbselected)){
                         vm.historySugg[vm.dbselected] = [];
                     }

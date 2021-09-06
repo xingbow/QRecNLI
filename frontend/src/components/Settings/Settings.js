@@ -103,6 +103,14 @@ export default {
                         </span>
                     );
                 }
+                else if (data.ctype == "time") {
+                    return (
+                        <span class="custom-tree-node">
+                            <i class="fas fa-clock"></i>
+                            <span style="margin-left:5px;">{node.label}</span>
+                        </span>
+                    );
+                }
 
             }
         },

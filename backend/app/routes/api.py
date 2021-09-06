@@ -149,7 +149,7 @@ def sql_sugg(db_id):
 @api.route("/user_data", methods=['POST'])
 def get_user_data():
     user_data = request.json
-    print(f"user_data: {user_data}")
+    # print(f"user_data: {user_data}")
     user_data_folder = current_app.dataService.global_variable.USER_DATA_FOLDER
     userid = user_data["userid"]
     username = user_data["username"]

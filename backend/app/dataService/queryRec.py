@@ -18,9 +18,9 @@ except ImportError:
     import app.dataService.globalVariable as GV
     from app.dataService.utils.processSQL import process_sql, decode_sql, generate_sql
     from app.dataService.utils.processSQL.decode_sql import extract_select_names, extract_agg_opts, extract_groupby_names
-
+# TODO: data type checking and loading before recommendation
 class queryRecommender(object):
-    # TODO: handle change of database
+    # TODO Check: handle change of database
     def __init__(self, topic_sim_th=0.55, item_sim=0.4, alpha=0.9, beta=0.5,
                  groupby_th=0.7, agg_th=0.5, sim=0.7,
                  opt_n = 1,

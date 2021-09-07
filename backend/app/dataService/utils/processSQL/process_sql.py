@@ -610,7 +610,9 @@ def get_schemas_from_json(fpath):
         table_names = db["table_names"]
         column_names_original = db['column_names_original']
         table_names_original = db['table_names_original']
-        tables[db_id] = {'table_names': table_names, 'column_names': column_names,'column_names_original': column_names_original, 'table_names_original': table_names_original}
+        column_types = db["column_types"]
+        tables[db_id] = {'table_names': table_names, 
+        'column_names': column_names,'column_names_original': column_names_original, 'table_names_original': table_names_original, "column_types": column_types}
         for i, tabn in enumerate(table_names_original):
             table = str(tabn.lower())
             cols = [str(col.lower()) for td, col in column_names_original if td == i]

@@ -76,6 +76,11 @@ class queryRecommender(object):
         cosine_scores = util.pytorch_cos_sim(embedd0, embedd1).cpu().numpy()
         return cosine_scores
 
+    # set constraints
+    def set_constraints(self, search_cols):
+        
+        return
+
     def search_sim_dbs(self, topic, search_cols):
         """
         - retrieve similar db according to query table names
@@ -156,7 +161,7 @@ class queryRecommender(object):
         # exit()
         return freq_combo
 
-    def get_opts(self, df, cols, groupby_contexts=[], agg_contexts=[], top_n = 2):
+    def get_opts(self, df, cols, groupby_contexts=[], agg_contexts=[], top_n = 1):
         """
         recommend  `groupby` & `agg_opt` items
         `agg_opt` items: `avg`, `min`, `max`, `count`, `sum`
@@ -261,6 +266,11 @@ class queryRecommender(object):
                         agg_context_sim = np.max(self.cal_cosine_sim(agg_l, col), axis=0)
                         agg_col = [col[aid] for aid, a_sim in enumerate(agg_context_sim) if
                                    a_sim > self.item_sim]
+                        if agg_opt != "count":
+                            agg_col = [ac for ac in agg_col if ac not in GV.opt_constraints]
+                        # print("-*-"*10)
+                        # print("agg_col: ", agg_col)
+                        # print("-*-"*10)
                         if agg_opt not in agg_sugg_dict.keys():
                             agg_sugg_dict[agg_opt] = []
                         agg_sugg_dict[agg_opt] += (agg_col)
@@ -291,7 +301,17 @@ class queryRecommender(object):
                                     if len(agg_sugg_dict[agg_opt])>=1:
                                         break
                                     else:
-                                        agg_sugg_dict[agg_opt].append(c)
+                                        # agg_sugg_dict[agg_opt].append(c)
+                                        if agg_opt == "count":
+                                            agg_sugg_dict[agg_opt].append(c)
+                                        else:
+                                            if c not in GV.opt_constraints:
+                                                agg_sugg_dict[agg_opt].append(c)
+                                
+                                if len(agg_sugg_dict[agg_opt])==0:
+                                    agg_sugg_dict.pop(agg_opt)
+
+
             agg_sugg.append(agg_sugg_dict)
         # assert len(agg_sugg) == len(cols)
         # print("agg_sugg: ", agg_sugg)
@@ -348,8 +368,8 @@ class queryRecommender(object):
                 next_cols = [list(v) for vidx, v in enumerate(freq_combo["itemsets"].values) if vidx<top_n]
 
             # # get `groupby` and `agg_opt` items
-            groupby_sugg, agg_sugg = self.get_opts(db_df_bin, next_cols, groupby_contexts,
-                                                   agg_contexts, self.opt_n)
+            # groupby_sugg, agg_sugg = self.get_opts(db_df_bin, next_cols, groupby_contexts,
+            #                                        agg_contexts, self.opt_n)
 
             # print("next_cols: ", next_cols)
             return {
@@ -364,7 +384,6 @@ class queryRecommender(object):
         rest_cols = columns.difference(context_cols)
         
         all_sims = np.zeros(len(rest_cols))
-
         ########################################################################
         # get `groupby` and `agg_opt` items (NEW)
         opt_flag = False
@@ -385,6 +404,11 @@ class queryRecommender(object):
                         # print("sel_contexts, self.pre_sel: ", sel_contexts, self.pre_sel)
                         print("prev cols, groupby_sugg, agg_sugg: ", sel_contexts[-1], groupby_sugg, agg_sugg)
                         print("---"*10)
+        # 
+        # if len(context_cols) > 0:
+        #     groupby_sugg_, agg_sugg_ = self.get_opts(db_df_bin, [context_cols], groupby_contexts,
+        #                                                 agg_contexts, self.opt_n)
+        #     print("operations for queried items: ", context_cols, groupby_sugg_, agg_sugg_)
         ########################################################################
 
         for contextid, context in enumerate(sel_contexts):

@@ -82,3 +82,11 @@ test_table_cols = ['addresses: address content', 'addresses: city', 'addresses: 
 'customer contact channels: active from date', 'customer contact channels: active to date', 'customer contact channels: contact number', 
 'customer orders: order status', 'customer orders: order date', 'customer orders: order details', 'order items: order quantity']
 
+opt_constraints = ['addresses: address content', 'addresses: city', 'addresses: zip postcode', 
+'addresses: state province county', 'addresses: country', 'addresses: other address details', 
+'products: product details', 'customers: payment method', 'customers: customer name', 
+'customers: date became customer', 'customers: other customer details', 'customer addresses: date address from', 
+'customer addresses: address type', 'customer addresses: date address to', 'customer contact channels: channel code', 
+'customer contact channels: active from date', 'customer contact channels: active to date', 'customer contact channels: contact number', 
+'customer orders: order status', 'customer orders: order date', 'customer orders: order details']
+

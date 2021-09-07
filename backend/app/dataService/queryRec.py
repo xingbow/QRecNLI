@@ -21,10 +21,9 @@ except ImportError:
 
 class queryRecommender(object):
     # TODO: handle change of database
-    def __init__(self, topic_sim_th=0.4, item_sim=0.4, alpha=0.9, beta=0.5,
-                 groupby_th=0.6, agg_th=0.4, sim=0.7,
-                 opt_n = 2,
-                 agg_freq = 10,
+    def __init__(self, topic_sim_th=0.6, item_sim=0.4, alpha=0.9, beta=0.5,
+                 groupby_th=0.7, agg_th=0.5, sim=0.7,
+                 opt_n = 1,
                  ref_db_meta_path=os.path.join(GV.SPIDER_FOLDER, "train_spider.json")):
         self.GV = GV
         self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
@@ -52,6 +51,8 @@ class queryRecommender(object):
         # self.search_cols = search_cols
         self.db_cache = {} # caching search results
         self.g_cols_cache = {}
+        # ---- pre-selected
+        self.pre_sel = []
 
     def cal_cosine_sim(self, sen0, sen1):
         """
@@ -62,6 +63,14 @@ class queryRecommender(object):
         - OUTPUT:
           - cosine similarity between sen0 and sen1
         """
+        if isinstance(sen0, list):
+            sen0 = ["".join(s.split(":")[1:]) if ":" in s else s for s in sen0]
+        elif isinstance(sen0, str):
+            sen0 = "".join(sen0.split(":")[1:]) if ":" in sen0 else sen0
+        if isinstance(sen1, list):
+            sen1 = ["".join(s.split(":")[1:]) if ":" in s else s for s in sen1]
+        elif isinstance(sen1, str):
+            sen1 = "".join(sen1.split(":")[1:]) if ":" in sen1 else sen1
         embedd0 = self.model.encode(sen0, convert_to_tensor=True)
         embedd1 = self.model.encode(sen1, convert_to_tensor=True)
         cosine_scores = util.pytorch_cos_sim(embedd0, embedd1).cpu().numpy()
@@ -112,7 +121,7 @@ class queryRecommender(object):
 
     def get_grouped_cols(self, columns, min_size = 2, th = 0.8):
         corpus_embeddings = self.model.encode(columns, convert_to_tensor=False)
-        clusters = util.community_detection(corpus_embeddings, min_community_size = min_size, threshold = th, init_max_size=len(columns))
+        clusters = util.community_detection(corpus_embeddings, min_community_size = min_size, threshold = th, init_max_size=3)
         col_groups = [set([columns[c] for c in cluster]) for cluster in clusters]
         # print("col_groups: ", col_groups)
         return col_groups
@@ -278,7 +287,8 @@ class queryRecommender(object):
                                     agg_sugg_dict[agg_opt] = []
                                 if c not in agg_sugg_dict[agg_opt]:
                                     # select top one count
-                                    if agg_opt == "count" and len(agg_sugg_dict[agg_opt])>=1:
+                                    # if agg_opt == "count" and len(agg_sugg_dict[agg_opt])>=1:
+                                    if len(agg_sugg_dict[agg_opt])>=1:
                                         break
                                     else:
                                         agg_sugg_dict[agg_opt].append(c)
@@ -327,7 +337,7 @@ class queryRecommender(object):
                             # check `max_len` constraints
                             for c in self.g_cols_cache:
                                 if col in c:
-                                    curr_set += list(c.difference([col]))[:max_len-1]
+                                    curr_set += list(c.difference([col]))[:max_len-2]
                             # print("curr_set: ", curr_set)
                             cols_supp.append(curr_set) 
                 #############################################
@@ -338,8 +348,8 @@ class queryRecommender(object):
                 next_cols = [list(v) for vidx, v in enumerate(freq_combo["itemsets"].values) if vidx<top_n]
 
             # # get `groupby` and `agg_opt` items
-            # groupby_sugg, agg_sugg = self.get_opts(db_df_bin, next_cols, groupby_contexts,
-            #                                        agg_contexts, self.opt_n)
+            groupby_sugg, agg_sugg = self.get_opts(db_df_bin, next_cols, groupby_contexts,
+                                                   agg_contexts, self.opt_n)
 
             # print("next_cols: ", next_cols)
             return {
@@ -360,35 +370,42 @@ class queryRecommender(object):
         opt_flag = False
         if len(sel_contexts) > 0:
             if len(sel_contexts[-1]) > 0:
-                groupby_sugg, agg_sugg = self.get_opts(db_df_bin, [sel_contexts[-1]], groupby_contexts,
-                                                    agg_contexts, self.opt_n)
-                if len(groupby_sugg[0]) > 0 or bool(agg_sugg[0]):
-                    opt_flag = True
-                    if bool(agg_sugg[0]):
-                        sel_pre = [[]]
-                    else:
-                        sel_pre = [sel_contexts[-1]]
-                    # print("---"*10)
-                    # print("prev cols, groupby_sugg, agg_sugg: ", sel_contexts[-1], groupby_sugg, agg_sugg)
-                    # print("---"*10)
-
-
+                if set(self.pre_sel) != set(sel_contexts[-1]):
+                    groupby_sugg, agg_sugg = self.get_opts(db_df_bin, [sel_contexts[-1]], groupby_contexts,
+                                                        agg_contexts, self.opt_n)
+                    # print("sel_contexts[-1], self.pre_sel: ", sel_contexts[-1], self.pre_sel)
+                    self.pre_sel = sel_contexts[-1]
+                    if len(groupby_sugg[0]) > 0 or bool(agg_sugg[0]):
+                        opt_flag = True
+                        if bool(agg_sugg[0]):
+                            sel_pre = [[]]
+                        else:
+                            sel_pre = [sel_contexts[-1]]
+                        print("---"*10)
+                        # print("sel_contexts, self.pre_sel: ", sel_contexts, self.pre_sel)
+                        print("prev cols, groupby_sugg, agg_sugg: ", sel_contexts[-1], groupby_sugg, agg_sugg)
+                        print("---"*10)
         ########################################################################
 
         for contextid, context in enumerate(sel_contexts):
+            # print()
             # print("context: ", context)
+            # print()
             if len(context)>0:
                 # 1. consider semantic similarity
                 semantic_sim_scores = np.max(self.cal_cosine_sim(rest_cols, context),
                                             axis=1) * math.pow(self.alpha,
                                                                 len(sel_contexts) - contextid - 1)
+                # print("semantic_sim_scores: ", semantic_sim_scores)
                 # 2. consider cosine similarity between feature vectors (relevance vector to the database)
                 db_col_feat = db_df_bin[rest_cols].T
                 context_feat = db_df_bin[context].T
                 db_relevance = np.max(cosine_similarity(db_col_feat, context_feat), axis=1) * math.pow(
                     self.alpha, len(sel_contexts) - contextid - 1)
+                # print("db_relevance: ", db_relevance)
                 # 3. average similarity based on semantic similarity and db relevance
                 all_sims += semantic_sim_scores + self.beta * db_relevance
+        # print("all_sims: ", all_sims, rest_cols)
         rest_cols = rest_cols[(-all_sims).argsort()]
         top_n_rest_cols = rest_cols[:top_n]
         # TODO: pay attention to item similarity threshold change & reinitialization
@@ -411,7 +428,7 @@ class queryRecommender(object):
                     curr_set = [col]
                     for c in self.g_cols_cache:
                         if col in c:
-                            curr_set += list(c.difference([col]))[:max_len-1]
+                            curr_set += list(c.difference([col]))[:max_len-2]
                     # print("col not in total cols: ", curr_set)
                     freq_cols.append(curr_set)
             else:
@@ -436,6 +453,12 @@ class queryRecommender(object):
         # get `groupby` and `agg_opt` items (OLD)
         # groupby_sugg, agg_sugg = self.get_opts(db_df_bin, freq_cols, groupby_contexts,
         #                                        agg_contexts, self.opt_n)
+
+        # return {
+        #     "select": freq_cols,
+        #     "groupby": groupby_sugg,
+        #     "agg":  agg_sugg
+        # }
         if opt_flag:
             return {
                 "select": sel_pre + freq_cols,
@@ -456,6 +479,8 @@ if __name__ == "__main__":
 
     qr = queryRecommender()
     db_bin = qr.search_sim_dbs(test_topic.replace("_", " ").strip(), test_table_cols)
+    print(qr.tables[test_topic])
+    exit()
 
     # initial recommendation
     context_dict = {
@@ -465,8 +490,8 @@ if __name__ == "__main__":
     }
     # sugg_dict = qr.query_suggestion(db_bin, context_dict, None)
     sugg_dict = qr.query_suggestion(db_bin, context_dict, 0.6)
-    nls = generate_sql.compile_sql(sugg_dict)
-    print("nl for sugg_dict: ", nls)
+    # nls = generate_sql.compile_sql(sugg_dict)
+    # print("nl for sugg_dict: ", nls)
     freq_combo = sugg_dict["select"]
     groupby_sugg = sugg_dict["groupby"]
     agg_sugg = sugg_dict["agg"]
@@ -482,8 +507,8 @@ if __name__ == "__main__":
     # next query suggestion
     context_dict["select"] = select_items
     sugg_dict = qr.query_suggestion(db_bin, context_dict, 0.6)
-    nls = generate_sql.compile_sql(sugg_dict)
-    print("nl for sugg_dict: ", nls)
+    # nls = generate_sql.compile_sql(sugg_dict)
+    # print("nl for sugg_dict: ", nls)
     next_cols = sugg_dict["select"]
     groupby_sugg = sugg_dict["groupby"]
     agg_sugg = sugg_dict["agg"]
@@ -499,8 +524,8 @@ if __name__ == "__main__":
     # context_dict["select"] = select_items + [next_cols[3]]
     context_dict["select"] = select_items + [next_cols[0]]
     sugg_dict = qr.query_suggestion(db_bin, context_dict, 0.6)
-    nls = generate_sql.compile_sql(sugg_dict)
-    print("nl for sugg_dict: ", nls)
+    # nls = generate_sql.compile_sql(sugg_dict)
+    # print("nl for sugg_dict: ", nls)
     next_cols = sugg_dict["select"]
     groupby_sugg = sugg_dict["groupby"]
     agg_sugg = sugg_dict["agg"]

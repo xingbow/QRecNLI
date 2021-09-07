@@ -81,6 +81,7 @@ test_table_cols = ['addresses: address content', 'addresses: city', 'addresses: 
 'customer addresses: address type', 'customer addresses: date address to', 'customer contact channels: channel code', 
 'customer contact channels: active from date', 'customer contact channels: active to date', 'customer contact channels: contact number', 
 'customer orders: order status', 'customer orders: order date', 'customer orders: order details', 'order items: order quantity']
+col_combo = [{'products: product details', 'order items: order quantity'}]
 
 opt_constraints = ['addresses: address content', 'addresses: city', 'addresses: zip postcode', 
 'addresses: state province county', 'addresses: country', 'addresses: other address details', 
@@ -89,4 +90,5 @@ opt_constraints = ['addresses: address content', 'addresses: city', 'addresses: 
 'customer addresses: address type', 'customer addresses: date address to', 'customer contact channels: channel code', 
 'customer contact channels: active from date', 'customer contact channels: active to date', 'customer contact channels: contact number', 
 'customer orders: order status', 'customer orders: order date', 'customer orders: order details']
+
 

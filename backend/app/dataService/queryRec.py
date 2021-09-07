@@ -76,10 +76,6 @@ class queryRecommender(object):
         cosine_scores = util.pytorch_cos_sim(embedd0, embedd1).cpu().numpy()
         return cosine_scores
 
-    # set constraints
-    def set_constraints(self, search_cols):
-        
-        return
 
     def search_sim_dbs(self, topic, search_cols):
         """
@@ -128,6 +124,7 @@ class queryRecommender(object):
         corpus_embeddings = self.model.encode(columns, convert_to_tensor=False)
         clusters = util.community_detection(corpus_embeddings, min_community_size = min_size, threshold = th, init_max_size=3)
         col_groups = [set([columns[c] for c in cluster]) for cluster in clusters]
+        col_groups += GV.col_combo
         # print("col_groups: ", col_groups)
         return col_groups
 

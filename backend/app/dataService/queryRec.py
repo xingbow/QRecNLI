@@ -21,7 +21,7 @@ except ImportError:
 
 class queryRecommender(object):
     # TODO: handle change of database
-    def __init__(self, topic_sim_th=0.6, item_sim=0.4, alpha=0.9, beta=0.5,
+    def __init__(self, topic_sim_th=0.55, item_sim=0.4, alpha=0.9, beta=0.5,
                  groupby_th=0.7, agg_th=0.5, sim=0.7,
                  opt_n = 1,
                  ref_db_meta_path=os.path.join(GV.SPIDER_FOLDER, "train_spider.json")):

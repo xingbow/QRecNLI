@@ -15,7 +15,7 @@ export default {
             rowStyle: {
                 padding: 2
             },
-            showSugg: false,
+            showSugg: true,
             qSugg: {},
             historySugg: {},
         }
@@ -23,10 +23,10 @@ export default {
     watch: {
         dbselected: function(dbselected) {
             // initial suggestions
-            if(dbselected.length>0){
+            if (dbselected.length > 0) {
                 dataService.SQLSugg(dbselected, (suggData) => {
                     this.qSugg = suggData["nl"];
-                    if(!this.historySugg.hasOwnProperty(dbselected)){
+                    if (!this.historySugg.hasOwnProperty(dbselected)) {
                         this.historySugg[dbselected] = [];
                     }
                     this.historySugg[dbselected].push({
@@ -34,7 +34,7 @@ export default {
                         "sugg": suggData
                     });
                 });
-            }  
+            }
         },
     },
     mounted() {
@@ -44,11 +44,11 @@ export default {
         })
         const vm = this;
         this.$nextTick(() => {
-            if(vm.dbselected.length>0){
+            if (vm.dbselected.length > 0) {
                 dataService.SQLSugg(vm.dbselected, (suggData) => {
                     console.log("suggestion data: ", suggData);
                     this.qSugg = suggData["nl"];
-                    if(!vm.historySugg.hasOwnProperty(vm.dbselected)){
+                    if (!vm.historySugg.hasOwnProperty(vm.dbselected)) {
                         vm.historySugg[vm.dbselected] = [];
                     }
                     vm.historySugg[vm.dbselected].push({
@@ -86,7 +86,7 @@ export default {
                             console.log("query suggestion after submitting nl query: ", data);
                             // pipeService.emitQuerySugg(data);
                             this.qSugg = data['nl'];
-                            if(!this.historySugg.hasOwnProperty(this.dbselected)){
+                            if (!this.historySugg.hasOwnProperty(this.dbselected)) {
                                 this.historySugg[this.dbselected] = []
                             }
                             this.historySugg[this.dbselected].push({

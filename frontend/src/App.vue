@@ -74,11 +74,11 @@
           class="p border-right rowchild"
           style="display: flex"
         >
-          <div class="align-self-center" style="margin: 10px; width: 30%">
+          <div class="align-self-center" style="margin: 10px; width: 70px">
             <h6>Databases:</h6>
           </div>
-          <div style="margin: 5px; width: 60%">
-            <el-select v-model="dbselected">
+          <div style="margin: 5px 15px; width: 220px">
+            <el-select v-model="dbselected" style="width: 100%">
               <el-option
                 v-for="item in dbLists"
                 :key="item"
@@ -88,7 +88,7 @@
             </el-select>
           </div>
         </div>
-        <div class="p border-right" style="text-align: start;">
+        <div class="p border-bottom border-right" style="text-align: start;">
           <Settings :tables="tables"></Settings>
         </div>
       </el-col>
@@ -123,6 +123,7 @@ export default {
     return {
       dataset: "spider",
       dbselected: "customers_and_addresses",
+      // dbselected: "department_management",
       dbLists: [],
       dbInfo: [],
       tables: {},
@@ -166,7 +167,9 @@ export default {
     const _this = this;
     this.$nextTick(() => {
       dataService.initialization(dataset, (data) => {
+        data.sort()
         _this.dbLists = data;
+        _this.dbLists.sort();
         if (dbselected.length > 0) {
           dataService.getTables(dbselected, (tableData) => {
             _this.tables = tableData;

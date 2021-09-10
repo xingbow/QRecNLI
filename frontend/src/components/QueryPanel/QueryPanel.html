@@ -28,18 +28,18 @@
                     </el-popover>
                 </div>
                 <div class="input-group-append">
-                    <button class="btn btn-outline-secondary btn-sm speaker" type="button"><i class="fas fa-microphone"></i></button>
+                    <!-- <button class="btn btn-outline-secondary btn-sm speaker" type="button"><i class="fas fa-microphone"></i></button> -->
                     <button class="btn btn-outline-secondary btn-sm" type="button" v-on:click="search">Search</button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="p rowchild" style="width: 100%; margin-left: 80px">
+    <div class="p rowchild recommend-container" style="margin-left: 80px">
         <span class="next-query-trigger" v-on:click="showSugg = !showSugg">You may also want to ask</span>
         <div class="recommend" v-if="showSugg">
             <div v-for="(nl, nlidx) in qSugg">
                 <a class="recommend-item " v-on:click="selectQuery(nlidx)">
-                    <span style="margin: 0px 5px;">{{nl}}</span>
+                    <span style="margin: 0px 5px;">{{nl.replace(',', ' and')}}</span>
                 </a>
             </div>
         </div>

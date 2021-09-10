@@ -29,8 +29,9 @@
 }
 
 #databaseMeta {
-  height: 650px;
+  height: 600px;
   overflow: scroll;
+  font-size: 14px;
 }
 
 #table-cols {
@@ -40,11 +41,6 @@
 #data-table {
   font-size: 12px;
   height: 175px;
-}
-
-#databaseMeta {
-  height: 630px;
-  font-size: 13px;
 }
 
 .ghost {
@@ -61,5 +57,10 @@
 .number-icon {
   font-size: 16px;
   font-weight: bold;
+}
+
+.custom-tree-node-text{
+  font-size: 18px;
+  margin-left: 5px;
 }
 </style>

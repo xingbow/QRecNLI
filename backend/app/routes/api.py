@@ -93,6 +93,9 @@ def initialization(dataset):
 
 @api.route("/get_tables/<db_id>")
 def get_tables(db_id):
+    # TODO: initialize the query context when the db is (re)selected
+    current_app.dataService.init_query_context(db_id)
+    print("query cache init.")
     return jsonify(current_app.dataService.get_tables(db_id))
 
 

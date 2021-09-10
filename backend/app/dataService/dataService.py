@@ -201,6 +201,12 @@ class DataService(object):
         else:
             raise Exception(f"Can not support {self.dataset} dataset")
 
+    def init_query_context(self, db_id):
+        self.h_q[db_id] = {}
+        self.h_q[db_id]["select"] = []
+        self.h_q[db_id]["groupby"] = []
+        self.h_q[db_id]["agg"] = []
+
     def set_query_context(self, sql, db_id):
         """
         set query context
@@ -222,10 +228,7 @@ class DataService(object):
 
         self.cur_q = [sql, db_id]
         if db_id not in self.h_q.keys():
-            self.h_q[db_id] = {}
-            self.h_q[db_id]["select"] = []
-            self.h_q[db_id]["groupby"] = []
-            self.h_q[db_id]["agg"] = []
+            self.init_query_context(db_id)
         # ensure entities are in the table columns (exclude the foreig/primary keys)
         self.h_q[db_id]["select"].append([ent for ent in select_ents if ent in table_cols])
         self.h_q[db_id]["groupby"].append([ent for ent in groupby_ents if ent in table_cols])

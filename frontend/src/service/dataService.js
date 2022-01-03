@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const GET_REQUEST = 'get'
 const POST_REQUEST = 'post'
-const dataServerUrl = `${process.env.DATA_SERVER_URL || 'http://127.0.0.1:5010'}/api`
+const dataServerUrl = `${process.env.DATA_SERVER_URL || 'http://127.0.0.1:5011'}/api`
 
 function request(url, params, type, callback) {
     let func
@@ -73,6 +73,12 @@ function SQLSugg(db_id, callback) {
     request(url, params, GET_REQUEST, callback);
 }
 
+function sendUserData(userdata, callback){
+    const url = `${dataServerUrl}/user_data`;
+    const params = userdata;
+    request(url, params, POST_REQUEST, callback);
+}
+
 export default {
     dataServerUrl,
     initialization,
@@ -82,5 +88,6 @@ export default {
     text2SQL,
     SQL2VL,
     SQL2text,
-    SQLSugg
+    SQLSugg,
+    sendUserData
 }

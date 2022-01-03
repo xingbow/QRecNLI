@@ -3,7 +3,6 @@
     <VegaLiteChart
       :vlSpecs="qRet.content"
       :innerKey="qRet.id"
-      :defaultTitle="qRet.title"
       :onDelete="onDelete"
     >
       <template v-slot:setting-popover>
@@ -18,7 +17,6 @@
     <DraggableTable
       :dataContent="qRet.content"
       :columnNames="Object.keys(qRet.content[0])"
-      :defaultTitle="qRet.title"
       :onDelete="onDelete"
     >
       <template v-slot:setting-popover>
@@ -38,7 +36,6 @@
       :w="80"
       :h="50"
       :onDelete="onDelete"
-      :defaultTitle="qRet.title"
     >
       <span class="result-text">{{ qRet.content }}</span>
       <template v-slot:setting-popover>

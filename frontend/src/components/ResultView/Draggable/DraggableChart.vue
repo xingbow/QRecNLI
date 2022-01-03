@@ -11,25 +11,31 @@
       <el-row class="float-button-rol" v-if="inputVisible === false">
         <el-button
           plain
-          size="mini"
+          size="small"
           icon="el-icon-info"
           v-on:click="infoVisible = !infoVisible"
         ></el-button>
         <el-button
           plain
-          size="mini"
+          size="small"
+          icon="el-icon-s-data"
+          v-on:click="onPlotData"
+        ></el-button>
+        <el-button
+          plain
+          size="small"
           icon="el-icon-edit"
           v-on:click="inputVisible = true"
         ></el-button>
         <el-button
           plain
-          size="mini"
+          size="small"
           icon="el-icon-setting"
           v-on:click="settingVisible = !settingVisible"
         ></el-button>
         <el-button
           plain
-          size="mini"
+          size="small"
           icon="el-icon-delete"
           v-on:click="onDelete"
         ></el-button>
@@ -108,6 +114,10 @@ export default {
     };
   },
   props: {
+    onPlotData: {
+      type: Function,
+      default: () => "",
+    },
     onDelete: {
       type: Function,
       default: () => "",
@@ -167,6 +177,10 @@ export default {
 }
 
 .el-button--mini {
+  padding: 8px;
+}
+
+.el-button--small {
   padding: 8px;
 }
 

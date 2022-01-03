@@ -65,20 +65,22 @@ def compile_nl_from_sql_parts(s, g, a):
     for opt in a.keys():
         for ent in a[opt]:
             s_set.discard(ent)
-        opt_nl = [agg_opts_to_nl[opt] + ent.replace(":", "") for ent in a[opt]]
+        # opt_nl = [agg_opts_to_nl[opt] + ent.split(":")[1] + " of " + ent.split(":")[0] for ent in a[opt]]
+        opt_nl = [agg_opts_to_nl[opt] + ent.split(":")[1].strip() for ent in a[opt]]
         opt_nls.extend(opt_nl)
     # print(opt_nls)
-    sel_nl_l = [ent.replace(":", "") for ent in list(s_set)] + opt_nls
-    sel_nl = "Find " + ", ".join(sel_nl_l)
+    # sel_nl_l = [ent.split(":")[1] + " of " + ent.split(":")[0] for ent in sorted(s_set)] + opt_nls
+    sel_nl_l = [ent.split(":")[1].strip() for ent in sorted(s_set)] + opt_nls
+    sel_nl = "Find " + (", ".join(sel_nl_l)).strip()
     if len(g) > 0:
-        g_nl = " of " + ", ".join(["each " + ent.replace(":", "") for ent in g])
+        g_nl = " of " + (", ".join(["each " + ent.split(":")[1].strip() for ent in g])).strip()
     # print(sel_nl + g_nl)
         return sel_nl + g_nl
     else:
         return sel_nl
 
 
-def compile_sql(nl_dict, db_meta):
+def compile_sql(nl_dict):
     """
     generate sql based on sql suggestions
     - input: 

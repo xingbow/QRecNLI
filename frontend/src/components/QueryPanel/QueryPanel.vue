@@ -36,6 +36,10 @@
   color: rgb(131, 127, 127);
 }
 
+.recommend-container {
+  width: calc(100% - 100px);
+}
+
 .recommend {
   /* height: 95px; */
   overflow: scroll;

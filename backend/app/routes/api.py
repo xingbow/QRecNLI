@@ -1,85 +1,21 @@
-'''
-    The RESTful style api server
-'''
-from pprint import pprint
-
 import json
 import os
-import re
 import logging
-import mimetypes
 import pandas as pd
 from time import time
 
-from flask import Blueprint, current_app, request, jsonify, Response
+from flask import Blueprint, current_app, request, jsonify
 from app.dataService.utils import processSQL
-from app.dataService.utils.helpers import NpEncoder
 
 LOG = logging.getLogger(__name__)
 
 api = Blueprint('api', __name__)
 
-MB = 1 << 20
-BUFF_SIZE = 10 * MB
 
-
-def partial_response(path, start, end=None):
-    LOG.info('Requested: %s, %s', start, end)
-    file_size = os.path.getsize(path)
-
-    # Determine (end, length)
-    if end is None:
-        end = start + BUFF_SIZE - 1
-    end = min(end, file_size - 1)
-    end = min(end, start + BUFF_SIZE - 1)
-    length = end - start + 1
-
-    # Read file
-    with open(path, 'rb') as fd:
-        fd.seek(start)
-        bytes = fd.read(length)
-    assert len(bytes) == length
-
-    response = Response(
-        bytes,
-        206,
-        mimetype=mimetypes.guess_type(path)[0],
-        direct_passthrough=True,
-    )
-    response.headers.add(
-        'Content-Range', 'bytes {0}-{1}/{2}'.format(
-            start, end, file_size,
-        ),
-    )
-    response.headers.add(
-        'Accept-Ranges', 'bytes'
-    )
-    LOG.info('Response: %s', response)
-    LOG.info('Response: %s', response.headers)
-    return response
-
-
-def get_range(request):
-    range = request.headers.get('Range')
-    LOG.info('Requested: %s', range)
-    m = re.match('bytes=(?P<start>\d+)-(?P<end>\d+)?', range)
-    if m:
-        start = m.group('start')
-        end = m.group('end')
-        start = int(start)
-        if end is not None:
-            end = int(end)
-        return start, end
-    else:
-        return 0, None
-
-
-# ################################################################################ route
 @api.route('/')
 def index():
     print('main url!')
     return json.dumps('/')
-    # return render_template('index.html')
 
 
 @api.route('/initialization/<dataset>')
@@ -149,6 +85,7 @@ def sql_sugg(db_id):
     # print(f"sugg: {sugg}")
     return jsonify(sugg)
 
+
 @api.route("/user_data", methods=['POST'])
 def get_user_data():
     user_data = request.json
@@ -159,9 +96,11 @@ def get_user_data():
     systype = user_data["systype"]
     timestamp = int(time())
     print(os.path.join(user_data_folder, f"{userid}-{username}-{systype}-{timestamp}.json"))
-    with open(os.path.join(user_data_folder, f"{userid}-{username}-{systype}-{timestamp}.json"), "w") as f:
+    with open(os.path.join(user_data_folder, f"{userid}-{username}-{systype}-{timestamp}.json"),
+              "w") as f:
         json.dump(user_data, f)
     return jsonify("successfully save user data!")
+
 
 if __name__ == '__main__':
     pass

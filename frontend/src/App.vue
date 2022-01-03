@@ -13,59 +13,8 @@
             user-select: none;
             font-size: 30px;
           "
-          >seqNLI</span>
+          >Qrec-NLI</span>
           <!-- user id -->
-          <div style="
-          margin-left: 5px;
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 500;
-            user-select: none;
-            font-size: 15px;
-          ">ID: </div>
-          <el-input
-          style="width:200px;"
-            placeholder="Please input user id"
-            v-model="userid"
-            clearable>
-          </el-input>
-          <!-- user name -->
-          <div style="
-          margin-left: 5px;
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 500;
-            user-select: none;
-            font-size: 13px;
-          ">Name: </div>
-          <el-input
-            style="width:200px;"
-            placeholder="Please input name"
-            v-model="username"
-            clearable>
-          </el-input>
-          <!-- system selection -->
-          <div style="
-          margin-left: 5px;
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 500;
-            user-select: none;
-            font-size: 13px;
-          ">System type: </div>
-          <el-select v-model="sysval" clearable placeholder="Select">
-            <el-option
-            style="width:200px;"
-              v-for="item in sysType"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-      </div>
-      <div style="float:right;color:white">
-        <el-button plain v-show="start" v-on:click="beginQuery">Begin Query</el-button>
-        <el-button plain v-show="!start" v-on:click="endQuery">End Query</el-button>
       </div>
     </nav>
     <el-row>
@@ -96,7 +45,7 @@
         <div class="p border-bottom border-right" style="display: flex;">
           <QueryPanel :dbselected="dbselected" :tables="tables" />
         </div>
-        <div class="p" style="text-align: start">
+        <div class="p border-bottom" style="text-align: start">
           <ResultView :dbselected="dbselected" :tables="tables" />
         </div>
       </el-col>

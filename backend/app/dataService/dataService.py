@@ -201,6 +201,12 @@ class DataService(object):
         else:
             raise Exception(f"Can not support {self.dataset} dataset")
 
+    def init_query_context(self, db_id):
+        self.h_q[db_id] = {}
+        self.h_q[db_id]["select"] = []
+        self.h_q[db_id]["groupby"] = []
+        self.h_q[db_id]["agg"] = []
+
     def set_query_context(self, sql, db_id):
         """
         set query context
@@ -222,10 +228,7 @@ class DataService(object):
 
         self.cur_q = [sql, db_id]
         if db_id not in self.h_q.keys():
-            self.h_q[db_id] = {}
-            self.h_q[db_id]["select"] = []
-            self.h_q[db_id]["groupby"] = []
-            self.h_q[db_id]["agg"] = []
+            self.init_query_context(db_id)
         # ensure entities are in the table columns (exclude the foreig/primary keys)
         self.h_q[db_id]["select"].append([ent for ent in select_ents if ent in table_cols])
         self.h_q[db_id]["groupby"].append([ent for ent in groupby_ents if ent in table_cols])
@@ -251,6 +254,8 @@ class DataService(object):
 
         # database meta data
         db_meta = self.db_meta_dict[db_id]
+        # print("db_meta: ", db_meta.keys()])
+
         # load sql suggestion model
         self._load_sqlsugg_model()
         # print("db id, table_cols: ", db_id.replace("_", " ").strip(), table_cols)
@@ -258,8 +263,9 @@ class DataService(object):
         # print(db_bin.head())
         sugg_dict = self.sqlsugg_model.query_suggestion(db_bin, context_dict, min_support)
         # print("sugg_dict: ", sugg_dict)
+        
 
-        nls = generate_sql.compile_sql(sugg_dict, db_meta)
+        nls = generate_sql.compile_sql(sugg_dict)
         sqls = [self.text2sql(nl, db_id) for nl in nls]        
 
         return {
@@ -361,7 +367,10 @@ class DataService(object):
 if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
-    db_dict = dataService.get_tables("cinema")
+    db_id = GV.test_topic
+    db_dict = dataService.get_tables(db_id)
+    db_cols = dataService.get_db_cols("customers_and_addresses")
+    print("db_cols: ", db_cols)
 
     # 1. text2sql
     # result = dataService.text2sql("films and film prices that cost below 10 dollars", "cinema")
@@ -375,12 +384,12 @@ if __name__ == '__main__':
     
     # 3. query suggestion
     # print(dataService.db_meta_dict["cinema"])
-    db_info = dataService.db_meta_dict["cinema"]
-    print(db_info["primary_keys"], db_info["foreign_keys"])
-    table_names = db_info["table_names"]
-    table_cols = [table_names[col[0]] + ": " + col[1] for col in db_info["column_names"] if col[0]!=-1]
-    print(table_cols)
+    # db_info = dataService.db_meta_dict[db_id]
+    # print(db_info["primary_keys"], db_info["foreign_keys"])
+    # table_names = db_info["table_names"]
+    # table_cols = [table_names[col[0]] + ": " + col[1] for col in db_info["column_names"] if col[0]!=-1]
+    # print(table_cols)
     # dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
-    sql_suggest = dataService.sql_suggest("cinema", table_cols)
+    sql_suggest = dataService.sql_suggest(db_id, db_cols)
     print("sql_suggest: ", sql_suggest)
 

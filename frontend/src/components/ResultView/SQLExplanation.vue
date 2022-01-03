@@ -2,7 +2,7 @@
   <div class="explanation-container">
     <div class="rowitem">
       <div class="ex-table-item">SQL</div>
-      <span>{{ sqlQuery }}</span>
+      <span class="ex-table-content">{{ sqlQuery }}</span>
     </div>
     <div class="rowitem">
       <div class="ex-table-item">Trans.</div>
@@ -122,6 +122,10 @@ export default {
 .ex-table-item {
   width: 80px;
   font-weight: bold;
+}
+
+.ex-table-content {
+  max-width: 420px;
 }
 
 .rowitem {

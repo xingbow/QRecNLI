@@ -65,7 +65,7 @@
       <el-popover
         class="popover-info"
         placement="right"
-        width="450"
+        width="550"
         trigger="manual"
         v-model="infoVisible"
       >

@@ -77,7 +77,7 @@ export default {
                 return (
                     <span class="custom-tree-node">
                         <i class="fas fa-table"></i>
-                        <span style="margin-left:5px;">{node.label}</span>
+                        <span style="margin-left:5px; font-size: 16px">{node.label}</span>
                     </span>
                 );
             } else if (data.type == "column") {
@@ -99,6 +99,14 @@ export default {
                     return (
                         <span class="custom-tree-node">
                             <i class="fas fa-key"></i>
+                            <span style="margin-left:5px;">{node.label}</span>
+                        </span>
+                    );
+                }
+                else if (data.ctype == "time") {
+                    return (
+                        <span class="custom-tree-node">
+                            <i class="fas fa-clock"></i>
                             <span style="margin-left:5px;">{node.label}</span>
                         </span>
                     );
@@ -127,7 +135,6 @@ export default {
                     sqlDecoded: SQLTrans.sqlDecoded,
                 };
             }
-
             this.historyData.push(histNode);
         });
 

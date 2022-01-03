@@ -4,12 +4,20 @@
     :h="height"
     :onResize="onResize"
     :onDelete="onDelete"
+    :onPlotData="onPlotData"
     :defaultTitle="defaultTitle"
   >
     <vega-lite
       :spec="vlSpec"
+      v-if="showData === false"
       v-bind:id="`vega-lite-chart-${innerKey}`"
     ></vega-lite>
+    <Table
+      v-else-if="showData === true"
+      :columnNames="columnNames"
+      :dataContent="data"
+      :width="width"
+    />
     <template v-slot:setting-popover>
       <slot name="setting-popover"></slot>
     </template>
@@ -23,16 +31,18 @@
 /* global d3 $ */
 import VueVega from "vue-vega";
 import DraggableChart from "./DraggableChart.vue";
+import Table from "./Table.vue";
 import Vue from "vue";
 
 Vue.use(VueVega);
 
 export default {
   name: "VegaLiteChart",
-  components: { DraggableChart },
+  components: { DraggableChart, Table },
   props: {
     innerKey: String,
     vlSpecs: Array,
+    data: Array,
     onDelete: Function,
     defaultTitle: {
       type: String,
@@ -48,9 +58,15 @@ export default {
       vlSpecRecords: {},
       vlFocalMark: "",
       vlSpec: {},
+
+      showData: false,
     };
   },
-  computed: {},
+  computed: {
+    columnNames: function () {
+      return Object.keys(this.data[0]);
+    },
+  },
   watch: {
     vlSpecs: function () {
       this.transferVlSpecs();
@@ -109,6 +125,9 @@ export default {
           height: this.innerHeight,
         };
       }
+    },
+    onPlotData: function () {
+      this.showData = !this.showData;
     },
   },
 };

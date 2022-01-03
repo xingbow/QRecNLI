@@ -7,17 +7,11 @@
     :defaultTitle="defaultTitle"
     class="draggable-table-container"
   >
-    <el-table :data="dataContent" style="width: width" size="small">
-      <el-table-column
-        v-for="column in columns"
-        :key="column.key"
-        :prop="column.prop"
-        :label="column.label"
-        :width="column.width"
-        :max-width="20"
-      >
-      </el-table-column>
-    </el-table>
+    <Table
+      :dataContent="dataContent"
+      :columnNames="columnNames"
+      :width="width"
+    />
     <template v-slot:setting-popover>
       <slot name="setting-popover"></slot>
     </template>
@@ -30,12 +24,13 @@
 <script>
 /* global _ $*/
 import DraggableChart from "./DraggableChart.vue";
+import Table from "./Table.vue";
 
 const maxWidth = 200;
 
 export default {
   name: "DraggableTable",
-  components: { DraggableChart },
+  components: { DraggableChart, Table },
   props: {
     dataContent: Array,
     columnNames: Array,
@@ -47,19 +42,17 @@ export default {
   },
   data() {
     return {
-      columns: [],
       width: 500,
       height: 300,
     };
   },
   watch: {
     dataContent: function () {
-      this.buildColumns();
+      this.width = this.getTotalWidth();
     },
   },
   beforeMount() {
-    this.buildColumns();
-    this.width = _.sum(this.columns.map((col) => col.width));
+    this.width = this.getTotalWidth();
   },
   methods: {
     estimateWidth: function (name) {
@@ -69,25 +62,11 @@ export default {
       const letterWidth = 10;
       return _.min([_.max([tokenLength, name.length]) * letterWidth, maxWidth]);
     },
-    buildColumns: function () {
-      this.columns = this.columnNames.map((name) => ({
-        key: name,
-        prop: name,
-        label: name,
-        width: this.estimateWidth(name),
-      }));
-    },
     getTotalWidth: function () {
-      console.log(_.sum(this.columns.map((col) => col.width)));
-      return _.sum(this.columns.map((col) => col.width));
+      return _.sum(this.columnNames.map((name) => this.estimateWidth(name)));
     },
     onResize: function (x, y, width, height) {
       if (width !== this.width || height !== this.height) {
-        const sudoWidth = _.sum(this.columns.map(col => col.width));
-        this.columns = this.columns.map(col => ({
-          ...col,
-          width: _.min([col.width * width / sudoWidth, maxWidth])
-        }))
         this.width = width;
         this.height = height;
       }

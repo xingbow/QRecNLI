@@ -25,11 +25,11 @@
 }
 
 #settingsContainer {
-  height: 670px;
+  height: 761px;
 }
 
 #databaseMeta {
-  height: 600px;
+  height: 690px;
   overflow: scroll;
   font-size: 14px;
 }

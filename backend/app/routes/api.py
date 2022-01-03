@@ -48,25 +48,27 @@ def load_tables(table_name):
 @api.route("/text2sql/<user_text>/<db_id>", methods=['GET'])
 def text2sql(user_text="films and film prices that cost below 10 dollars", db_id="cinema"):
     sql = current_app.dataService.text2sql(user_text, db_id)
-    current_app.dataService.set_query_context(sql, db_id) # set query context
+    current_app.dataService.set_query_context(sql, db_id)  # set query context
     result = {'sql': sql, 'data': current_app.dataService.sql2data(sql, db_id).values.tolist()}
     return jsonify(result)
 
 
 @api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
 def sql2vis(sql_text, db_id="cinema"):
-    content = current_app.dataService.sql2vl(sql_text, db_id)
+    response = current_app.dataService.sql2vl(sql_text, db_id, return_data=True)
+    data = response['data'].to_dict('records')
+    content = response['vl']
     if isinstance(content, list):
         # TODO: vega-vue only supports the following mark types
-        content = [s for s in content if s['mark']['type'] in 
-                    ["bar", "circle", "square", "tick", "line", "area", "point", "rule", "text"]]
+        content = [s for s in content if s['mark']['type'] in
+                   ["bar", "circle", "square", "tick", "line", "area", "point", "rule", "text"]]
         returnType = 'vega-lite'
     elif isinstance(content, pd.DataFrame):
         content = content.to_dict('records')
         returnType = 'table'
     else:
         returnType = 'data'
-    return jsonify({'type': returnType, 'content': content})
+    return jsonify({'type': returnType, 'content': content, 'data': data})
 
 
 @api.route("/sql2text/<sql_text>/<db_id>", methods=['GET'])

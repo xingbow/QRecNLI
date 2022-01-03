@@ -351,7 +351,7 @@ class DataService(object):
         data = pd.DataFrame(data, columns=identifiers)
         return data
 
-    def sql2vl(self, sql, db_id):
+    def sql2vl(self, sql, db_id, return_data=False):
         data = self.sql2data(sql, db_id)
         if data.shape == (1, 1):
             response = data.values[0][0]
@@ -361,7 +361,10 @@ class DataService(object):
             except ValueError:
                 warnings.warn("Unsupported data type. Show the results in tables instead.")
                 response = data
-        return response
+        if return_data:
+            return {'data': data, 'vl': response}
+        else:
+            return response
 
 
 if __name__ == '__main__':

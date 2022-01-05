@@ -3,6 +3,7 @@ import Vue from 'vue'
 var pipeService = new Vue({
     data: {
         TESTEVENT: 'test_event',
+
         GETSQL: "GET_SQL",
         SQLTrans: "SQL_trans",
         VLSpecs: "VL_specs",

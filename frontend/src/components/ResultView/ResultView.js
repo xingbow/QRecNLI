@@ -1,6 +1,5 @@
 /* global d3 $ */
 import pipeService from '../../service/pipeService.js';
-import DrawResult from './drawResult.js';
 import DraggableTop from './Draggable/DraggableTop.vue'
 import SQLExplanation from './SQLExplanation.vue'
 import draggable from "vuedraggable";
@@ -38,7 +37,6 @@ export default {
         }
     },
     mounted: function() {
-        this.drawResult = new DrawResult(this.containerId);
         pipeService.onSQL(sqlRet => {
             const { sql, nl, SQLTrans, VLSpecs } = sqlRet;
             this.sqlQuery = sql;

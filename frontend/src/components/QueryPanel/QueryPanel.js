@@ -17,7 +17,6 @@ export default {
             },
             showSugg: true,
             qSugg: {},
-            historySugg: {},
         }
     },
     watch: {
@@ -26,21 +25,18 @@ export default {
             if (dbselected.length > 0) {
                 dataService.SQLSugg(dbselected, (suggData) => {
                     this.qSugg = suggData["nl"];
-                    if (!this.historySugg.hasOwnProperty(dbselected)) {
-                        this.historySugg[dbselected] = [];
-                    }
-                    this.historySugg[dbselected].push({
-                        "query": this.userText,
-                        "sugg": suggData
-                    });
                 });
             }
         },
     },
     mounted() {
-        pipeService.onSetQuery(nl => {
-            // console.log("nl in querypanel: ", nl)
-            this.userText = nl;
+        pipeService.onNLQuery(nl => {
+            if (this.userText !== nl)
+                this.userText = nl;
+        });
+        pipeService.onQuerySugg(sugg => {
+            if (this.qSugg !== sugg)
+                this.qSugg = sugg['nl'];
         })
         const vm = this;
         this.$nextTick(() => {
@@ -48,13 +44,6 @@ export default {
                 dataService.SQLSugg(vm.dbselected, (suggData) => {
                     console.log("suggestion data: ", suggData);
                     this.qSugg = suggData["nl"];
-                    if (!vm.historySugg.hasOwnProperty(vm.dbselected)) {
-                        vm.historySugg[vm.dbselected] = [];
-                    }
-                    vm.historySugg[vm.dbselected].push({
-                        "query": this.userText,
-                        "sugg": suggData
-                    });
                 });
             }
         });
@@ -64,6 +53,7 @@ export default {
             if (this.userText.length > 0) {
                 const userText = this.userText;
                 const dbName = this.dbselected;
+                pipeService.emitNLQuery(userText);
                 // TODO: the logic has been updated to sync (2nd Sep)
                 dataService.text2SQL([this.userText, dbName], (data) => {
                     const sqlResult = {
@@ -78,22 +68,15 @@ export default {
                             dataService.SQL2VL(sqlResult["sql"], dbName, (data) => {
                                 sqlResult.VLSpecs = [data];
                                 pipeService.emitSQL(sqlResult);
+
+                                // query suggestions
+                                dataService.SQLSugg(dbName, (data) => {
+                                    console.log("query suggestion after submitting nl query: ", data);
+                                    pipeService.emitQuerySugg(data);
+                                    this.qSugg = data['nl'];
+                                })
                             });
                         });
-
-                        // query suggestions
-                        dataService.SQLSugg(dbName, (data) => {
-                            console.log("query suggestion after submitting nl query: ", data);
-                            // pipeService.emitQuerySugg(data);
-                            this.qSugg = data['nl'];
-                            if (!this.historySugg.hasOwnProperty(this.dbselected)) {
-                                this.historySugg[this.dbselected] = []
-                            }
-                            this.historySugg[this.dbselected].push({
-                                "query": this.userText,
-                                "sugg": data
-                            });
-                        })
                     } else {
                         alert("sql returns is empty");
                     }
@@ -160,7 +143,7 @@ export default {
         selectQuery: function(nlidx) {
             if (this.qSugg) {
                 console.log("receive nl query:", nlidx, this.qSugg[nlidx]);
-                pipeService.emitSetQuery(this.qSugg[nlidx]);
+                this.userText = this.qSugg[nlidx];
             }
         },
     }

@@ -2,6 +2,7 @@
   <div class="vis-container" v-if="qRet.type === 'vega-lite'">
     <VegaLiteChart
       :vlSpecs="qRet.content"
+      :data="qRet.data"
       :innerKey="qRet.id"
       :onDelete="onDelete"
     >

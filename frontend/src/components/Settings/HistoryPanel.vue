@@ -31,7 +31,6 @@
 </template>
 
 <script>
-// import { defineComponent } from "@vue/composition-api";
 import pipeService from "../../service/pipeService";
 import draggable from "vuedraggable";
 
@@ -58,7 +57,8 @@ export default {
     handleNodeClick(key) {
       const history = this.findHistoryNodeByKey(key);
       pipeService.emitSQL(history.SQL);
-      // pipeService.emitQuerySugg(history.QuerySugg);
+      pipeService.emitNLQuery(history.key);
+      pipeService.emitQuerySugg(history.QuerySugg);
       this.historyData.pop();
     },
     handleNodeClone({ key }) {
@@ -90,13 +90,13 @@ export default {
       this.historyData.push(histNode);
     });
 
-    // pipeService.onSetQuery(SetQuery => {
-    //     this.historyData[this.historyData.length - 1].SetQuery = SetQuery;
-    // });
+    pipeService.onSetQuery(SetQuery => {
+        this.historyData[this.historyData.length - 1].SetQuery = SetQuery;
+    });
 
-    // pipeService.onQuerySugg(QuerySugg => {
-    //     this.historyData[this.historyData.length - 1].QuerySugg = QuerySugg;
-    // });
+    pipeService.onQuerySugg(QuerySugg => {
+        this.historyData[this.historyData.length - 1].QuerySugg = QuerySugg;
+    });
   },
 };
 </script>

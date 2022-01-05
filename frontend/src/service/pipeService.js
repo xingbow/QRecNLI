@@ -4,6 +4,7 @@ var pipeService = new Vue({
     data: {
         TESTEVENT: 'test_event',
 
+        NLQuery: "NL_Query",
         GETSQL: "GET_SQL",
         SQLTrans: "SQL_trans",
         VLSpecs: "VL_specs",
@@ -16,6 +17,14 @@ var pipeService = new Vue({
         },
         onTestEvent: function(callback) {
             this.$on(this.TESTEVENT, function(msg) {
+                callback(msg)
+            })
+        },
+        emitNLQuery: function(msg) {
+            this.$emit(this.NLQuery, msg);
+        },
+        onNLQuery: function(callback) {
+            this.$on(this.NLQuery, function(msg) {
                 callback(msg)
             })
         },

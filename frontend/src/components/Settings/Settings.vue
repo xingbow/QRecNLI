@@ -1,6 +1,60 @@
-<template src='./Settings.html'></template>
+<template>
+  <div id="settings">
+    <div class="card-block" id="settingsContainer" style="padding: 10px 10px">
+      <el-tabs type="card">
+        <el-tab-pane label="Tables" name="0">
+          <TableInfo :tableColumns="treeData" />
+        </el-tab-pane>
+        <el-tab-pane label="History Queries" name="1">
+          <HistoryPanel />
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+  </div>
+</template>
 
-<script src='./Settings.js'></script>
+<script>
+/* global _ $*/
+import TableInfo from "./TableInfo";
+import HistoryPanel from "./HistoryPanel";
+
+import "../../assets/historyQuery.css";
+
+export default {
+  name: "Settings",
+  components: {
+    HistoryPanel,
+    TableInfo,
+  },
+  props: {
+    tables: {},
+  },
+  data() {
+    return {
+      // TODO: organize metadata in tree layout
+      treeData: [],
+    };
+  },
+  watch: {
+    tables: function (tables) {
+      console.log("table changed in Setting View:", tables);
+      const treeData = Object.entries(tables).map((data) => {
+        const [key, value] = data;
+        return {
+          type: "table",
+          label: key,
+          children: value.map((v) => ({
+            type: "column",
+            label: v[0],
+            ctype: v[1],
+          })),
+        };
+      });
+      this.treeData = treeData;
+    },
+  },
+};
+</script>
 
 <style scoped>
 .card {
@@ -26,41 +80,5 @@
 
 #settingsContainer {
   height: 761px;
-}
-
-#databaseMeta {
-  height: 690px;
-  overflow: scroll;
-  font-size: 14px;
-}
-
-#table-cols {
-  font-size: 12px;
-}
-
-#data-table {
-  font-size: 12px;
-  height: 175px;
-}
-
-.ghost {
-  opacity: 0.5;
-  background: #c8ebfb;
-}
-
-.history-item-icon,.number-icon {
-  position: relative;
-  float: right;
-  margin-top: 5px;
-}
-
-.number-icon {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.custom-tree-node-text{
-  font-size: 18px;
-  margin-left: 5px;
 }
 </style>

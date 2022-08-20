@@ -33,6 +33,7 @@ class DataService(object):
         self.text2sql_model_loaded = False
         self.sql_parser_loaded = False
         self.sqlsugg_model_loaded = False
+        self.sql2text_model_loaded = False
         self.dataset = dataset
         self.global_variable = GV
         if self.dataset == "spider":
@@ -55,11 +56,22 @@ class DataService(object):
         if self.text2sql_model_loaded:
             return
         if verbose:
-            print("=== begin loading model ===")
+            print("=== begin loading text2sql model ===")
         self.text2sql_model = sp.SmBop()
         self.text2sql_model_loaded = True
         if verbose:
-            print("=== finish loading model ===")
+            print("=== finish loading text2sql model ===")
+    
+    def _load_sql2text_model(self, verbose=True):
+        if self.sql2text_model_loaded:
+            return
+        if verbose:
+            print("=== begin loading sql2text model ===")
+        self.text2sql_model = 
+        self.text2sql_model_loaded = True
+        if verbose:
+            print("=== finish loading sql2text model ===")
+        return
 
     def _load_sql_parser(self, verbose=True):
         if self.sql_parser_loaded:

@@ -67,8 +67,8 @@ class DataService(object):
             return
         if verbose:
             print("=== begin loading sql2text model ===")
-        self.text2sql_model = 
-        self.text2sql_model_loaded = True
+        self.sql2text_model = sp.SQL2NL()
+        self.sql2text_model_loaded = True
         if verbose:
             print("=== finish loading sql2text model ===")
         return
@@ -378,6 +378,10 @@ class DataService(object):
         else:
             return response
 
+    def sql2nl(self, sql: str):
+        self._load_sql2text_model()
+        nl = self.sql2text_model.sql2text(sql)
+        return nl
 
 if __name__ == '__main__':
     print('dataService:')
@@ -405,6 +409,12 @@ if __name__ == '__main__':
     # table_cols = [table_names[col[0]] + ": " + col[1] for col in db_info["column_names"] if col[0]!=-1]
     # print(table_cols)
     # dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
-    sql_suggest = dataService.sql_suggest(db_id, db_cols)
-    print("sql_suggest: ", sql_suggest)
+    ############### test sql suggestions
+    # sql_suggest = dataService.sql_suggest(db_id, db_cols)
+    # print("sql_suggest: ", sql_suggest)
+
+    ############### test sql2nl 
+    sql = "SELECT name ,  country ,  age FROM singer ORDER BY age DESC"
+    nl = dataService.sql2nl(sql)
+    print("sql: {} \n nl: {}".format(sql, nl))
 

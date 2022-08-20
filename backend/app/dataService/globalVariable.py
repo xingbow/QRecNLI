@@ -39,6 +39,12 @@ COND_OPS = ('and', 'or')
 SQL_OPS = ('intersect', 'union', 'except')
 ORDER_OPS = ('desc', 'asc')
 
+#################### SQL2NL model config
+SQL2NL_MODEL_NAME = "hkunlp/from_all_T5_base_prefix_sql2text2"
+SQL2NL_MODEL_FOLDER = os.path.abspath(os.path.join(MODEL_FOLDER, "UnifiedSKG"))
+SQL2NL_MODEL_CONFIG_PATH = os.path.abspath(os.path.join(SQL2NL_MODEL_FOLDER, "configure/Salesforce/T5_base_prefix_sql2text.cfg"))
+
+
 ##################
 ### test case for query suggestion
 # test_topic = "employee_hire_evaluation"

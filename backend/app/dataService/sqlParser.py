@@ -3,7 +3,6 @@ import sys
 # import nltk
 # nltk.download('punkt')
 # nltk.download('stopwords')
-import torch
 import pathlib
 import numpy as np
 
@@ -37,6 +36,12 @@ except ImportError:
     from app.dataService.utils.processSQL import process_sql
 
 pathlib.Path(f"cache").mkdir(exist_ok=True)
+
+# sql2nl
+sys.path.append(GV.MODEL_FOLDER)
+from transformers import AutoTokenizer
+from UnifiedSKG.utils.configue import Configure
+from UnifiedSKG.models.unified.prefixtuning import Model
 
 class SQLParser(object):
     def __init__(self):
@@ -75,9 +80,36 @@ class SmBop(object):
             return out[0]["sql_list"]
 
 
+class SQL2NL(object):
+    def __init__(self):
+        self.tokenizer = AutoTokenizer.from_pretrained(GV.SQL2NL_MODEL_NAME, use_fast=False)
+        args = Configure.Get(GV.SQL2NL_MODEL_CONFIG_PATH)
+        self.model = Model(args)
+        self.model.load(GV.SQL2NL_MODEL_NAME)
+    def sql2text(self, sql: str = "SELECT name ,  country ,  age FROM singer ORDER BY age DESC"):
+        prefix = ""
+        prompt = "{} ; structed knowledge: {}".format(sql, prefix)
+        tokenized_txt = self.tokenizer([prompt], max_length=1024, padding="max_length", truncation=True)
+        pred = self.tokenizer.batch_decode(
+            self.model.generate(
+                torch.LongTensor(tokenized_txt.data['input_ids']),
+                torch.LongTensor(tokenized_txt.data['attention_mask']),
+                num_beams=1, 
+                max_length=256
+                ), 
+            skip_special_tokens=True 
+        )
+        return pred[0]
+
 if __name__=='__main__':
     # smbop = SmBop()
     # result = smbop.predict("films and film prices that cost below 10 dollars", "cinema")
     # print("result: {}".format(result))
-    sp = SQLParser()
-    sp.parse_sql()
+    #######
+    # sp = SQLParser()
+    # sp.parse_sql()
+    ####### sql2text test
+    sql2nl = SQL2NL()
+    sql = "SELECT name ,  country ,  age FROM singer ORDER BY age DESC"
+    nl = sql2nl.sql2text(sql)
+    print("sql: {} \n nl: {}".format(sql, nl))

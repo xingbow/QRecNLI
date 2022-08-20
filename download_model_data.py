@@ -36,3 +36,9 @@ if not os.path.isdir(os.path.join(prefix, 'dataset/nvBench')):
     ps = subprocess.run(["git", "clone", nvBench_url, os.path.join(prefix,"dataset/nvBench")])
     ps = subprocess.run(["unzip", "-q", os.path.join(prefix,"dataset/nvBench/databases.zip"), "-d", os.path.join(prefix,"dataset/nvBench/")])
 
+# UnifiedSKG
+if not os.path.isdir(os.path.join(prefix, 'model/UnifiedSKG')):
+    unifiedSKG_git = "git@github.com:xingbow/UnifiedSKG.git"
+    ps = subprocess.run(["git", "clone", "--recurse-submodules", unifiedSKG_git, os.path.join(prefix,"model/UnifiedSKG")])
+
+

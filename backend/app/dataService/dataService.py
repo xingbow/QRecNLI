@@ -277,11 +277,13 @@ class DataService(object):
         # print("sugg_dict: ", sugg_dict)
         
 
-        nls = generate_sql.compile_sql(sugg_dict)
-        sqls = [self.text2sql(nl, db_id) for nl in nls]        
+        nls_prompts = generate_sql.compile_sql(sugg_dict)
+        # print("nls: {}".format(nls))
+        sqls = [self.text2sql(nl, db_id) for nl in nls_prompts]
+        sql2nls =  [self.sql2nl(sql) for sql in sqls]      
 
         return {
-            "nl": nls,
+            "nl": sql2nls,
             "sql": sqls
         }
 
@@ -410,11 +412,11 @@ if __name__ == '__main__':
     # print(table_cols)
     # dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
     ############### test sql suggestions
-    # sql_suggest = dataService.sql_suggest(db_id, db_cols)
-    # print("sql_suggest: ", sql_suggest)
+    sql_suggest = dataService.sql_suggest(db_id, db_cols)
+    print("sql_suggest: ", sql_suggest)
 
     ############### test sql2nl 
-    sql = "SELECT name ,  country ,  age FROM singer ORDER BY age DESC"
-    nl = dataService.sql2nl(sql)
-    print("sql: {} \n nl: {}".format(sql, nl))
+    # sql = "SELECT addresses.other_address_details FROM addresses"
+    # nl = dataService.sql2nl(sql)
+    # print("sql: {} \n nl: {}".format(sql, nl))
 

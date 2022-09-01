@@ -281,10 +281,10 @@ class DataService(object):
         # print("nls: {}".format(nls))
         sqls = [self.text2sql(nl, db_id) for nl in nls_prompts]
         sql2nls =  [self.sql2nl(sql) for sql in sqls]      
-
+        # print("sql2nls: {}, type: {}".format(sql2nls, type(sql2nls[0])))
         return {
-            "nl": sql2nls,
-            "sql": sqls
+            "sql": sqls,
+            "nl": sql2nls
         }
 
     def data2vl(self, data):
@@ -394,8 +394,9 @@ if __name__ == '__main__':
     print("db_cols: ", db_cols)
 
     # 1. text2sql
-    # result = dataService.text2sql("films and film prices that cost below 10 dollars", "cinema")
-    # print("test2sql: {}".format(result))
+    result = dataService.text2sql("What are the dates when the customers became customers?", "customers_and_addresses")
+    print("test2sql: {}".format(result))
+    exit()
     
     # 2. db lists
     # print(dataService.db_lists)

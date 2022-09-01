@@ -54,8 +54,13 @@ export default {
                 const userText = this.userText;
                 const dbName = this.dbselected;
                 pipeService.emitNLQuery(userText);
+                let text2SQLQuery = {
+                    "user_text": this.userText,
+                    "db_id": dbName
+                }
                 // TODO: the logic has been updated to sync (2nd Sep)
-                dataService.text2SQL([this.userText, dbName], (data) => {
+                // dataService.text2SQL([this.userText, dbName], (data) => {
+                dataService.text2SQL(text2SQLQuery, (data) => {
                     const sqlResult = {
                             "sql": data["sql"].trim(),
                             "data": data["data"],

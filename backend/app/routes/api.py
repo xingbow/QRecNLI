@@ -45,8 +45,13 @@ def load_tables(table_name):
     return jsonify(current_app.dataService.load_table_content(table_name))
 
 
-@api.route("/text2sql/<user_text>/<db_id>", methods=['GET'])
-def text2sql(user_text="films and film prices that cost below 10 dollars", db_id="cinema"):
+# @api.route("/text2sql/<user_text>/<db_id>", methods=['GET'])
+# def text2sql(user_text="films and film prices that cost below 10 dollars", db_id="cinema"):
+@api.route("/text2sql", methods=['POST'])
+def text2sql():
+    text2sql_data = request.json
+    user_text = text2sql_data["user_text"]
+    db_id = text2sql_data["db_id"]
     sql = current_app.dataService.text2sql(user_text, db_id)
     current_app.dataService.set_query_context(sql, db_id)  # set query context
     result = {'sql': sql, 'data': current_app.dataService.sql2data(sql, db_id).values.tolist()}

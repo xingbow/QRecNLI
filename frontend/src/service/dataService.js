@@ -49,10 +49,16 @@ function loadTablesContent(tableName, callback) {
     request(url, params, GET_REQUEST, callback)
 }
 
+// function text2SQL(userQuery, callback) {
+//     const url = `${dataServerUrl}/text2sql/${userQuery[0]}/${userQuery[1]}`
+//     const params = {}
+//     request(url, params, GET_REQUEST, callback);
+// }
+
 function text2SQL(userQuery, callback) {
-    const url = `${dataServerUrl}/text2sql/${userQuery[0]}/${userQuery[1]}`
-    const params = {}
-    request(url, params, GET_REQUEST, callback);
+    const url = `${dataServerUrl}/text2sql`
+    const params = userQuery
+    request(url, params, POST_REQUEST, callback);
 }
 
 function SQL2VL(sql, db_id, callback) {

@@ -412,11 +412,11 @@ if __name__ == '__main__':
     # print(table_cols)
     # dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
     ############### test sql suggestions
-    sql_suggest = dataService.sql_suggest(db_id, db_cols)
-    print("sql_suggest: ", sql_suggest)
+    # sql_suggest = dataService.sql_suggest(db_id, db_cols)
+    # print("sql_suggest: ", sql_suggest)
 
     ############### test sql2nl 
-    # sql = "SELECT addresses.other_address_details FROM addresses"
-    # nl = dataService.sql2nl(sql)
-    # print("sql: {} \n nl: {}".format(sql, nl))
+    sql = "SELECT addresses.other_address_details FROM addresses"
+    nl = dataService.sql2nl(sql)
+    print("sql: {} \n nl: {}".format(sql, nl))
 

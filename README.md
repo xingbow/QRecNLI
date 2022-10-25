@@ -1,10 +1,13 @@
 # QRec-NLI: Interactive Data Analysis with Next-step Natural Language Query Recommendation
+[**Video demo**](https://youtu.be/MrhtF1vQ8Go) |  [**Code**](https://github.com/xingbow/QRecNLI) | Authors: [Xingbo Wang](https://andy-xingbowang.com/), [Furui Cheng](https://www.furuicheng.tech/), [Yong Wang](https://yong-wang.org/), [Ke Xu](https://lukexuke.github.io/), Jiang Long, Hong Lu, [Huamin Qu](http://www.huamin.org/)
+
 [**QRec-NLI**](https://arxiv.org/abs/2201.04868) is a natural language interface (NLI) with a step-wise query recommendation module to guide visual data analysis, where data is stored across multiple tables in SQL databases. Please checkout [our paper](https://arxiv.org/abs/2201.04868) for more details.
 
 ![User workflow](./figures/fig-1_teaser-1.png)
 >*User workflow*: (1) A user first makes a series of natural language data queries by selecting from system recommendations step by step. The results of data queries are presented in visualizations. (2) After several steps of data exploration, the user chooses some desired insights (shown in visualizations) from previous queries, and organizes them into a dashboard by direct manipulation.
 
 The system adopts a log-based approach to generate ***semantically-relevant*** and ***context-aware*** query suggestions that adapt to a user's interested domains based on all queries made by current user and  reference queries in query databases.
+
 
 
 ## How to run the system

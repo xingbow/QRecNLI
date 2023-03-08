@@ -1,0 +1,28 @@
+<div id="resultview">
+    <!-- <div class="card"> -->
+    <div class="card-block" id="resultContainer">
+        <!-- <el-collapse>
+            <el-collapse-item title="SQL results and explanations" name="2">
+                <SQLExplanation :sqlQuery="sqlQuery" :nlExplanation="explanation" :selectDecoded="selectDecoded" :groupbyDecoded="groupbyDecoded" :whereDecoded="whereDecoded" :tables="tables" />
+            </el-collapse-item>
+        </el-collapse> -->
+        <div id="vegaLiteContainer">
+            <draggable class="list-group" :list="queryReturns" handle="none" group="historyNode">
+                <div class="list-group-item-invisible" v-for="(qRet, index) in queryReturns" :key="qRet.id">
+                    <DraggableTop :qRet="qRet" :onDelete="()=>onDelete(index)">
+                        <template v-slot:info-popover>
+                            <SQLExplanation 
+                            :sqlQuery="qRet.sqlQuery" 
+                            :nlExplanation="qRet.nlExplanation" 
+                            :selectDecoded="qRet.sqlDecoded['select'][1]" 
+                            :whereDecoded="qRet.sqlDecoded['where'].filter((d, i) => i % 2 === 0)" 
+                            :groupbyDecoded="qRet.sqlDecoded['groupBy']"
+                            :tables="tables" />
+                        </template>
+                    </DraggableTop>
+                </div>
+            </draggable>
+        </div>
+    </div>
+</div>
+</div>

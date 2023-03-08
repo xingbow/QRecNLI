@@ -1,0 +1,47 @@
+<div style="width: 100%;">
+    <div class="p rowchild" style="width: 100%;">
+        <span style="margin:5px 10px;">
+            <h6>Query:</h6>
+        </span>
+        <div style="width:90%; margin:5px 10px">
+            <div class="input-group" style="font-size:14px;">
+                <div class="input-body">
+                    <el-input type="text" v-model="userText" v-on:input="onInput" v-on:blur="onBlur" placeholder="show me the film with the largest cost." />
+                    <el-popover placement="bottom" width="300" content="default" v-model="popoverVisible">
+                        <el-table :data="textOptions" v-bind:show-header="false" max-height="300px" v-bind:cell-style="rowStyle" v-on:row-click="rowClick">
+                            <el-table-column width="30" property="type" label="type">
+                                <template slot-scope="scope">
+                                <div v-if="scope.row.type === 'text'">
+                                    <i class="fas fa-font"></i>
+                                </div>
+                                <div slot-scope="scope" v-else-if="scope.row.type === 'number'">
+                                    <i class="fas fa-list-ol"></i>
+                                </div>
+                                <div slot-scope="scope" v-else-if="scope.row.type === 'key'">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                            </template>
+                            </el-table-column>
+                            <el-table-column width="150" property="colName" label="name" />
+                            <el-table-column width="80" property="tableName" label="table name" />
+                        </el-table>
+                    </el-popover>
+                </div>
+                <div class="input-group-append">
+                    <!-- <button class="btn btn-outline-secondary btn-sm speaker" type="button"><i class="fas fa-microphone"></i></button> -->
+                    <button class="btn btn-outline-secondary btn-sm" type="button" v-on:click="search">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="p rowchild recommend-container" style="margin-left: 80px">
+        <span class="next-query-trigger" v-on:click="showSugg = !showSugg">You may also want to ask</span>
+        <div class="recommend" v-if="showSugg">
+            <div v-for="(nl, nlidx) in qSugg">
+                <a class="recommend-item " v-on:click="selectQuery(nlidx)">
+                    <span style="margin: 0px 5px;">{{nl.replace(',', ' and')}}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

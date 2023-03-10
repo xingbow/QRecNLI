@@ -1,3 +1,4 @@
+import traceback
 
 import lux
 import pandas as pd
@@ -5,10 +6,6 @@ from lux.vis.Vis import Vis
 from lux.vis.VisList import VisList
 import random
 from itertools import combinations
-
-df = pd.read_csv("https://raw.githubusercontent.com/lux-org/lux-datasets/master/data/college.csv")
-new_df = pd.read_csv("https://raw.githubusercontent.com/lux-org/lux-datasets/master/data/countries.csv")
-df_list = [df, new_df]
 
 
 
@@ -20,16 +17,6 @@ def get_all_rec(rec_dict):
     return all_rec
 
 
-unexplored_intents = [0 for i in range(len(df_list))]
-explored_intents = [0 for i in range(len(df_list))]
-current_choice = [0 for i in range(len(df_list))]
-for i in range(len(df_list)):
-    unexplored_intents[i] = get_all_rec(df_list[i].recommendation)
-    explored_intents[i] = []
-
-    current_choice[i] = "NULL"
-top_k1 = 5
-top_k2 = 5
 
 
 def already_exist(lst, item):
@@ -79,21 +66,27 @@ def rec_next_step(df, unexplored_intents, explored_intents, current_choice, top_
     all_recommendation_E_afterdelete.sort(key=lambda x: x.score, reverse=True)
     all_recommendation_U.sort(key=lambda x: x.score, reverse=True)
 
-    return all_recommendation_U[:min(top_k1, len(all_recommendation_U))], all_recommendation_E_afterdelete[:min(top_k2,
-                                                                                                                len(
-                                                                                                                    all_recommendation_E_afterdelete))]
+    return all_recommendation_U[:min(top_k1, len(all_recommendation_U))], all_recommendation_E_afterdelete[:min(top_k2,len(all_recommendation_E_afterdelete))]
 
 
 def multiDF_rec(df_list, unexplored_intents, explored_intents, current_choice, top_k1, top_k2):
     U = []
     E = []
     for i in range(len(df_list)):
-        rec_list = rec_next_step(df_list[i], unexplored_intents[i], explored_intents[i], current_choice[i], top_k1, top_k2)[0]
-        rec_dict = [{'vis_obj': x, 'df_index': i} for x in rec_list]
-        U += rec_dict
-        rec_list = rec_next_step(df_list[i], unexplored_intents[i], explored_intents[i], current_choice[i], top_k1, top_k2)[1]
-        rec_dict = [{'vis_obj': x, 'df_index': i} for x in rec_list]
-        E += rec_dict
+        try:
+            rec_list = rec_next_step(df_list[i], unexplored_intents[i], explored_intents[i], current_choice[i], top_k1, top_k2)[0]
+            rec_dict = [{'vis_obj': x, 'df_index': i} for x in rec_list]
+            U += rec_dict
+            rec_list = rec_next_step(df_list[i], unexplored_intents[i], explored_intents[i], current_choice[i], top_k1, top_k2)[1]
+            rec_dict = [{'vis_obj': x, 'df_index': i} for x in rec_list]
+            E += rec_dict
+        except:
+            traceback.print_exc()
+
+
+
+
+
 
     U.sort(key=lambda x: x['vis_obj'].score, reverse=True)
     E.sort(key=lambda x: x['vis_obj'].score, reverse=True)
@@ -104,6 +97,23 @@ def lux_rec_test():
     return rec
 
 if __name__ == "__main__":
+    df = pd.read_csv("https://raw.githubusercontent.com/lux-org/lux-datasets/master/data/college.csv")
+    new_df = pd.read_csv("https://raw.githubusercontent.com/lux-org/lux-datasets/master/data/countries.csv")
+    df_list = [df, new_df]
+
+    unexplored_intents = [0 for i in range(len(df_list))]
+    explored_intents = [0 for i in range(len(df_list))]
+    current_choice = [0 for i in range(len(df_list))]
+    for i in range(len(df_list)):
+        unexplored_intents[i] = get_all_rec(df_list[i].recommendation)
+        explored_intents[i] = []
+
+        current_choice[i] = "NULL"
+    top_k1 = 5
+    top_k2 = 5
+
+
+
     print('lux_test')
     print(lux_rec_test())
     print('end')

@@ -7,9 +7,11 @@ import warnings
 
 import sqlite3
 import pandas as pd
+import random
+import traceback
 
 try:
-    from luxRec import  lux_rec_test
+    from luxRec import  lux_rec_test,multiDF_rec
     import globalVariable as GV
     import sqlParser as sp
     import queryRec as qr
@@ -35,6 +37,7 @@ class DataService(object):
     def __init__(self, dataset="spider"):
         self.text2sql_model_loaded = True
         self.sql_parser_loaded = True
+
         self.sqlsugg_model_loaded = True
         self.sql2text_model_loaded = True
         self.dataset = dataset
@@ -50,6 +53,10 @@ class DataService(object):
             self.db_id = ""
             self.cur_q = None
             self.h_q = {}
+            self.u_q_lux={}
+            self.e_q_lux={}
+            self.c_lux={}
+
             self.table_cols = []
         else:
             raise Exception("currently only support spider dataset")
@@ -119,7 +126,7 @@ class DataService(object):
     def get_tables(self, db_id):
         self.db_id = db_id
         db_info = self.db_meta_dict[db_id]
-        # print(db_info.keys())
+        #print(db_info.keys())
         tkeys = set(db_info["primary_keys"]).union(set([k for kp in db_info["foreign_keys"] for k in kp]))
         table_names = db_info["table_names"]
         db_dict = {}
@@ -138,13 +145,41 @@ class DataService(object):
         # sort column names according to column types
         for dk in db_dict.keys():
             db_dict[dk] = sorted(db_dict[dk], key=lambda x: x[1])
-        # print(db_dict)
+        print('get_tables//')
+        print('db_dict.keys',db_dict.keys())
+        return db_dict
+
+    def get_tables_original(self, db_id):
+        self.db_id = db_id
+        db_info = self.db_meta_dict[db_id]
+        print('db_info.keys()',db_info.keys())
+        tkeys = set(db_info["primary_keys"]).union(set([k for kp in db_info["foreign_keys"] for k in kp]))
+        table_names = db_info["table_names_original"]
+        db_dict = {}
+        for cidx, (colname, coltype) in enumerate(zip(db_info["column_names_original"], db_info["column_types"])):
+            # print(cidx, colname, coltype)
+            cname = colname[1]
+            table_idx = colname[0]
+            if table_idx != -1:
+                table_name = table_names[table_idx]
+                if table_name not in db_dict:
+                    db_dict[table_name] = []
+                if cidx in tkeys:
+                    db_dict[table_name].append([cname, "key"])
+                else:
+                    db_dict[table_name].append([cname, coltype])
+        # sort column names according to column types
+        for dk in db_dict.keys():
+            db_dict[dk] = sorted(db_dict[dk], key=lambda x: x[1])
+        print('get_tables_original//')
+        print('db_dict.keys',db_dict.keys())
         return db_dict
 
     def get_cols(self, table_name):
         table_names = self.db_meta_dict[self.db_id]["table_names_original"]
         all_col_names = self.db_meta_dict[self.db_id]["column_names_original"]
         all_col_types = self.db_meta_dict[self.db_id]["column_types"]
+        print('table names',table_names)
         table_idx = table_names.index(table_name)
         cols_info = []
         for col_idx, col_name in enumerate(all_col_names):
@@ -196,6 +231,7 @@ class DataService(object):
                 row_dict[col_names[eleidx]] = ele
             row_dict["id"] = rowid
             table_data.append(row_dict)
+        print('tabel_data',table_data)
         return table_data
 
     def text2sql(self, q, db_id):
@@ -221,6 +257,30 @@ class DataService(object):
         self.h_q[db_id]["select"] = []
         self.h_q[db_id]["groupby"] = []
         self.h_q[db_id]["agg"] = []
+
+    def get_all_rec(self,rec_dict):
+        all_rec = []
+        for each in rec_dict:
+            all_rec += rec_dict[each]
+        return all_rec
+    def init_query_context_lux(self,db_id):
+
+        df_list=self.get_df_list(db_id)
+        print("lenlenlen",len(df_list))
+
+        self.u_q_lux[db_id]=[[]for i in range(len(df_list))]
+        for i in range(len(df_list)):
+            try:
+                self.u_q_lux[db_id][i]=self.get_all_rec(df_list[i].recommendation)
+            except:
+                traceback.print_exc()
+
+
+
+
+        self.e_q_lux[db_id]=[[] for i in range(len(df_list))]
+        print('init_e',self.e_q_lux)
+        self.c_lux[db_id]=['NULL' for i in range(len(df_list))]
 
     def set_query_context(self, sql, db_id):
         """
@@ -253,6 +313,16 @@ class DataService(object):
 
         # print(json.dumps(self.h_q, indent=2))
 
+    def set_query_context_lux(self,vis,db_id):
+
+        index = vis['df_index']
+        print('index',index)
+        C_vis_obj = vis['vis_obj']
+        self.e_q_lux[db_id][index].append(str(C_vis_obj))
+        print('set_E',self.e_q_lux[db_id])
+        self.u_q_lux[db_id][index] = [x for x in self.u_q_lux[db_id][index] if str(x) != str(C_vis_obj)]
+        print('set_u',self.u_q_lux[db_id][index])
+        self.c_lux[db_id][index]=C_vis_obj
 
     def sql_suggest(self, db_id, table_cols, min_support = 0.6, context_dict = {"select": [], "groupby": [], "agg": []}):
         """
@@ -289,9 +359,33 @@ class DataService(object):
             "sql": sqls,
             "nl": sql2nls
         }
+    def get_df_list(self,db_id):
+        db_dict=self.get_tables_original(db_id)
+        print('db_dict',db_dict)
+        df_list=[self.load_table_content(x) for x in db_dict.keys()]
+        print('df_list',df_list)
+        df_list=[pd.DataFrame(x) for x in df_list]
+        print('df_list_df',df_list)
+        return df_list
 
-    def lux_suggest(self):
-        return lux_rec_test()
+    def lux_suggest(self,db_id,unexplored_intents=0, explored_intents=0, current_choice=0, top_k1=5, top_k2=5):
+        df_list = self.get_df_list(db_id)
+        if db_id in self.u_q_lux.keys():
+            unexplored_intents=self.u_q_lux[db_id]
+            explored_intents=self.e_q_lux[db_id]
+            current_choice=self.c_lux[db_id]
+        else:
+            unexplored_intents = [self.get_all_rec(df_list[i].recommendation) for i in range(len(df_list))]
+            explored_intents= [[] for i in range(len(df_list))]
+            current_choice = ['NULL' for i in range(len(df_list))]
+
+        #print('df_list',df_list)
+        print('unexplored_intents',unexplored_intents)
+        print('current',current_choice)
+        rec=multiDF_rec(df_list,unexplored_intents,explored_intents, current_choice, top_k1, top_k2)
+
+
+        return rec
 
 
     def data2vl(self, data):
@@ -395,33 +489,75 @@ class DataService(object):
 if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
-    db_id = GV.test_topic
-    db_dict = dataService.get_tables(db_id)
-    db_cols = dataService.get_db_cols("customers_and_addresses")
-    print("db_cols: ", db_cols)
+    db_id = 'customers_and_addresses'
+    print('df_lists',dataService.db_lists)
+    '''
+    for each_db in dataService.db_lists:
+        db_id=each_db
+        print('db_id')
+        df = dataService.get_df_list(db_id)
+        for i in range(len(df)):
+            print('type', df[i].data_type)
+        dataService.init_query_context_lux(db_id)
+        lux_rec_result = dataService.lux_suggest(db_id)
+        print('first lux rec', lux_rec_result)
+        if lux_rec_result[0] + lux_rec_result[1]!=[]:
+            C = random.choice(lux_rec_result[0] + lux_rec_result[1])
+            print('C', C)
+            dataService.set_query_context_lux(C, db_id)
+            second_lux_rec_result = dataService.lux_suggest(db_id)
+            print('second lux rec', second_lux_rec_result)
+        else:
+            continue
+            
+    '''
+    #db_id='cinema'
+
+    #db_dict = dataService.get_tables(db_id)
+
+    #db_cols = dataService.get_db_cols("customers_and_addresses")
+    #print("db_cols: ", db_cols)
+
+    #lux_test
+    df=dataService.get_df_list(db_id)
+    for i in range(len(df)):
+
+        print('type',df[i].data_type)
+    dataService.init_query_context_lux(db_id)
+    lux_rec_result =dataService.lux_suggest(db_id)
+    print('first lux rec',lux_rec_result)
+    if lux_rec_result[0] + lux_rec_result[1] != []:
+        C = random.choice(lux_rec_result[0] + lux_rec_result[1])
+        print('C', C)
+        dataService.set_query_context_lux(C, db_id)
+        second_lux_rec_result = dataService.lux_suggest(db_id)
+        print('second lux rec', second_lux_rec_result)
+    else:
+        pass
+
 
     # 1. text2sql
     result = dataService.text2sql("What are the dates when the customers became customers?", "customers_and_addresses")
     print("test2sql: {}".format(result))
-    exit()
+
     
-    # 2. db lists
-    # print(dataService.db_lists)
-    # dataService.get_tables("cinema")
-    # print(dataService.get_cols("film"))
-    # print(dataService.load_table_content("film"))
+    #2. db lists
+    print(dataService.db_lists)
+    dataService.get_tables("cinema")
+    print(dataService.get_cols("film"))
+    print(dataService.load_table_content("film"))
     
-    # 3. query suggestion
-    # print(dataService.db_meta_dict["cinema"])
-    # db_info = dataService.db_meta_dict[db_id]
-    # print(db_info["primary_keys"], db_info["foreign_keys"])
-    # table_names = db_info["table_names"]
-    # table_cols = [table_names[col[0]] + ": " + col[1] for col in db_info["column_names"] if col[0]!=-1]
-    # print(table_cols)
-    # dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
+    #3. query suggestion
+    print(dataService.db_meta_dict["cinema"])
+    db_info = dataService.db_meta_dict[db_id]
+    print(db_info["primary_keys"], db_info["foreign_keys"])
+    table_names = db_info["table_names"]
+    table_cols = [table_names[col[0]] + ": " + col[1] for col in db_info["column_names"] if col[0]!=-1]
+    print(table_cols)
+    dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
     ############### test sql suggestions
-    # sql_suggest = dataService.sql_suggest(db_id, db_cols)
-    # print("sql_suggest: ", sql_suggest)
+    sql_suggest = dataService.sql_suggest(db_id, db_cols)
+    print("sql_suggest: ", sql_suggest)
 
     ############### test sql2nl 
     sql = "SELECT addresses.other_address_details FROM addresses"

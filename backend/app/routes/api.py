@@ -92,9 +92,9 @@ def sql_sugg(db_id):
     sugg = current_app.dataService.sql_suggest(db_id, table_cols)
     # print(f"sugg: {sugg}")
     return jsonify(sugg)
-@api.route("/lux_sugg", methods=['GET'])
-def lux_sugg():
-    lux_rec=current_app.dataService.lux_suggest()
+@api.route("/lux_sugg/<db_id>", methods=['GET'])
+def lux_sugg(db_id):
+    lux_rec=current_app.dataService.lux_suggest(db_id)
     print(lux_rec)
     return str(lux_rec)
 

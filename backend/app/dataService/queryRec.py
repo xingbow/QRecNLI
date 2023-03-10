@@ -116,7 +116,7 @@ class queryRecommender(object):
         sim_sum = [sum(db_df_bin[col]) for col in db_df_bin.columns]
         db_df_bin = db_df_bin[db_df_bin.columns[(-np.array(sim_sum)).argsort()]]
         ######################################################################
-        
+        print('db_df_bin',db_df_bin)
         self.db_cache[topic] = db_df_bin
         return db_df_bin
 

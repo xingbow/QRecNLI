@@ -25,6 +25,8 @@ export default {
             if (dbselected.length > 0) {
                 dataService.SQLSugg(dbselected, (suggData) => {
                     this.qSugg = suggData["nl"];
+                    // add emit original query suggestions
+                    pipeService.emitOriginalSugg(suggData);
                 });
             }
         },
@@ -44,6 +46,8 @@ export default {
                 dataService.SQLSugg(vm.dbselected, (suggData) => {
                     console.log("suggestion data: ", suggData);
                     this.qSugg = suggData["nl"];
+                    // add emit original (i.e., 1st) query suggestions
+                    pipeService.emitOriginalSugg(suggData);
                 });
             }
         });

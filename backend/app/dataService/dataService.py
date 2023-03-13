@@ -291,7 +291,7 @@ class DataService(object):
         """Get VegaLite specifications from tabular-style data.
         data: pd.DataFrame, data to be presented
         """
-        data_types = {column: helpers.get_attr_type(data[column].tolist()) for column in data}
+        data_types = {column: helpers.get_attr_type(data[column].values.tolist()) for column in data}
 
         attr_list, attr_type_str = helpers.get_attr_datatype_shorthand(data_types)
         if attr_type_str not in vis_design_combos or not \

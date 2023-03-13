@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const GET_REQUEST = 'get'
 const POST_REQUEST = 'post'
-const dataServerUrl = `${process.env.DATA_SERVER_URL || 'http://127.0.0.1:5011'}/api`
+const dataServerUrl = `${process.env.DATA_SERVER_URL || 'http://127.0.0.1:5012'}/api`
 
 function request(url, params, type, callback) {
     let func

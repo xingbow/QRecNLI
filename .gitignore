@@ -1,0 +1,32 @@
+.DS_Store
+.ipynb_checkpoints/
+.lock
+
+# frontend
+frontend/node_modules/
+
+# backend
+__pycache__/
+backend/app/data/
+backend/app/dataService/cache/
+node_modules
+cache
+*.pyc
+
+# jupyter
+.ipnb_*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# experiments
+t5_base_imdb_sentiment
+lightning_logs
+t5_seq
+notebooks/

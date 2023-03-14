@@ -1,7 +1,7 @@
 .DS_Store
 .ipynb_checkpoints/
 .lock
-.history
+.history/
 # frontend
 frontend/node_modules/
 
@@ -9,7 +9,7 @@ frontend/node_modules/
 __pycache__/
 backend/app/data/
 backend/app/dataService/cache/
-node_modules
+node_modules/
 cache
 *.pyc
 
@@ -32,3 +32,4 @@ t5_seq
 notebooks/
 package-lock.json
 package.json
+.history/backend

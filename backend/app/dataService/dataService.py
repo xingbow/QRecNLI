@@ -519,10 +519,12 @@ if __name__ == '__main__':
     #print("db_cols: ", db_cols)
 
     #lux_test
-    df=dataService.get_df_list(db_id)
-    for i in range(len(df)):
 
-        print('type',df[i].data_type)
+    #df=dataService.get_df_list(db_id)
+    #for i in range(len(df)):
+
+     #   print('type',df[i].data_type)
+
     dataService.init_query_context_lux(db_id)
     lux_rec_result =dataService.lux_suggest(db_id)
     print('first lux rec',lux_rec_result)

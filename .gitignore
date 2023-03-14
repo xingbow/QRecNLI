@@ -29,7 +29,6 @@ cache
 t5_base_imdb_sentiment
 lightning_logs
 t5_seq
+notebooks
 notebooks/
-package-lock.json
-package.json
 .history/backend

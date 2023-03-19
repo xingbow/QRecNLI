@@ -30,6 +30,6 @@ t5_base_imdb_sentiment
 lightning_logs
 t5_seq
 notebooks/
-package-lock.json
-package.json
+/package-lock.json
+/package.json
 .history/backend

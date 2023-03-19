@@ -24,6 +24,7 @@
 #   'except': None/sql
 #   'union': None/sql
 # }
+
 ################################
 import sys
 import os
@@ -233,3 +234,40 @@ def extract_agg_opts(select_decoded):
 
 def extract_groupby_names(groupby_decoded):
     return [gb[1] for gb in groupby_decoded]
+
+
+def decode_sql_lux(sql_decoded):
+
+    SELECT=[]
+    GROUPBY=[]
+    FROM=[]
+    WHERE=[]
+    already_select=[]
+    agg_dict=extract_agg_opts(sql_decoded['select'])
+    select_entity=extract_select_names(sql_decoded['select'])
+    groupby_entity=extract_groupby_names(sql_decoded['groupBy'])
+    for each in agg_dict.keys():
+        if agg_dict[each]!=[]:
+            if each=='avg':
+                for i in agg_dict[each]:
+                    SELECT.append('mean'+'('+i.split(':')[1].strip()+')')
+                    already_select.append(i.split(':')[1])
+
+            else:
+                for i in agg_dict[each]:
+                    SELECT.append(each+'('+i.split(":")[1].strip()+')')
+                    already_select.append(i.split(':')[1])
+
+    for each in select_entity :
+        if each.split(":")[1]  not in already_select:
+            SELECT.append(each.split(":")[1].strip())
+    FROM.append(select_entity[0].split(':')[0].strip())
+    for each in groupby_entity:
+        GROUPBY.append(each.split(':')[1].strip())
+
+    #TODO:solve where
+
+    WHERE.append(sql_decoded['where'])
+    return {'SELECT': SELECT, 'FROM': FROM, 'WHERE': WHERE, "GROUP BY": GROUPBY}
+if __name__=='__main__':
+    temp=decode_sql()

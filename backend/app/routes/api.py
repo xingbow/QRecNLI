@@ -26,14 +26,23 @@ def initialization(dataset):
     else:
         raise Exception("currently only support spider dataset")
 
-
+'''
 @api.route("/get_tables/<db_id>")
 def get_tables(db_id):
     # TODO: initialize the query context when the db is (re)selected
     current_app.dataService.init_query_context(db_id)
     print("query cache init.")
     return jsonify(current_app.dataService.get_tables(db_id))
-
+'''
+####myh#####
+@api.route("/get_tables/<db_id>")
+def get_tables(db_id):
+    # TODO: initialize the query context when the db is (re)selected
+    #current_app.dataService.init_query_context(db_id)
+    current_app.dataService.init_query_context_lux(db_id)
+    print("query cache init.")
+    return jsonify(current_app.dataService.get_tables(db_id))
+#************
 
 @api.route("/get_database_meta/<db_id>")
 def get_database_meta(db_id):
@@ -47,6 +56,7 @@ def load_tables(table_name):
 
 # @api.route("/text2sql/<user_text>/<db_id>", methods=['GET'])
 # def text2sql(user_text="films and film prices that cost below 10 dollars", db_id="cinema"):
+'''
 @api.route("/text2sql", methods=['POST'])
 def text2sql():
     text2sql_data = request.json
@@ -57,14 +67,27 @@ def text2sql():
     result = {'sql': sql, 'data': current_app.dataService.sql2data(sql, db_id).values.tolist()}
     print("text2sql: ", result)
     return jsonify(result)
+'''
+@api.route("/text2sql", methods=['POST'])
+def text2sql():
+    text2sql_data = request.json
+    user_text = text2sql_data["user_text"]
+    db_id = text2sql_data["db_id"]
+    sql = current_app.dataService.text2sql(user_text, db_id)
 
+    current_app.dataService.set_query_context_lux(sql, db_id)  # set query context
+    result = {'sql': sql, 'data': current_app.dataService.sql2data(sql, db_id).values.tolist()}
+    print("text2sql: ", result)
+    return jsonify(result)
 
 @api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
 def sql2vis(sql_text, db_id="cinema"):
+    sql_text='SELECT Cinema_ID FROM cinema'
     response = current_app.dataService.sql2vl(sql_text, db_id, return_data=True)
     data = response['data'].to_dict('records')
     content = response['vl']
     if isinstance(content, list):
+
         # TODO: vega-vue only supports the following mark types
         content = [s for s in content if s['mark']['type'] in
                    ["bar", "circle", "square", "tick", "line", "area", "point", "rule", "text"]]
@@ -80,6 +103,7 @@ def sql2vis(sql_text, db_id="cinema"):
 @api.route("/sql2text/<sql_text>/<db_id>", methods=['GET'])
 def sql2text(sql_text, db_id="cinema"):
     sql_parsed = current_app.dataService.parsesql(sql_text, db_id)
+
     sql_decoded = processSQL.decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
     text = processSQL.sql2text(sql_decoded)
     response = {'sqlDecoded': sql_decoded, 'text': text}
@@ -95,7 +119,7 @@ def sql_sugg(db_id):
 
 @api.route("/lux_sugg/<db_id>", methods=['GET'])
 def lux_sugg(db_id):
-    current_app.dataService.init_query_context_lux(db_id)
+
     lux_rec=current_app.dataService.lux_suggest(db_id)
     print(lux_rec)
     return str(lux_rec)

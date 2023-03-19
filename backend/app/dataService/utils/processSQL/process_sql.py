@@ -204,6 +204,7 @@ def parse_col(toks, start_idx, tables_with_alias, schema, default_tables=None):
         :returns next idx, column id
     """
     tok = toks[start_idx]
+    print('tok',tok)
     if tok == "*":
         return start_idx + 1, schema.idMap[tok]
 
@@ -216,7 +217,10 @@ def parse_col(toks, start_idx, tables_with_alias, schema, default_tables=None):
 
     for alias in default_tables:
         table = tables_with_alias[alias]
+        print('table',table)
+        print('schema.schema[table]',schema.schema[table])
         if tok in schema.schema[table]:
+
             key = table + "." + tok
             return start_idx+1, schema.idMap[key]
 
@@ -272,8 +276,16 @@ def parse_val_unit(toks, start_idx, tables_with_alias, schema, default_tables=No
     col_unit1 = None
     col_unit2 = None
     unit_op = UNIT_OPS.index('none')
+    '''
+    print('toks',toks)
+    print('idx',idx)
+    print('tables_with_alias',tables_with_alias)
+    print('schema',schema)
+    print('default_tables',default_tables)
+    '''
 
     idx, col_unit1 = parse_col_unit(toks, idx, tables_with_alias, schema, default_tables)
+
     if idx < len_ and toks[idx] in UNIT_OPS:
         unit_op = UNIT_OPS.index(toks[idx])
         idx += 1
@@ -342,6 +354,7 @@ def parse_condition(toks, start_idx, tables_with_alias, schema, default_tables=N
     conds = []
 
     while idx < len_:
+        print(11111111111111)
         idx, val_unit = parse_val_unit(toks, idx, tables_with_alias, schema, default_tables)
         not_op = False
         if toks[idx] == 'not':

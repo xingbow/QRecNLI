@@ -30,7 +30,7 @@ except ImportError:
     import app.dataService.globalVariable as GV
     import app.dataService.sqlParser as sp
     import app.dataService.queryRec as qr
-    from app.dataService.luxRec import lux_run_test
+    from  app.dataService.luxRec import lux_run_test
     from app.dataService.utils import helpers
     from app.dataService.utils.visRecos import vis_design_combos
     from app.dataService.vlgenie import VLGenie
@@ -564,12 +564,12 @@ if __name__ == '__main__':
     dataService = DataService("spider")
     db_id = 'cinema'
 
-    dataService.set_query_context("SELECT cinema_id FROM cinema WHERE openning_year=2010",db_id)
-    exit()
-    sql='SELECT cinema_id FROM cinema'
-    response =dataService.sql2vl(sql, db_id, return_data=True)
-    print('response',response)
-    exit()
+    #dataService.set_query_context("SELECT cinema_id FROM cinema WHERE openning_year=2010",db_id)
+    #exit()
+    #sql='SELECT cinema_id FROM cinema'
+    #response =dataService.sql2vl(sql, db_id, return_data=True)
+    #print('response',response)
+    #exit()
 
 
     #dataService.get_df_list(db_id)

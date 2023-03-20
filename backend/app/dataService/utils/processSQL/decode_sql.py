@@ -267,7 +267,7 @@ def decode_sql_lux(sql_decoded):
 
     #TODO:solve where
 
-    WHERE.append(sql_decoded['where'])
+    #WHERE.append(sql_decoded['where'])
     return {'SELECT': SELECT, 'FROM': FROM, 'WHERE': WHERE, "GROUP BY": GROUPBY}
 if __name__=='__main__':
     temp=decode_sql()

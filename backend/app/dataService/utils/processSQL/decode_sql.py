@@ -234,14 +234,33 @@ def extract_agg_opts(select_decoded):
 
 def extract_groupby_names(groupby_decoded):
     return [gb[1] for gb in groupby_decoded]
+################add by myh#############
+
+def extract_where_elements(where_decoded):
+    where_element=[]
+    print('gv.cond',GV.COND_OPS)
+    print('where_deocded',where_decoded)
+    for each_condition in where_decoded:
+      if each_condition not in  GV.COND_OPS:
+        #print('each_condition',each_condition)
+        where_dict={}
+        filter_op=each_condition[1]
+        column_name=each_condition[2][1][1].split(':')[1].strip()
+        value=each_condition[3]
+        where_dict['filter_op']=filter_op
+        where_dict['column_name']=column_name
+        where_dict['value']=value
+        where_element.append(where_dict)
+    return where_element
 
 
+#**************************************
 def decode_sql_lux(sql_decoded):
 
     SELECT=[]
     GROUPBY=[]
     FROM=[]
-    WHERE=[]
+
     already_select=[]
     agg_dict=extract_agg_opts(sql_decoded['select'])
     select_entity=extract_select_names(sql_decoded['select'])
@@ -267,7 +286,7 @@ def decode_sql_lux(sql_decoded):
 
     #TODO:solve where
 
-    #WHERE.append(sql_decoded['where'])
+    WHERE=extract_where_elements(sql_decoded['where'])
     return {'SELECT': SELECT, 'FROM': FROM, 'WHERE': WHERE, "GROUP BY": GROUPBY}
 if __name__=='__main__':
     temp=decode_sql()

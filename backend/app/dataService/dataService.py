@@ -24,7 +24,7 @@ try:
     from vlgenie import VLGenie
     from utils.processSQL import decode_sql, generate_sql
     from utils.processSQL.sql_vis_convert import vis2sql,sql_element2vis
-    from utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names,decode_sql_lux
+    from utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names,decode_sql_lux, extract_where_elements
 except ImportError:
 
     import app.dataService.globalVariable as GV
@@ -36,7 +36,7 @@ except ImportError:
     from app.dataService.vlgenie import VLGenie
     from app.dataService.utils.processSQL import decode_sql, generate_sql
     from app.dataService.utils.processSQL.sql_vis_convert import vis2sql,sql_element2vis
-    from app.dataService.utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names
+    from app.dataService.utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names,extract_where_elements
 
 
 class DataService(object):
@@ -340,6 +340,7 @@ class DataService(object):
         print("select ents: ", select_ents)
         print("groupby ents: ", groupby_ents)
         print("agg dict: ", agg_dict)
+        print('where',extract_where_elements(sql_decoded['where']))
         print(f"table_cols: {table_cols}")
 
         self.cur_q = [sql, db_id]
@@ -565,9 +566,9 @@ class DataService(object):
 if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
-    db_id = 'customers_and_addresses'
+    db_id = 'cinema'
 
-    #dataService.set_query_context("SELECT cinema_id FROM cinema WHERE openning_year=2010",db_id)
+    #dataService.set_query_context("SELECT cinema_id FROM cinema WHERE openning_year = 2020 and cinema_id = 1",db_id)
     #exit()
     #sql='SELECT cinema_id FROM cinema'
     #response =dataService.sql2vl(sql, db_id, return_data=True)
@@ -581,16 +582,16 @@ if __name__ == '__main__':
     #exit()
 
     ############### test sql2nl
-    '''
-    sql = "SELECT addresses.other_address_details FROM addresses"
+
+    sql = "SELECT cinema_id FROM cinema WHERE openning_year=2020"
     nl = dataService.sql2nl(sql)
 
     print("sql: {} \n nl: {}".format(sql, nl))
     # 1. text2sql
-    result = dataService.text2sql(nl,db_id)
+    result = dataService.text2sql('What are the ids of all cinemas that are opened in 2020?',db_id)
     print("test2sql: {}".format(result))
     exit()
-    '''
+
 
     #dataService.sql2data(sql="SELECT other_address_details FROM addresses",db_id=db_id)
     #dataService.set_query_context("SELECT addresses.address_content , addresses.other_address_details FROM addresses",db_id)

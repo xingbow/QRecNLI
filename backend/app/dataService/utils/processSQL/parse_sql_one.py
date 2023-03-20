@@ -102,9 +102,9 @@ def get_schemas_from_json(fpath):
 
 
 if __name__ == '__main__':
-    sql = "SELECT name ,  country ,  age FROM singer group by country having count(*) > 2"
+    sql = "SELECT cinema_id FROM cinema WHERE openning_year = 2020 and cinema_id = 1"
     # ORDER BY age DESC"
-    db_id = "concert_singer"
+    db_id = "cinema"
     # print(os.path.dirname(os.path.realpath(__file__)))
     table_file = os.path.join(os.path.dirname(__file__),
                               "../../../data/dataset/spider/tables.json")

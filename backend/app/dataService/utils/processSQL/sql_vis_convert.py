@@ -82,7 +82,8 @@ def sql_element2vis(sql_element):
         if len(temp)==2:
             lux_intent.append(lux.Clause(temp[1][:-1],aggregation=temp[0].lower()))
     for each in sql_element['WHERE']:
-        lux_intent.append(each)
+        where_intent=lux.Clause(attribute=each['column_name'],filter_op=each['filter_op'], value=each['value'])
+        lux_intent.append(where_intent)
     if len(sql_element['FROM'])>1:
         print('lux does not support cross-df recommendation!!!!')
     table_name=sql_element['FROM'][0]

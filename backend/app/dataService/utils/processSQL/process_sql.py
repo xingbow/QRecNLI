@@ -204,7 +204,7 @@ def parse_col(toks, start_idx, tables_with_alias, schema, default_tables=None):
         :returns next idx, column id
     """
     tok = toks[start_idx]
-    print('tok',tok)
+    #print('tok',tok)
     if tok == "*":
         return start_idx + 1, schema.idMap[tok]
 
@@ -217,8 +217,8 @@ def parse_col(toks, start_idx, tables_with_alias, schema, default_tables=None):
 
     for alias in default_tables:
         table = tables_with_alias[alias]
-        print('table',table)
-        print('schema.schema[table]',schema.schema[table])
+        #print('table',table)
+        #print('schema.schema[table]',schema.schema[table])
         if tok in schema.schema[table]:
 
             key = table + "." + tok
@@ -354,7 +354,7 @@ def parse_condition(toks, start_idx, tables_with_alias, schema, default_tables=N
     conds = []
 
     while idx < len_:
-        print(11111111111111)
+        #print(11111111111111)
         idx, val_unit = parse_val_unit(toks, idx, tables_with_alias, schema, default_tables)
         not_op = False
         if toks[idx] == 'not':
@@ -403,7 +403,15 @@ def parse_select(toks, start_idx, tables_with_alias, schema, default_tables=None
         if toks[idx] in AGG_OPS:
             agg_id = AGG_OPS.index(toks[idx])
             idx += 1
+
+        #print('select1111',)
+        #print('toks', toks)
+        #print('idx', idx)
+        #print('tables_with_alias', tables_with_alias)
+        #print('schema', schema)
+        #print('default_tables', default_tables)
         idx, val_unit = parse_val_unit(toks, idx, tables_with_alias, schema, default_tables)
+        #print('val_unit',val_unit)
         val_units.append((agg_id, val_unit))
         if idx < len_ and toks[idx] == ',':
             idx += 1  # skip ','

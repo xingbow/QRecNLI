@@ -297,9 +297,12 @@ class DataService(object):
         print('sql_element',sql_element)
         vis_intent,vis_table=sql_element2vis(sql_element)
 
-        df=pd.DataFrame(self.load_table_content(vis_table)).drop(columns='id')
-        df=pd.DataFrame(self.load_table_content('schedule')).drop(columns='id')
-        df.columns=df.columns.map(lambda x:x.replace('_'," ").lower())
+        df_list = self.get_df_list(db_id)
+        table_name_list=list(self.get_tables(db_id).keys())
+        index=table_name_list.index(vis_table)
+        df=df_list[index]
+        #df=pd.DataFrame(self.load_table_content('schedule')).drop(columns='id')
+        #df.columns=df.columns.map(lambda x:x.replace('_'," ").lower())
 
         print('df______________',df)
 
@@ -562,7 +565,7 @@ class DataService(object):
 if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
-    db_id = 'cinema'
+    db_id = 'customers_and_addresses'
 
     #dataService.set_query_context("SELECT cinema_id FROM cinema WHERE openning_year=2010",db_id)
     #exit()

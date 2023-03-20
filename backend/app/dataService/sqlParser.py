@@ -111,5 +111,8 @@ if __name__=='__main__':
     ####### sql2text test
     sql2nl = SQL2NL()
     sql = "SELECT name ,  country ,  age FROM singer ORDER BY age DESC"
+    parser=SQLParser()
+    parse_result=parser.parse_sql()
+    print('parse_result',parse_result)
     nl = sql2nl.sql2text(sql)
     print("sql: {} \n nl: {}".format(sql, nl))

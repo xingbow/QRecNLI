@@ -24,6 +24,7 @@
 #   'except': None/sql
 #   'union': None/sql
 # }
+
 ################################
 import sys
 import os
@@ -233,3 +234,59 @@ def extract_agg_opts(select_decoded):
 
 def extract_groupby_names(groupby_decoded):
     return [gb[1] for gb in groupby_decoded]
+################add by myh#############
+
+def extract_where_elements(where_decoded):
+    where_element=[]
+    print('gv.cond',GV.COND_OPS)
+    print('where_deocded',where_decoded)
+    for each_condition in where_decoded:
+      if each_condition not in  GV.COND_OPS:
+        #print('each_condition',each_condition)
+        where_dict={}
+        filter_op=each_condition[1]
+        column_name=each_condition[2][1][1].split(':')[1].strip()
+        value=each_condition[3]
+        where_dict['filter_op']=filter_op
+        where_dict['column_name']=column_name
+        where_dict['value']=value
+        where_element.append(where_dict)
+    return where_element
+
+
+#**************************************
+def decode_sql_lux(sql_decoded):
+
+    SELECT=[]
+    GROUPBY=[]
+    FROM=[]
+
+    already_select=[]
+    agg_dict=extract_agg_opts(sql_decoded['select'])
+    select_entity=extract_select_names(sql_decoded['select'])
+    groupby_entity=extract_groupby_names(sql_decoded['groupBy'])
+    for each in agg_dict.keys():
+        if agg_dict[each]!=[]:
+            if each=='avg':
+                for i in agg_dict[each]:
+                    SELECT.append('mean'+'('+i.split(':')[1].strip()+')')
+                    already_select.append(i.split(':')[1])
+
+            else:
+                for i in agg_dict[each]:
+                    SELECT.append(each+'('+i.split(":")[1].strip()+')')
+                    already_select.append(i.split(':')[1])
+
+    for each in select_entity :
+        if each.split(":")[1]  not in already_select:
+            SELECT.append(each.split(":")[1].strip())
+    FROM.append(select_entity[0].split(':')[0].strip())
+    for each in groupby_entity:
+        GROUPBY.append(each.split(':')[1].strip())
+
+    #TODO:solve where
+
+    WHERE=extract_where_elements(sql_decoded['where'])
+    return {'SELECT': SELECT, 'FROM': FROM, 'WHERE': WHERE, "GROUP BY": GROUPBY}
+if __name__=='__main__':
+    temp=decode_sql()

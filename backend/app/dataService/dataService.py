@@ -9,6 +9,10 @@ import sqlite3
 import pandas as pd
 import random
 import traceback
+import re
+import lux
+from lux.vis.Vis import Vis
+from lux.vis.VisList import VisList
 
 try:
     from luxRec import  lux_rec_test,multiDF_rec
@@ -19,26 +23,28 @@ try:
     from utils.visRecos import vis_design_combos
     from vlgenie import VLGenie
     from utils.processSQL import decode_sql, generate_sql
-    from utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names
+    from utils.processSQL.sql_vis_convert import vis2sql,sql_element2vis
+    from utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names,decode_sql_lux, extract_where_elements
 except ImportError:
 
     import app.dataService.globalVariable as GV
     import app.dataService.sqlParser as sp
     import app.dataService.queryRec as qr
-    from app.dataService.luxRec import lux_run_test
+    from  app.dataService.luxRec import lux_run_test
     from app.dataService.utils import helpers
     from app.dataService.utils.visRecos import vis_design_combos
     from app.dataService.vlgenie import VLGenie
     from app.dataService.utils.processSQL import decode_sql, generate_sql
-    from app.dataService.utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names
+    from app.dataService.utils.processSQL.sql_vis_convert import vis2sql,sql_element2vis
+    from app.dataService.utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names,extract_where_elements
 
 
 class DataService(object):
     def __init__(self, dataset="spider"):
-        self.text2sql_model_loaded = False
+        self.text2sql_model_loaded =False
         self.sql_parser_loaded = False
 
-        self.sqlsugg_model_loaded = False
+        self.sqlsugg_model_loaded = True
         self.sql2text_model_loaded = False
         self.dataset = dataset
         self.global_variable = GV
@@ -48,6 +54,7 @@ class DataService(object):
             for db_meta in json.load(open(os.path.join(GV.SPIDER_FOLDER, "tables.json"), "r")):
                 db_lists.append(db_meta["db_id"])
                 db_meta_dict[db_meta["db_id"]] = db_meta
+
             self.db_lists = db_lists
             self.db_meta_dict = db_meta_dict
             self.db_id = ""
@@ -145,8 +152,8 @@ class DataService(object):
         # sort column names according to column types
         for dk in db_dict.keys():
             db_dict[dk] = sorted(db_dict[dk], key=lambda x: x[1])
-        print('get_tables//')
-        print('db_dict.keys',db_dict.keys())
+        #print('get_tables//')
+        #print('db_dict.keys',db_dict.keys())
         return db_dict
 
     def get_tables_original(self, db_id):
@@ -155,6 +162,7 @@ class DataService(object):
         print('db_info.keys()',db_info.keys())
         tkeys = set(db_info["primary_keys"]).union(set([k for kp in db_info["foreign_keys"] for k in kp]))
         table_names = db_info["table_names_original"]
+        print('table_names_original',table_names)
         db_dict = {}
         for cidx, (colname, coltype) in enumerate(zip(db_info["column_names_original"], db_info["column_types"])):
             # print(cidx, colname, coltype)
@@ -171,8 +179,8 @@ class DataService(object):
         # sort column names according to column types
         for dk in db_dict.keys():
             db_dict[dk] = sorted(db_dict[dk], key=lambda x: x[1])
-        print('get_tables_original//')
-        print('db_dict.keys',db_dict.keys())
+        # print('get_tables_original//')
+        #print('db_dict.keys',db_dict.keys())
         return db_dict
 
     def get_cols(self, table_name):
@@ -282,6 +290,34 @@ class DataService(object):
         print('init_e',self.e_q_lux)
         self.c_lux[db_id]=['NULL' for i in range(len(df_list))]
 
+    def sql2vis(self,sql,db_id):   #input :sql_str
+        sql_parse = self.parsesql(sql, db_id)
+        sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
+        sql_element = decode_sql_lux(sql_decoded)
+        print('sql_element',sql_element)
+        vis_intent,vis_table=sql_element2vis(sql_element)
+
+        df_list = self.get_df_list(db_id)
+        table_name_list=list(self.get_tables(db_id).keys())
+        index=table_name_list.index(vis_table)
+        df=df_list[index]
+        #df=pd.DataFrame(self.load_table_content('schedule')).drop(columns='id')
+        #df.columns=df.columns.map(lambda x:x.replace('_'," ").lower())
+
+        print('df______________',df)
+
+        vis=Vis(vis_intent,df)
+
+        print('sql2vis_result',vis,vis_table)
+        return vis,vis_table
+    def vis2sql(self,sql,table_name):
+        sql_result=vis2sql(sql,table_name)
+        return sql_result
+
+
+
+
+
     def set_query_context(self, sql, db_id):
         """
         set query context
@@ -292,14 +328,20 @@ class DataService(object):
         # TODO: dont update context if already exists in the history
         sql_parse = self.parsesql(sql, db_id)
         sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
+        #################### add by myh######################
+        decode_sql_lux_result=decode_sql_lux(sql_decoded)
+        print('decode_sql_lux',decode_sql_lux_result)
+        # ***************************************************
         select_ents = extract_select_names(sql_decoded["select"])
+        #print('se_ent',select_ents)
         groupby_ents = extract_groupby_names(sql_decoded["groupBy"])
         agg_dict = extract_agg_opts(sql_decoded["select"])
         table_cols = self.get_db_cols(db_id) # meaningful columns
-        # print("select ents: ", select_ents)
-        # print("groupby ents: ", groupby_ents)
-        # print("agg dict: ", agg_dict)
-        # print(f"table_cols: {table_cols}")
+        print("select ents: ", select_ents)
+        print("groupby ents: ", groupby_ents)
+        print("agg dict: ", agg_dict)
+        print('where',extract_where_elements(sql_decoded['where']))
+        print(f"table_cols: {table_cols}")
 
         self.cur_q = [sql, db_id]
         if db_id not in self.h_q.keys():
@@ -313,14 +355,26 @@ class DataService(object):
 
         # print(json.dumps(self.h_q, indent=2))
 
-    def set_query_context_lux(self,vis,db_id):
+    def set_query_context_lux(self,sql,db_id):
+        """
+        set query context lux
+        ### Input
+        - sql: sql (str)
+        - db_id: database name (str)
+        """
+        C_vis_obj,C_table_name=self.sql2vis(sql,db_id)
+        table_name_list=self.get_tables(db_id)
+        print('table_name_list',table_name_list)
+        print('table_name_list.keys',table_name_list.keys())
 
-        index = vis['df_index']
+        index=list(table_name_list.keys()).index(C_table_name)
+        #index = vis['df_index']
         print('index',index)
-        C_vis_obj = vis['vis_obj']
+        #C_vis_obj = vis['vis_obj']
         self.e_q_lux[db_id][index].append(str(C_vis_obj))
         print('set_E',self.e_q_lux[db_id])
-        self.u_q_lux[db_id][index] = [x for x in self.u_q_lux[db_id][index] if str(x) != str(C_vis_obj)]
+        #next line need_test
+        self.u_q_lux[db_id][index] = [x for x in self.u_q_lux[db_id][index] if re.findall(r'[(](.*)[)]', str(x)) != re.findall(r'[(](.*)[)]', str(C_vis_obj))]
         print('set_u',self.u_q_lux[db_id][index])
         self.c_lux[db_id][index]=C_vis_obj
 
@@ -362,14 +416,26 @@ class DataService(object):
     def get_df_list(self,db_id):
         db_dict=self.get_tables_original(db_id)
         print('db_dict',db_dict)
+        db_dict_notoriginal=self.get_tables(db_id)
+        #print('db_dict_notoriginal',db_dict_notoriginal)
         df_list=[self.load_table_content(x) for x in db_dict.keys()]
         print('df_list',df_list)
         df_list=[pd.DataFrame(x) for x in df_list]
+        #TODO:make sure these process are right    #myh
+        ########process column names to make sure it can match sql content###
+        df_list=[each.drop(columns=['id']) for each in df_list]
+        for each_df in df_list:
+
+                each_df.columns=each_df.columns.map(lambda x:x.replace("_"," ").lower())
+        #for each_df in df_list:
+        #    each_df.columns=each_df.columns.map(lambda x:x.lower())
         print('df_list_df',df_list)
+
         return df_list
 
     def lux_suggest(self,db_id,unexplored_intents=0, explored_intents=0, current_choice=0, top_k1=5, top_k2=5):
         df_list = self.get_df_list(db_id)
+        table_name_list=list(self.get_tables(db_id).keys())# to do: 确定大小写是否影响
         if db_id in self.u_q_lux.keys():
             unexplored_intents=self.u_q_lux[db_id]
             explored_intents=self.e_q_lux[db_id]
@@ -380,12 +446,21 @@ class DataService(object):
             current_choice = ['NULL' for i in range(len(df_list))]
 
         #print('df_list',df_list)
-        print('unexplored_intents',unexplored_intents)
-        print('current',current_choice)
+        #print('unexplored_intents',unexplored_intents)
+        #print('current',current_choice)
         rec=multiDF_rec(df_list,unexplored_intents,explored_intents, current_choice, top_k1, top_k2)
+        print('rec',rec)
+        rec_sql=[]
+        #print('rec',rec[0][0])
+        #print('table_name',table_name_list)
+        example_sql=vis2sql(str(rec[0][0]['vis_obj']),table_name_list[rec[0][0]['df_index']])
+        #print('example_sql',example_sql)
+        for i in range(len(rec)):
+            rec_sql.append([vis2sql(str(each['vis_obj']),table_name_list[each['df_index']]) for each in rec[i]])
 
 
-        return rec
+        return rec_sql
+
 
 
     def data2vl(self, data):
@@ -456,11 +531,10 @@ class DataService(object):
         # print()
         # print("sql_parsed: ", sql_parsed)
         sql_decoded = decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
-        # print()
-        # print("sql decoded: ", sql_decoded)
-        # exit()
+        print('sql_decoded',sql_decoded)
         identifiers = [ident.replace('\'s', '') \
                        for ident in helpers.get_sql_identifiers(sql_decoded["select"])]
+        print('identifiers',identifiers)
 
         db_path = os.path.join(GV.SPIDER_FOLDER, f"database/{db_id}/{db_id}.sqlite")
         con = sqlite3.connect(db_path)
@@ -494,8 +568,42 @@ class DataService(object):
 if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
-    db_id = 'customers_and_addresses'
-    print('df_lists',dataService.db_lists)
+    db_id = 'cinema'
+
+    #dataService.set_query_context("SELECT cinema_id FROM cinema WHERE openning_year = 2020 and cinema_id = 1",db_id)
+    #exit()
+    #sql='SELECT cinema_id FROM cinema'
+    #response =dataService.sql2vl(sql, db_id, return_data=True)
+    #print('response',response)
+    #exit()
+
+
+    #dataService.get_df_list(db_id)
+    #print('meta_dict',dataService.db_meta_dict["cinema"]['column_names_original'])
+    #print('meta_dict',dataService.db_meta_dict["cinema"]['column_names'])
+    #exit()
+
+    ############### test sql2nl
+
+    sql = "SELECT cinema_id FROM cinema WHERE openning_year=2020"
+    nl = dataService.sql2nl(sql)
+
+    print("sql: {} \n nl: {}".format(sql, nl))
+    # 1. text2sql
+    result = dataService.text2sql('What are the ids of all cinemas that are opened in 2020?',db_id)
+    print("test2sql: {}".format(result))
+    exit()
+
+
+    #dataService.sql2data(sql="SELECT other_address_details FROM addresses",db_id=db_id)
+    #dataService.set_query_context("SELECT addresses.address_content , addresses.other_address_details FROM addresses",db_id)
+    #dataService.set_query_context("SELECT active_from_date FROM customer_contact_channels",db_id)
+    #exit()
+    #print('df_lists',dataService.db_lists)
+
+    #print('dataService.get_tables_original(db_id)',dataService.get_tables_original(db_id))
+
+
     '''
     for each_db in dataService.db_lists:
         db_id=each_db
@@ -542,7 +650,7 @@ if __name__ == '__main__':
     else:
         pass
 
-
+    exit()
     # 1. text2sql
     result = dataService.text2sql("What are the dates when the customers became customers?", "customers_and_addresses")
     print("test2sql: {}".format(result))

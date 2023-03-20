@@ -453,7 +453,12 @@ class DataService(object):
 
     def sql2data(self, sql, db_id):
         sql_parsed = self.parsesql(sql, db_id)
+        # print()
+        # print("sql_parsed: ", sql_parsed)
         sql_decoded = decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
+        # print()
+        # print("sql decoded: ", sql_decoded)
+        # exit()
         identifiers = [ident.replace('\'s', '') \
                        for ident in helpers.get_sql_identifiers(sql_decoded["select"])]
 
@@ -541,6 +546,9 @@ if __name__ == '__main__':
     # 1. text2sql
     result = dataService.text2sql("What are the dates when the customers became customers?", "customers_and_addresses")
     print("test2sql: {}".format(result))
+    dataService.sql2data(result, "customers_and_addresses")
+
+    exit()
 
     
     #2. db lists

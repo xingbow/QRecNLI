@@ -40,6 +40,7 @@ def get_tables(db_id):
     # TODO: initialize the query context when the db is (re)selected
     #current_app.dataService.init_query_context(db_id)
     current_app.dataService.init_query_context_lux(db_id)
+
     print("query cache init.")
     return jsonify(current_app.dataService.get_tables(db_id))
 #************
@@ -82,7 +83,7 @@ def text2sql():
 
 @api.route("/sql2vis/<sql_text>/<db_id>", methods=['GET'])
 def sql2vis(sql_text, db_id="cinema"):
-    sql_text='SELECT Cinema_ID FROM cinema'
+    #sql_text='SELECT Cinema_ID FROM cinema'
     response = current_app.dataService.sql2vl(sql_text, db_id, return_data=True)
     data = response['data'].to_dict('records')
     content = response['vl']
@@ -112,18 +113,22 @@ def sql2text(sql_text, db_id="cinema"):
 
 @api.route("/sql_sugg/<db_id>", methods=['GET'])
 def sql_sugg(db_id):
-    table_cols = current_app.dataService.get_db_cols(db_id)
-    sugg = current_app.dataService.sql_suggest(db_id, table_cols)
-    # print(f"sugg: {sugg}")
-    return jsonify(sugg)
 
+    lux_rec=current_app.dataService.lux_suggest(db_id)
+    result=current_app.dataService.rec2json(lux_rec)
+
+
+
+
+    return jsonify(result)
+'''
 @api.route("/lux_sugg/<db_id>", methods=['GET'])
 def lux_sugg(db_id):
 
     lux_rec=current_app.dataService.lux_suggest(db_id)
     print(lux_rec)
     return str(lux_rec)
-
+'''
 
 @api.route("/user_data", methods=['POST'])
 def get_user_data():

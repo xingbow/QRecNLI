@@ -462,6 +462,18 @@ class DataService(object):
         return rec_sql
 
 
+    def rec2json(self,rec_sql):
+        sqls=[]
+
+        for each_set in rec_sql:
+            for each in each_set:
+                sqls.append(each)
+        nls=[self.sql2nl(x) for x in sqls]
+        return {
+            "sql": sqls,
+            "nl": nls
+        }
+
 
     def data2vl(self, data):
         """Get VegaLite specifications from tabular-style data.
@@ -584,7 +596,7 @@ if __name__ == '__main__':
     #exit()
 
     ############### test sql2nl
-
+    '''
     sql = "SELECT cinema_id FROM cinema WHERE openning_year=2020"
     nl = dataService.sql2nl(sql)
 
@@ -593,7 +605,7 @@ if __name__ == '__main__':
     result = dataService.text2sql('What are the ids of all cinemas that are opened in 2020?',db_id)
     print("test2sql: {}".format(result))
     exit()
-
+    '''
 
     #dataService.sql2data(sql="SELECT other_address_details FROM addresses",db_id=db_id)
     #dataService.set_query_context("SELECT addresses.address_content , addresses.other_address_details FROM addresses",db_id)
@@ -640,6 +652,8 @@ if __name__ == '__main__':
 
     dataService.init_query_context_lux(db_id)
     lux_rec_result =dataService.lux_suggest(db_id)
+    json_result=dataService.rec2json(lux_rec_result)
+    print('jsoan_result',json_result)
     print('first lux rec',lux_rec_result)
     if lux_rec_result[0] + lux_rec_result[1] != []:
         C = random.choice(lux_rec_result[0] + lux_rec_result[1])

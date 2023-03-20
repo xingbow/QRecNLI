@@ -272,6 +272,13 @@ class DataService(object):
             all_rec += rec_dict[each]
         return all_rec
     def init_query_context_lux(self,db_id):
+        #如果已经init过了，那就跳过
+        '''
+        if db_id in self.u_q_lux.keys():
+            print('already_init')
+            return None
+        '''
+
 
         df_list=self.get_df_list(db_id)
         print("lenlenlen",len(df_list))
@@ -436,15 +443,18 @@ class DataService(object):
     def lux_suggest(self,db_id,unexplored_intents=0, explored_intents=0, current_choice=0, top_k1=5, top_k2=5):
         df_list = self.get_df_list(db_id)
         table_name_list=list(self.get_tables(db_id).keys())# to do: 确定大小写是否影响
-        if db_id in self.u_q_lux.keys():
-            unexplored_intents=self.u_q_lux[db_id]
-            explored_intents=self.e_q_lux[db_id]
-            current_choice=self.c_lux[db_id]
+        if db_id not in self.u_q_lux.keys():
+            self.init_query_context_lux(db_id)
+
+        unexplored_intents=self.u_q_lux[db_id]
+        explored_intents=self.e_q_lux[db_id]
+        current_choice=self.c_lux[db_id]
+        '''
         else:
             unexplored_intents = [self.get_all_rec(df_list[i].recommendation) for i in range(len(df_list))]
             explored_intents= [[] for i in range(len(df_list))]
             current_choice = ['NULL' for i in range(len(df_list))]
-
+        '''
         #print('df_list',df_list)
         #print('unexplored_intents',unexplored_intents)
         #print('current',current_choice)
@@ -648,7 +658,7 @@ if __name__ == '__main__':
 
      #   print('type',df[i].data_type)
 
-    dataService.init_query_context_lux(db_id)
+    #dataService.init_query_context_lux(db_id)
     lux_rec_result =dataService.lux_suggest(db_id)
     json_result=dataService.rec2json(lux_rec_result)
     print('jsoan_result',json_result)

@@ -41,10 +41,10 @@ except ImportError:
 
 class DataService(object):
     def __init__(self, dataset="spider"):
-        self.text2sql_model_loaded =False
+        self.text2sql_model_loaded = False
         self.sql_parser_loaded = False
 
-        self.sqlsugg_model_loaded = True
+        self.sqlsugg_model_loaded = False
         self.sql2text_model_loaded = False
         self.dataset = dataset
         self.global_variable = GV

@@ -239,7 +239,7 @@ class DataService(object):
                 row_dict[col_names[eleidx]] = ele
             row_dict["id"] = rowid
             table_data.append(row_dict)
-        print('tabel_data',table_data)
+        # print('tabel_data',table_data)
         return table_data
 
     def text2sql(self, q, db_id):
@@ -294,7 +294,7 @@ class DataService(object):
         sql_parse = self.parsesql(sql, db_id)
         sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
         sql_element = decode_sql_lux(sql_decoded)
-        print('sql_element',sql_element)
+        # print('sql_element',sql_element)
         vis_intent,vis_table=sql_element2vis(sql_element)
 
         df_list = self.get_df_list(db_id)
@@ -304,11 +304,11 @@ class DataService(object):
         #df=pd.DataFrame(self.load_table_content('schedule')).drop(columns='id')
         #df.columns=df.columns.map(lambda x:x.replace('_'," ").lower())
 
-        print('df______________',df)
+        # print('df______________',df)
 
         vis=Vis(vis_intent,df)
 
-        print('sql2vis_result',vis,vis_table)
+        # print('sql2vis_result',vis,vis_table)
         return vis,vis_table
     def vis2sql(self,sql,table_name):
         sql_result=vis2sql(sql,table_name)
@@ -364,18 +364,18 @@ class DataService(object):
         """
         C_vis_obj,C_table_name=self.sql2vis(sql,db_id)
         table_name_list=self.get_tables(db_id)
-        print('table_name_list',table_name_list)
-        print('table_name_list.keys',table_name_list.keys())
+        # print('table_name_list',table_name_list)
+        # print('table_name_list.keys',table_name_list.keys())
 
         index=list(table_name_list.keys()).index(C_table_name)
         #index = vis['df_index']
-        print('index',index)
+        # print('index',index)
         #C_vis_obj = vis['vis_obj']
         self.e_q_lux[db_id][index].append(str(C_vis_obj))
-        print('set_E',self.e_q_lux[db_id])
+        # print('set_E',self.e_q_lux[db_id])
         #next line need_test
         self.u_q_lux[db_id][index] = [x for x in self.u_q_lux[db_id][index] if re.findall(r'[(](.*)[)]', str(x)) != re.findall(r'[(](.*)[)]', str(C_vis_obj))]
-        print('set_u',self.u_q_lux[db_id][index])
+        # print('set_u',self.u_q_lux[db_id][index])
         self.c_lux[db_id][index]=C_vis_obj
 
     def sql_suggest(self, db_id, table_cols, min_support = 0.6, context_dict = {"select": [], "groupby": [], "agg": []}):
@@ -415,11 +415,11 @@ class DataService(object):
         }
     def get_df_list(self,db_id):
         db_dict=self.get_tables_original(db_id)
-        print('db_dict',db_dict)
+        # print('db_dict',db_dict)
         db_dict_notoriginal=self.get_tables(db_id)
         #print('db_dict_notoriginal',db_dict_notoriginal)
         df_list=[self.load_table_content(x) for x in db_dict.keys()]
-        print('df_list',df_list)
+        # print('df_list',df_list)
         df_list=[pd.DataFrame(x) for x in df_list]
         #TODO:make sure these process are right    #myh
         ########process column names to make sure it can match sql content###
@@ -429,7 +429,7 @@ class DataService(object):
                 each_df.columns=each_df.columns.map(lambda x:x.replace("_"," ").lower())
         #for each_df in df_list:
         #    each_df.columns=each_df.columns.map(lambda x:x.lower())
-        print('df_list_df',df_list)
+        # print('df_list_df',df_list)
 
         return df_list
 

@@ -81,7 +81,8 @@ def multiDF_rec(df_list, unexplored_intents, explored_intents, current_choice, t
             rec_dict = [{'vis_obj': x, 'df_index': i} for x in rec_list]
             E += rec_dict
         except:
-            traceback.print_exc()
+            pass
+            # traceback.print_exc()
 
 
 

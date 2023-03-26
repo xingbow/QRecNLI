@@ -288,7 +288,8 @@ class DataService(object):
             try:
                 self.u_q_lux[db_id][i]=self.get_all_rec(df_list[i].recommendation)
             except:
-                traceback.print_exc()
+                print("raise Exception in query init (Lux)")
+                # traceback.print_exc()
 
 
 

@@ -1,6 +1,6 @@
+/* global d3 $ _ */
 import dataService from '../../service/dataService.js'
 import pipeService from '../../service/pipeService.js'
-
 export default {
     name: "QueryPanel",
     props: {
@@ -45,6 +45,8 @@ export default {
             if (vm.dbselected.length > 0) {
                 dataService.SQLSugg(vm.dbselected, (suggData) => {
                     console.log("suggestion data: ", suggData);
+                    // let qSugg = _.cloneDeep(suggData["nl"]);
+                    // this.qSugg = _.shuffle(qSugg).slice(0,5)
                     this.qSugg = suggData["nl"];
                     // add emit original (i.e., 1st) query suggestions
                     pipeService.emitOriginalSugg(suggData);
@@ -81,8 +83,27 @@ export default {
                                 // query suggestions
                                 dataService.SQLSugg(dbName, (data) => {
                                     console.log("query suggestion after submitting nl query: ", data);
-                                    pipeService.emitQuerySugg(data);
-                                    this.qSugg = data['nl'];
+                                    
+                                    if(data.nl.length>5){
+                                        let newData = data.nl.map((nl, nlidx)=>{
+                                            return [nl, data.sql[nlidx]]
+                                        })
+                                        let suggDict = {}
+                                        suggDict.nl = []
+                                        suggDict.sql = []
+                                        _.shuffle(newData).slice(0,5).map(d=>{
+                                            suggDict.nl.push(d[0]);
+                                            suggDict.sql.push(d[1]);
+                                        });
+                                        pipeService.emitQuerySugg(suggDict);
+                                        this.qSugg = suggDict['nl'];
+
+                                    }
+                                    else{
+                                        pipeService.emitQuerySugg(data);
+                                        this.qSugg = data['nl'];
+                                    }
+                                   
                                 })
                             });
                         });

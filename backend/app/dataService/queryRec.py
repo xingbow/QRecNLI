@@ -500,8 +500,7 @@ if __name__ == "__main__":
 
     qr = queryRecommender()
     db_bin = qr.search_sim_dbs(test_topic.replace("_", " ").strip(), test_table_cols)
-    print(qr.tables[test_topic])
-    exit()
+    # print(qr.tables[test_topic])
 
     # initial recommendation
     context_dict = {

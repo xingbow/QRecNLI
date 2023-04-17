@@ -274,7 +274,7 @@ class DataService(object):
         db_bin = self.sqlsugg_model.search_sim_dbs(db_id.replace("_", " ").strip(), table_cols)
         # print(db_bin.head())
         sugg_dict = self.sqlsugg_model.query_suggestion(db_bin, context_dict, min_support)
-        # print("sugg_dict: ", sugg_dict)
+        print("sugg_dict: ", sugg_dict)
         
 
         nls_prompts = generate_sql.compile_sql(sugg_dict)

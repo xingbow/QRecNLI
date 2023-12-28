@@ -1,5 +1,5 @@
 import re
-import sqlparse
+# import sqlparse
 import json
 import numpy as np
 

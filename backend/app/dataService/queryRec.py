@@ -26,7 +26,8 @@ class queryRecommender(object):
                  opt_n = 1,
                  ref_db_meta_path=os.path.join(GV.SPIDER_FOLDER, "train_spider.json")):
         self.GV = GV
-        self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+        # self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+        self.model = SentenceTransformer('all-MiniLM-L6-v2')
         # self.model = SentenceTransformer('paraphrase-MiniLM-L12-v2')
 
         self.db_schema, self.db_names, self.tables = process_sql.get_schemas_from_json(

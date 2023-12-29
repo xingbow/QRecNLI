@@ -46,6 +46,13 @@ SQL2NL_MODEL_FOLDER = os.path.abspath(os.path.join(MODEL_FOLDER, "UnifiedSKG"))
 SQL2NL_MODEL_CONFIG_PATH = os.path.abspath(os.path.join(SQL2NL_MODEL_FOLDER, "configure/Salesforce/T5_base_prefix_sql2text.cfg"))
 
 
+#################### import your openai key here
+if os.path.exists(os.path.join(_current_dir, 'openaikey')):
+    with open(os.path.join(_current_dir, 'openaikey'), 'r') as f:
+        openai_key = f.read().strip()
+else:
+    raise Exception("Please put your openai key in globalVariable.py")
+
 ##################
 ### test case for query suggestion
 # test_topic = "employee_hire_evaluation"

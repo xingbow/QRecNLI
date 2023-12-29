@@ -25,9 +25,11 @@ try:
     from utils.processSQL import decode_sql, generate_sql
     from utils.processSQL.sql_vis_convert import vis2sql,sql_element2vis
     from utils.processSQL.decode_sql import  extract_select_names, extract_agg_opts, extract_groupby_names,decode_sql_lux, extract_where_elements
+    import sqlmodel as sm
 except ImportError:
 
     import app.dataService.globalVariable as GV
+    import app.dataService.sqlmodel as sm
     import app.dataService.sqlParser as sp
     import app.dataService.queryRec as qr
     from  app.dataService.luxRec import lux_run_test
@@ -41,11 +43,12 @@ except ImportError:
 
 class DataService(object):
     def __init__(self, dataset="spider"):
-        self.text2sql_model_loaded = False
+        # self.text2sql_model_loaded = False
+        self.sql_model_loaded = False
         self.sql_parser_loaded = False
 
         self.sqlsugg_model_loaded = False
-        self.sql2text_model_loaded = False
+        # self.sql2text_model_loaded = False
         self.dataset = dataset
         self.global_variable = GV
         if self.dataset == "spider":
@@ -69,26 +72,16 @@ class DataService(object):
             raise Exception("currently only support spider dataset")
         return
 
-    def _load_text2sql_model(self, verbose=True):
-        if self.text2sql_model_loaded:
+    def _load_sql_model(self, verbose=True):
+        if self.sql_model_loaded:
             return
         if verbose:
             print("=== begin loading text2sql model ===")
-        self.text2sql_model = sp.SmBop()
-        self.text2sql_model_loaded = True
+        self.sql_model = sm.sqlModel()
+        self.sql_model_loaded = True
         if verbose:
             print("=== finish loading text2sql model ===")
     
-    def _load_sql2text_model(self, verbose=True):
-        if self.sql2text_model_loaded:
-            return
-        if verbose:
-            print("=== begin loading sql2text model ===")
-        self.sql2text_model = sp.SQL2NL()
-        self.sql2text_model_loaded = True
-        if verbose:
-            print("=== finish loading sql2text model ===")
-        return
 
     def _load_sql_parser(self, verbose=True):
         if self.sql_parser_loaded:
@@ -243,8 +236,8 @@ class DataService(object):
         return table_data
 
     def text2sql(self, q, db_id):
-        self._load_text2sql_model()
-        sql = self.text2sql_model.predict(q, db_id)
+        self._load_sql_model()
+        sql = self.sql_model.predict(q, db_id)
         return sql
 
     def parsesql(self, sql, db_id):
@@ -584,8 +577,8 @@ class DataService(object):
             return response
 
     def sql2nl(self, sql: str):
-        self._load_sql2text_model()
-        nl = self.sql2text_model.sql2text(sql)
+        self._load_sql_model()
+        nl = self.sql_model.sql2text(sql)
         return nl
 
 if __name__ == '__main__':

@@ -46,8 +46,8 @@ SQL2NL_MODEL_CONFIG_PATH = os.path.abspath(os.path.join(SQL2NL_MODEL_FOLDER, "co
 
 
 # import your openai key here
-if os.path.exists(os.path.join(_current_dir, 'openaikey.key')):
-    with open(os.path.join(_current_dir, 'openaikey.key'), 'r') as f:
+if os.path.exists(os.path.join(_current_dir, 'openaikey')):
+    with open(os.path.join(_current_dir, 'openaikey'), 'r') as f:
         openai_key = f.read().strip()
 else:
     raise Exception("Please put your openai key in globalVariable.py")

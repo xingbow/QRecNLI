@@ -1,8 +1,8 @@
 import os
 import sys
-# import nltk
-# nltk.download('punkt')
-# nltk.download('stopwords')
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
 import pathlib
 import numpy as np
 
@@ -35,7 +35,7 @@ try:
 except ImportError:
     from app.dataService.utils.processSQL import process_sql
 
-pathlib.Path(f"cache").mkdir(exist_ok=True)
+# pathlib.Path(f"cache").mkdir(exist_ok=True)
 
 # sql2nl
 # sys.path.append(GV.MODEL_FOLDER)
@@ -48,7 +48,7 @@ class SQLParser(object):
         self.db = GV.SPIDER_FOLDER
         self.db_schema, self.db_names, self.tables = process_sql.get_schemas_from_json(os.path.join(self.db, "tables.json"))
         
-    def parse_sql(self, sql="SELECT name ,  country ,  age FROM singer group by country having count(*) > 2", db_id="concert_singer"):
+    def parse_sql(self, sql="SELECT name as N,  country ,  age, FROM singer group by country having count(*) > 2", db_id="concert_singer"):
         schema = self.db_schema[db_id]
         table = self.tables[db_id]
         schema = process_sql.Schema(schema, table)
@@ -106,10 +106,12 @@ if __name__=='__main__':
     # result = smbop.predict("films and film prices that cost below 10 dollars", "cinema")
     # print("result: {}".format(result))
     #######
-    # sp = SQLParser()
-    # sp.parse_sql()
+    sp = SQLParser()
+    res = sp.parse_sql()
+    print("res: {}".format(res))
     ####### sql2text test
-    sql2nl = SQL2NL()
-    sql = "SELECT name ,  country ,  age FROM singer ORDER BY age DESC"
-    nl = sql2nl.sql2text(sql)
-    print("sql: {} \n nl: {}".format(sql, nl))
+    # sql2nl = SQL2NL()
+    # sql = "SELECT name ,  country ,  age FROM singer ORDER BY age DESC"
+    # nl = sql2nl.sql2text(sql)
+    # print("sql: {} \n nl: {}".format(sql, nl))
+    pass

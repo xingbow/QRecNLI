@@ -387,7 +387,7 @@ if __name__ == '__main__':
     print("test2sql: {}".format(result))
     data = dataService.sql2data(result, db_id)
     print(f'sql2data: {data}')
-    exit()
+    
     
     # 2. db lists
     # print(dataService.db_lists)

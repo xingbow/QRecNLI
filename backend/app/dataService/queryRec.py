@@ -7,6 +7,8 @@ import pandas as pd
 import math
 
 from sentence_transformers import SentenceTransformer, util
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from mlxtend.frequent_patterns import fpmax, fpgrowth
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -121,9 +123,9 @@ class queryRecommender(object):
         self.db_cache[topic] = db_df_bin
         return db_df_bin
 
-    def get_grouped_cols(self, columns, min_size = 2, th = 0.8):
-        corpus_embeddings = self.model.encode(columns, convert_to_tensor=False)
-        clusters = util.community_detection(corpus_embeddings, min_community_size = min_size, threshold = th, init_max_size=3)
+    def get_grouped_cols(self, columns, min_size = 2, th = 0.75):
+        corpus_embeddings = self.model.encode(columns, convert_to_tensor=True)
+        clusters = util.community_detection(corpus_embeddings, min_community_size = min_size, threshold = th)
         col_groups = [set([columns[c] for c in cluster]) for cluster in clusters]
         col_groups += GV.col_combo
         # print("col_groups: ", col_groups)

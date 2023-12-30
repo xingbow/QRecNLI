@@ -75,6 +75,7 @@ export default {
                         // send "sql" to settings and record sql history
                     if (sqlResult["sql"].length > 0) {
                         dataService.SQL2text(sqlResult["sql"], dbName, (data) => {
+                            console.log("sql2text:",  data)
                             sqlResult.SQLTrans = data;
                             dataService.SQL2VL(sqlResult["sql"], dbName, (data) => {
                                 sqlResult.VLSpecs = [data];

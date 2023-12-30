@@ -13,6 +13,7 @@ import re
 import lux
 from lux.vis.Vis import Vis
 from lux.vis.VisList import VisList
+from sql_metadata import Parser
 
 try:
     from luxRec import  lux_rec_test,multiDF_rec
@@ -292,25 +293,40 @@ class DataService(object):
         self.c_lux[db_id]=['NULL' for i in range(len(df_list))]
 
     def sql2vis(self,sql,db_id):   #input :sql_str
-        sql_parse = self.parsesql(sql, db_id)
-        sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
-        sql_element = decode_sql_lux(sql_decoded)
-        # print('sql_element',sql_element)
-        vis_intent,vis_table=sql_element2vis(sql_element)
+        try:
+            sql_parse = self.parsesql(sql, db_id)
+            sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
+            print(f"sql_decoded: {sql_decoded}")
+            
+            sql_element = decode_sql_lux(sql_decoded)
+            # print('sql_element',sql_element)
+            vis_intent,vis_table=sql_element2vis(sql_element)
+            print('vis_intent',vis_intent)
+            print("vis_table: ", vis_table)
+            df_list = self.get_df_list(db_id)
+            table_name_list=list(self.get_tables(db_id).keys())
+            index=table_name_list.index(vis_table)
+            df=df_list[index]
+            #df=pd.DataFrame(self.load_table_content('schedule')).drop(columns='id')
+            #df.columns=df.columns.map(lambda x:x.replace('_'," ").lower())
 
-        df_list = self.get_df_list(db_id)
-        table_name_list=list(self.get_tables(db_id).keys())
-        index=table_name_list.index(vis_table)
-        df=df_list[index]
-        #df=pd.DataFrame(self.load_table_content('schedule')).drop(columns='id')
-        #df.columns=df.columns.map(lambda x:x.replace('_'," ").lower())
-
-        # print('df______________',df)
-
-        vis=Vis(vis_intent,df)
-
-        # print('sql2vis_result',vis,vis_table)
-        return vis,vis_table
+            # print('df______________',df)
+            # print('Vis(vis_intent,df[vis_intent]): ', Vis(vis_intent,df[vis_intent].astype(str)))
+            try:
+                vis=Vis(vis_intent,df)
+            except:
+                try:
+                    vis = Vis(vis_intent,df[vis_intent])
+                except:
+                    # exceptions: cross-df cases
+                    vis = sql
+            # print('sql2vis_result',vis,vis_table)
+            return vis,vis_table
+        except Exception as e:
+            print(f"raise Exception in sql2vis: {e}")
+            vis_table = Parser(sql).tables[0].lower()
+            vis = sql
+            return vis, vis_table
     def vis2sql(self,sql,table_name):
         sql_result=vis2sql(sql,table_name)
         return sql_result
@@ -326,23 +342,39 @@ class DataService(object):
         - sql: sql (str)
         - db_id: database name (str)
         """
-        # TODO: dont update context if already exists in the history
-        sql_parse = self.parsesql(sql, db_id)
-        sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
-        #################### add by myh######################
-        decode_sql_lux_result=decode_sql_lux(sql_decoded)
-        print('decode_sql_lux',decode_sql_lux_result)
-        # ***************************************************
-        select_ents = extract_select_names(sql_decoded["select"])
-        #print('se_ent',select_ents)
-        groupby_ents = extract_groupby_names(sql_decoded["groupBy"])
-        agg_dict = extract_agg_opts(sql_decoded["select"])
-        table_cols = self.get_db_cols(db_id) # meaningful columns
-        print("select ents: ", select_ents)
-        print("groupby ents: ", groupby_ents)
-        print("agg dict: ", agg_dict)
-        print('where',extract_where_elements(sql_decoded['where']))
-        print(f"table_cols: {table_cols}")
+        try:
+            # TODO: dont update context if already exists in the history
+            sql_parse = self.parsesql(sql, db_id)
+            sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
+            #################### add by myh######################
+            decode_sql_lux_result=decode_sql_lux(sql_decoded)
+            print('decode_sql_lux',decode_sql_lux_result)
+            # ***************************************************
+            select_ents = extract_select_names(sql_decoded["select"])
+            #print('se_ent',select_ents)
+            groupby_ents = extract_groupby_names(sql_decoded["groupBy"])
+            agg_dict = extract_agg_opts(sql_decoded["select"])
+            table_cols = self.get_db_cols(db_id) # meaningful columns
+            print("select ents: ", select_ents)
+            print("groupby ents: ", groupby_ents)
+            print("agg dict: ", agg_dict)
+            print('where',extract_where_elements(sql_decoded['where']))
+            print(f"table_cols: {table_cols}")
+        except:
+            # handle exceptions: cross-df cases & complex aliases
+            parse_result = Parser(sql).columns_dict
+            select_ents = []
+            groupby_ents = []
+            agg_dict = {}
+            if "select" in parse_result:
+                select_ents = parse_result["select"]
+                select_ents = [' '.join(ent.lower().split(".")[0].split("_")) + ": " + ' '.join(ent.lower().split(".")[1].split("_")) for ent in select_ents]
+            if "group_by" in parse_result:
+                groupby_ents = parse_result["group_by"]
+                groupby_ents = [' '.join(ent.lower().split(".")[0].split("_")) + ": " + ' '.join(ent.lower().split(".")[1].split("_")) for ent in groupby_ents]
+            table_cols = self.get_db_cols(db_id) # meaningful columns
+            print("select ents: ", select_ents)
+            print("groupby ents: ", groupby_ents)
 
         self.cur_q = [sql, db_id]
         if db_id not in self.h_q.keys():
@@ -543,6 +575,11 @@ class DataService(object):
         return vl_specs
 
     def sql2data(self, sql, db_id):
+        db_path = os.path.join(GV.SPIDER_FOLDER, f"database/{db_id}/{db_id}.sqlite")
+        con = sqlite3.connect(db_path)
+        data = pd.read_sql(sql, con)
+        return data
+
         sql_parsed = self.parsesql(sql, db_id)
         # print()
         # print("sql_parsed: ", sql_parsed)
@@ -563,6 +600,7 @@ class DataService(object):
 
     def sql2vl(self, sql, db_id, return_data=False):
         data = self.sql2data(sql, db_id)
+        # print(f"data in sql2vl: {data}")
         if data.shape == (1, 1):
             response = data.values[0][0]
         else:
@@ -599,6 +637,32 @@ if __name__ == '__main__':
     #print('meta_dict',dataService.db_meta_dict["cinema"]['column_names'])
     #exit()
 
+
+    ############### test sql2vis
+    db_id = "customers_and_addresses"
+    # sql = """
+    # SELECT customer_name
+    # FROM Customers
+    # """
+
+    sql = """
+    SELECT c.customer_name, p.product_details
+    FROM Customers c
+    JOIN Customer_Orders co ON c.customer_id = co.customer_id
+    JOIN Order_Items oi ON co.order_id = oi.order_id
+    JOIN Products p ON oi.product_id = p.product_id
+    """
+
+    # sql = """
+    # SELECT Products.product_details, Order_Items.order_quantity, COUNT(*)
+    # FROM Products 
+    # JOIN Order_Items ON Products.product_id = Order_Items.product_id
+    # WHERE Order_Items.order_quantity <10
+    # """
+    dataService.set_query_context(sql, db_id)
+    vis,vis_table = dataService.sql2vis(sql, db_id)
+    print(vis, vis_table)
+    exit()
     ############### test sql2nl
     '''
     sql = "SELECT cinema_id FROM cinema WHERE openning_year=2020"

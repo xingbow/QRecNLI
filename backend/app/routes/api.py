@@ -3,9 +3,10 @@ import os
 import logging
 import pandas as pd
 from time import time
-
+from sql_metadata import Parser
 from flask import Blueprint, current_app, request, jsonify
 from app.dataService.utils import processSQL
+import numpy as np
 
 LOG = logging.getLogger(__name__)
 
@@ -75,7 +76,8 @@ def text2sql():
     user_text = text2sql_data["user_text"]
     db_id = text2sql_data["db_id"]
     sql = current_app.dataService.text2sql(user_text, db_id)
-
+    sql = sql.replace("\n", "\n ")
+    print(f"sql: {sql}")
     current_app.dataService.set_query_context_lux(sql, db_id)  # set query context
     result = {'sql': sql, 'data': current_app.dataService.sql2data(sql, db_id).values.tolist()}
     print("text2sql: ", result)
@@ -97,17 +99,27 @@ def sql2vis(sql_text, db_id="cinema"):
         content = content.to_dict('records')
         returnType = 'table'
     else:
+        if isinstance(content, np.integer):
+            content = int(content)
+        if isinstance(content, np.floating):
+            content = float(content)
+        if isinstance(content, np.ndarray):
+            content = content.tolist()
         returnType = 'data'
+        
     return jsonify({'type': returnType, 'content': content, 'data': data})
 
 
 @api.route("/sql2text/<sql_text>/<db_id>", methods=['GET'])
 def sql2text(sql_text, db_id="cinema"):
-    sql_parsed = current_app.dataService.parsesql(sql_text, db_id)
-
-    sql_decoded = processSQL.decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
-    text = processSQL.sql2text(sql_decoded)
+    text = current_app.dataService.sql2nl(sql_text)
+    sql_decoded = {}
+    # Parser(sql_text)
+    # sql_parsed = current_app.dataService.parsesql(sql_text, db_id)
+    # sql_decoded = processSQL.decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
+    # text = processSQL.sql2text(sql_decoded)
     response = {'sqlDecoded': sql_decoded, 'text': text}
+    print(f"response in sql2text: {response}")
     return jsonify(response)
 
 

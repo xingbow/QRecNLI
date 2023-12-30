@@ -47,8 +47,16 @@ _DEFAULT_TEMPLATE = """Given an input question, first create a syntactically cor
 
 Never query for all the columns from a specific table, only ask for a the few relevant columns given the question.
 
-Pay attention to avoid SQL aliases (e.g., renaming columns, MIN/MAX/SUM/AVG/COUNT, tables) in SQL Query, e.g., 
-Instead of SELECT product_id, SUM(order_quantity) AS total_quantity, please use SELECT product_id, SUM(order_quantity).
+Pay attention to avoid SQL aliases (e.g., renaming columns, MIN/MAX/SUM/AVG/COUNT, table names) in SQL Query, e.g., 
+1. Instead of SELECT SUM(order_quantity) AS total_quantity, please use SELECT SUM(order_quantity) (without "AS" for aliases).
+2. Instead of SELECT c.customer_name, ca.address_type
+ FROM Customers c
+ JOIN Customer_Addresses ca ON c.customer_id = ca.customer_id, 
+ please use SELECT Customers.customer_name, Customer_Addresses.address_type 
+ FROM Customers JOIN Customer_Addresses ON Customers.customer_id = Customer_Addresses.customer_id (without table name aliases)
+3. Instead of SELECT MAX(active_from_date) AS last_active_date, please use SELECT MAX(active_from_date) (without "AS" for aliases).
+
+
 Pay attention to use only the column names that you can see in the schema description. Be careful to not query for columns that do not exist. Also, pay attention to which column is in which table.
 
 
@@ -68,7 +76,8 @@ PROMPT = PromptTemplate(
 
 class sqlModel(object):
     def __init__(self):
-        self.model = ChatOpenAI(model_name="gpt-3.5-turbo-1106", temperature=0, openai_api_key = GV.openai_key, model_kwargs={"seed": 42})
+        self.model = ChatOpenAI(model_name="gpt-3.5-turbo-1106", temperature=0, openai_api_key = GV.openai_key)
+                                # , model_kwargs={"seed": 42})
         self.spider_dataset_dir = GV.SPIDER_FOLDER
 
     def predict(self, q, db_id):

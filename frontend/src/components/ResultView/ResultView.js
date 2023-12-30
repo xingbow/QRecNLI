@@ -42,9 +42,9 @@ export default {
             this.sqlQuery = sql;
             this.nlQuery = nl;
             this.explanation = SQLTrans.text;
-            this.selectDecoded = SQLTrans.sqlDecoded['select'][1];
-            this.whereDecoded = SQLTrans.sqlDecoded['where'].filter((d, i) => i % 2 === 0);
-            this.groupbyDecoded = SQLTrans.sqlDecoded['groupBy'];
+            // this.selectDecoded = SQLTrans.sqlDecoded['select'][1];
+            // this.whereDecoded = SQLTrans.sqlDecoded['where'].filter((d, i) => i % 2 === 0);
+            // this.groupbyDecoded = SQLTrans.sqlDecoded['groupBy'];
             this.queryReturns = VLSpecs.map(query => {
                 this.visCounter += 1;
                 // return [...query, `origin-${this.visCounter}`];
@@ -54,7 +54,7 @@ export default {
                     sqlQuery: sql,
                     nlQuery: nl,
                     nlExplanation: SQLTrans.text,
-                    sqlDecoded: SQLTrans.sqlDecoded,
+                    // sqlDecoded: SQLTrans.sqlDecoded,
                 };
             });
         });

@@ -7,6 +7,10 @@ import warnings
 
 import sqlite3
 import pandas as pd
+import random
+import traceback
+import re
+from sql_metadata import Parser
 
 try:
     import globalVariable as GV
@@ -216,12 +220,27 @@ class DataService(object):
         - sql: sql (str)
         - db_id: database name (str)
         """
-        # TODO: dont update context if already exists in the history
-        sql_parse = self.parsesql(sql, db_id)
-        sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
-        select_ents = extract_select_names(sql_decoded["select"])
-        groupby_ents = extract_groupby_names(sql_decoded["groupBy"])
-        agg_dict = extract_agg_opts(sql_decoded["select"])
+        try:
+            # TODO: dont update context if already exists in the history
+            sql_parse = self.parsesql(sql, db_id)
+            sql_decoded = decode_sql(sql_parse["sql_parse"], sql_parse["table"])
+            select_ents = extract_select_names(sql_decoded["select"])
+            groupby_ents = extract_groupby_names(sql_decoded["groupBy"])
+            agg_dict = extract_agg_opts(sql_decoded["select"])
+        except Exception as e:
+            print(f"raise Exception in sql2vis: {e}")
+            parse_result = Parser(sql).columns_dict
+            select_ents = []
+            groupby_ents = []
+            agg_dict = {}
+            if "select" in parse_result:
+                select_ents = parse_result["select"]
+                select_ents = [' '.join(ent.lower().split(".")[0].split("_")) + ": " + ' '.join(ent.lower().split(".")[1].split("_")) for ent in select_ents]
+            if "group_by" in parse_result:
+                groupby_ents = parse_result["group_by"]
+                groupby_ents = [' '.join(ent.lower().split(".")[0].split("_")) + ": " + ' '.join(ent.lower().split(".")[1].split("_")) for ent in groupby_ents]
+
+
         table_cols = self.get_db_cols(db_id) # meaningful columns
         # print("select ents: ", select_ents)
         # print("groupby ents: ", groupby_ents)
@@ -341,6 +360,10 @@ class DataService(object):
         return vl_specs
 
     def sql2data(self, sql, db_id):
+        db_path = os.path.join(GV.SPIDER_FOLDER, f"database/{db_id}/{db_id}.sqlite")
+        con = sqlite3.connect(db_path)
+        data = pd.read_sql(sql, con)
+        return data
         sql_parsed = self.parsesql(sql, db_id)
         sql_decoded = decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
         identifiers = [ident.replace('\'s', '') \
@@ -371,6 +394,7 @@ class DataService(object):
             return response
 
     def sql2nl(self, sql: str):
+        self._load_sql_model()
         nl = self.sql_model.sql2text(sql)
         return nl
 

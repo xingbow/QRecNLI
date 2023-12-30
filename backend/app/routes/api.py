@@ -3,6 +3,7 @@ import os
 import logging
 import pandas as pd
 from time import time
+from sql_metadata import Parser
 
 from flask import Blueprint, current_app, request, jsonify
 from app.dataService.utils import processSQL
@@ -89,6 +90,9 @@ def sql2vis(sql_text, db_id="cinema"):
 
 @api.route("/sql2text/<sql_text>/<db_id>", methods=['GET'])
 def sql2text(sql_text, db_id="cinema"):
+    text = current_app.dataService.sql2nl(sql_text)
+    return jsonify({'text': text, 'sqlDecoded': {}})
+    # old version
     sql_parsed = current_app.dataService.parsesql(sql_text, db_id)
     sql_decoded = processSQL.decode_sql(sql_parsed["sql_parse"], sql_parsed["table"])
     text = processSQL.sql2text(sql_decoded)

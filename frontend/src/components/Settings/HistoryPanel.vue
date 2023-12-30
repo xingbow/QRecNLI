@@ -84,7 +84,7 @@ export default {
           sqlQuery: sql,
           nlQuery: nl,
           nlExplanation: SQLTrans.text,
-          sqlDecoded: SQLTrans.sqlDecoded,
+          // sqlDecoded: SQLTrans.sqlDecoded,
         };
       }
       this.historyData.push(histNode);

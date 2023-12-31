@@ -281,7 +281,7 @@ class DataService(object):
         self._load_sqlsugg_model()
         # print("db id, table_cols: ", db_id.replace("_", " ").strip(), table_cols)
         db_bin = self.sqlsugg_model.search_sim_dbs(db_id.replace("_", " ").strip(), table_cols)
-        # print(db_bin.head())
+        print(db_bin.head())
         sugg_dict = self.sqlsugg_model.query_suggestion(db_bin, context_dict, min_support)
         print("sugg_dict: ", sugg_dict)
         
@@ -402,8 +402,9 @@ if __name__ == '__main__':
     print('dataService:')
     dataService = DataService("spider")
     db_id = GV.test_topic
+    db_id = "customers_and_addresses"
     db_dict = dataService.get_tables(db_id)
-    db_cols = dataService.get_db_cols("customers_and_addresses")
+    db_cols = dataService.get_db_cols(db_id)
     print("db_cols: ", db_cols)
 
     # 1. text2sql
@@ -428,7 +429,7 @@ if __name__ == '__main__':
     # print(table_cols)
     # dataService.set_query_context("SELECT title ,  directed_by FROM film", "cinema")
     ############### test sql suggestions
-    # sql_suggest = dataService.sql_suggest(db_id, db_cols)
+    sql_suggest = dataService.sql_suggest(db_id, db_cols)
     # print("sql_suggest: ", sql_suggest)
 
     ############### test sql2nl 

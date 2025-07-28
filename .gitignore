@@ -1,3 +1,6 @@
+openaikey
+venv
+model_cache
 .DS_Store
 .ipynb_checkpoints/
 .lock

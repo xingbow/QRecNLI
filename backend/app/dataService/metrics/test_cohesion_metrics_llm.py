@@ -44,6 +44,5 @@ my_instance = MyClass()
 
 print(f"SQL 1: {my_instance._get_where_conditions(sql1)}")
 print(f"SQL 2: {my_instance._get_where_conditions(sql2)}")
-print(f"SQL 3: {my_instance._get_where_conditions(sql3)}")
 print(f"SQL 4: {my_instance._get_where_conditions(sql4)}")
 print(f"SQL 5: {my_instance._get_where_conditions(sql5)}")

@@ -14,6 +14,9 @@
             <draggable class="list-group" :list="queryReturns" handle="none" group="historyNode">
                 <div class="list-group-item-invisible" v-for="(qRet, index) in queryReturns" :key="qRet.id">
                     <DraggableTop :qRet="qRet" :onDelete="()=>onDelete(index)">
+                        <template v-slot:setting-popover>
+                            <!-- Configuration will be handled by individual components -->
+                        </template>
                         <template v-slot:info-popover>
                             <SQLExplanation 
                             :sqlQuery="qRet.sqlQuery" 

@@ -5,6 +5,7 @@ import SQLExplanation from './SQLExplanation.vue'
 import draggable from "vuedraggable";
 import VueVega from 'vue-vega';
 import Vue from 'vue';
+import configStorageService from '../../service/configStorageService.js';
 
 Vue.use(VueVega);
 
@@ -38,7 +39,7 @@ export default {
     },
     mounted: function() {
         pipeService.onSQL(sqlRet => {
-            const { sql, nl, SQLTrans, VLSpecs } = sqlRet;
+            const { sql, nl, SQLTrans, VLSpecs, savedConfigState } = sqlRet;
             this.sqlQuery = sql;
             this.nlQuery = nl;
             this.explanation = SQLTrans.text;
@@ -47,13 +48,21 @@ export default {
             // this.groupbyDecoded = SQLTrans.sqlDecoded['groupBy'];
             this.queryReturns = VLSpecs.map(query => {
                 this.visCounter += 1;
-                // return [...query, `origin-${this.visCounter}`];
+                const chartId = `origin-${this.visCounter}`;
+                
+                // Use saved state from history click if available, otherwise check storage using nlQuery
+                let savedState = savedConfigState;
+                if (!savedState) {
+                    savedState = configStorageService.getChartState(nl);
+                }
+                
                 return {...query,
-                    id: `origin-${this.visCounter}`,
-                    title: nl,
+                    id: chartId,
+                    title: (savedState && savedState.title) || nl, // Use saved title if available
                     sqlQuery: sql,
                     nlQuery: nl,
                     nlExplanation: SQLTrans.text,
+                    savedConfig: savedState && savedState.config, // Include saved config for restoration
                     // sqlDecoded: SQLTrans.sqlDecoded,
                 };
             });

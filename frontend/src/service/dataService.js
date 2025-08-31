@@ -4,7 +4,7 @@ const GET_REQUEST = 'get'
 const POST_REQUEST = 'post'
 const dataServerUrl = `${'http://127.0.0.1:5012'}/api`
 
-function request(url, params, type, callback) {
+function request(url, params, type, callback, errorCallback) {
     let func
     if (type === GET_REQUEST) {
         func = axios.get
@@ -17,10 +17,26 @@ function request(url, params, type, callback) {
                 callback(response["data"])
             } else {
                 console.error(response) /* eslint-disable-line */
+                if (errorCallback) {
+                    errorCallback({
+                        type: 'http_error',
+                        status: response.status,
+                        message: `Server returned status ${response.status}`,
+                        details: response
+                    })
+                }
             }
         })
         .catch((error) => {
             console.error(error) /* eslint-disable-line */
+            if (errorCallback) {
+                errorCallback({
+                    type: 'network_error',
+                    message: (error.response && error.response.data && error.response.data.error) || error.message || 'Network error occurred',
+                    status: error.response && error.response.status,
+                    details: error
+                })
+            }
         })
 }
 
@@ -55,22 +71,22 @@ function loadTablesContent(tableName, callback) {
 //     request(url, params, GET_REQUEST, callback);
 // }
 
-function text2SQL(userQuery, callback) {
+function text2SQL(userQuery, callback, errorCallback) {
     const url = `${dataServerUrl}/text2sql`
     const params = userQuery
-    request(url, params, POST_REQUEST, callback);
+    request(url, params, POST_REQUEST, callback, errorCallback);
 }
 
-function SQL2VL(sql, db_id, callback) {
+function SQL2VL(sql, db_id, callback, errorCallback) {
     const url = `${dataServerUrl}/sql2vis/${sql}/${db_id}`;
     const params = {};
-    request(url, params, GET_REQUEST, callback);
+    request(url, params, GET_REQUEST, callback, errorCallback);
 }
 
-function SQL2text(sql, db_id, callback) {
+function SQL2text(sql, db_id, callback, errorCallback) {
     const url = `${dataServerUrl}/sql2text/${sql}/${db_id}`;
     const params = {};
-    request(url, params, GET_REQUEST, callback);
+    request(url, params, GET_REQUEST, callback, errorCallback);
 }
 
 function SQLSugg(db_id, callback) {

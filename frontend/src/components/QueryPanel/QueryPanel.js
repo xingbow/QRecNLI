@@ -62,8 +62,14 @@ export default {
                     "user_text": this.userText,
                     "db_id": dbName
                 }
-                // TODO: the logic has been updated to sync (2nd Sep)
-                // dataService.text2SQL([this.userText, dbName], (data) => {
+                
+                // Show loading state
+                this.$message({
+                    message: 'Processing your query...',
+                    type: 'info',
+                    duration: 1000
+                });
+                
                 dataService.text2SQL(text2SQLQuery, (data) => {
                     const sqlResult = {
                             "sql": data["sql"].trim(),
@@ -84,14 +90,46 @@ export default {
                                     pipeService.emitQuerySugg(data);
                                     this.qSugg = data['nl'];
                                 })
+                            }, (error) => {
+                                this.handleError('Failed to generate visualization', error);
                             });
+                        }, (error) => {
+                            this.handleError('Failed to translate SQL to text', error);
                         });
                     } else {
-                        alert("sql returns is empty");
+                        this.$message({
+                            message: 'No SQL query was generated. Please try rephrasing your question.',
+                            type: 'warning'
+                        });
                     }
+                }, (error) => {
+                    this.handleError('Failed to convert text to SQL', error);
                 });
             } else {
-                alert("input text is empty");
+                this.$message({
+                    message: 'Please enter a query to search.',
+                    type: 'warning'
+                });
+            }
+        },
+        
+        handleError: function(userMessage, error) {
+            console.error('Query error:', error);
+            
+            let errorMessage = userMessage;
+            if (error && error.message) {
+                errorMessage += `: ${error.message}`;
+            }
+            
+            this.$message({
+                message: errorMessage,
+                type: 'error',
+                duration: 5000
+            });
+            
+            // Optionally show more detailed error for debugging
+            if (error && error.details) {
+                console.error('Detailed error:', error.details);
             }
         },
         onInput: function(input) {

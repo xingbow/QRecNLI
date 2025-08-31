@@ -5,6 +5,9 @@
       :data="qRet.data"
       :innerKey="qRet.id"
       :onDelete="onDelete"
+      :defaultTitle="qRet.title"
+      :savedConfig="qRet.savedConfig"
+      :nlQuery="qRet.nlQuery"
     >
       <template v-slot:setting-popover>
         <slot name="setting-popover"></slot>

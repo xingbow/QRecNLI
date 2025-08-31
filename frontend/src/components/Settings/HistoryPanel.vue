@@ -33,6 +33,7 @@
 <script>
 import pipeService from "../../service/pipeService";
 import draggable from "vuedraggable";
+import configStorageService from "../../service/configStorageService.js";
 
 export default {
   name: "HistoryPanel",
@@ -56,15 +57,43 @@ export default {
     },
     handleNodeClick(key) {
       const history = this.findHistoryNodeByKey(key);
-      pipeService.emitSQL(history.SQL);
+      
+      // Get saved configuration and title for this query using the natural language query as key
+      const savedState = configStorageService.getChartState(key);
+      
+      // Enhance the SQL return with saved configuration info
+      const enhancedSQL = {
+        ...history.SQL,
+        savedConfigState: savedState
+      };
+      
+      pipeService.emitSQL(enhancedSQL);
       pipeService.emitNLQuery(history.key);
       pipeService.emitQuerySugg(history.QuerySugg);
       this.historyData.pop();
     },
     handleNodeClone({ key }) {
       this.visCounter += 1;
-      const VLSpecs = this.findHistoryNodeByKey(key).VLSpecs;
-      return { ...VLSpecs, id: `history-${this.visCounter}` };
+      const historyNode = this.findHistoryNodeByKey(key);
+      const VLSpecs = historyNode.VLSpecs;
+      const chartId = `history-${this.visCounter}`;
+      
+      // Restore saved configuration and title if available using the natural language query as key
+      const savedState = configStorageService.getChartState(key);
+      if ((savedState && savedState.config) || (savedState && savedState.title)) {
+        console.log(`Restoring saved state for chart: ${key}`, savedState);
+        
+        return {
+          ...VLSpecs,
+          id: chartId,
+          // Restore saved title if available, otherwise use original
+          title: (savedState && savedState.title) || VLSpecs.title,
+          // Include saved configuration for restoration
+          savedConfig: savedState && savedState.config
+        };
+      }
+      
+      return { ...VLSpecs, id: chartId };
     },
   },
   mounted: function () {
@@ -84,6 +113,7 @@ export default {
           sqlQuery: sql,
           nlQuery: nl,
           nlExplanation: SQLTrans.text,
+          originalId: VLSpecs[0].id, // Store original ID for config lookup
           // sqlDecoded: SQLTrans.sqlDecoded,
         };
       }

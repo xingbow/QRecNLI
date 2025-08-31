@@ -97,8 +97,9 @@ export default {
   data() {
     return {
       dataset: "spider",
-      dbselected: "customers_and_addresses",
+      // dbselected: "tracking_share_transactions",
       // dbselected: "department_management",
+      dbselected: "company_employee",
       dbLists: [],
       dbInfo: [],
       tables: {},

@@ -12,6 +12,14 @@
         <el-button
           plain
           size="small"
+          :icon="isBookmarked ? 'el-icon-star-on' : 'el-icon-star-off'"
+          :type="isBookmarked ? 'primary' : ''"
+          v-on:click="toggleBookmark"
+          title="Pin/Unpin chart"
+        ></el-button>
+        <el-button
+          plain
+          size="small"
           icon="el-icon-info"
           v-on:click="infoVisible = !infoVisible"
         ></el-button>
@@ -45,10 +53,7 @@
           v-model="title"
           width="w"
           class="title-input"
-          @blur="
-            inputVisible = false;
-            titleVisible = true;
-          "
+          @blur="handleTitleBlur"
         ></el-input>
       </div>
       <el-popover
@@ -94,6 +99,7 @@
 /* global _ $*/
 import VueDraggableResizable from "vue-draggable-resizable";
 import "vue-draggable-resizable/dist/VueDraggableResizable.css";
+import configStorageService from "../../../service/configStorageService.js";
 
 export default {
   name: "DraggableChart",
@@ -104,7 +110,8 @@ export default {
       infoVisible: false,
       inputVisible: false,
       titleVisible: true,
-      title: "title",
+      title: "",
+      isBookmarked: false,
       margin: {
         top: 10,
         bottom: 10,
@@ -138,9 +145,23 @@ export default {
       type: String,
       default: "",
     },
+    chartId: {
+      type: String,
+      default: "",
+    },
+    nlQuery: {
+      type: String,
+      default: "",
+    },
   },
   mounted() {
     this.title = this.defaultTitle;
+    this.restoreTitle();
+  },
+  watch: {
+    defaultTitle: function(newTitle) {
+      this.title = newTitle;
+    }
   },
   methods: {
     _onResize: function (x, y, width, height) {
@@ -151,6 +172,42 @@ export default {
         height - this.margin.top - this.margin.bottom
       );
     },
+    
+    // Title persistence methods
+    saveTitle: function() {
+      const storageKey = this.nlQuery || this.chartId;
+      if (storageKey) {
+        configStorageService.saveChartTitle(storageKey, this.title);
+      }
+    },
+    
+    restoreTitle: function() {
+      const storageKey = this.nlQuery || this.chartId;
+      if (storageKey) {
+        const savedTitle = configStorageService.getChartTitle(storageKey);
+        if (savedTitle) {
+          console.log(`Restoring title for chart: ${storageKey}`, savedTitle);
+          this.title = savedTitle;
+          this.$emit('title-restored', savedTitle);
+        }
+      }
+    },
+    
+    // Override title input handling to save on blur
+    handleTitleBlur: function() {
+      this.inputVisible = false;
+      this.titleVisible = true;
+      this.saveTitle();
+    },
+    
+    // Bookmark functionality
+    toggleBookmark: function() {
+      this.isBookmarked = !this.isBookmarked;
+      this.$emit('bookmark-changed', {
+        chartId: this.chartId,
+        isBookmarked: this.isBookmarked
+      });
+    }
   },
 };
 </script>

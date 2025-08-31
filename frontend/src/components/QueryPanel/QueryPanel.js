@@ -1,6 +1,6 @@
-/* global d3 $ _ */
 import dataService from '../../service/dataService.js'
 import pipeService from '../../service/pipeService.js'
+
 export default {
     name: "QueryPanel",
     props: {
@@ -17,6 +17,7 @@ export default {
             },
             showSugg: true,
             qSugg: {},
+            isSearching: false,
         }
     },
     watch: {
@@ -45,8 +46,6 @@ export default {
             if (vm.dbselected.length > 0) {
                 dataService.SQLSugg(vm.dbselected, (suggData) => {
                     console.log("suggestion data: ", suggData);
-                    // let qSugg = _.cloneDeep(suggData["nl"]);
-                    // this.qSugg = _.shuffle(qSugg).slice(0,5)
                     this.qSugg = suggData["nl"];
                     // add emit original (i.e., 1st) query suggestions
                     pipeService.emitOriginalSugg(suggData);
@@ -59,13 +58,21 @@ export default {
             if (this.userText.length > 0) {
                 const userText = this.userText;
                 const dbName = this.dbselected;
+                this.isSearching = true; // Block interactions during search
+                pipeService.emitSearchStart(); // Signal search operation start
                 pipeService.emitNLQuery(userText);
                 let text2SQLQuery = {
                     "user_text": this.userText,
                     "db_id": dbName
                 }
-                // TODO: the logic has been updated to sync (2nd Sep)
-                // dataService.text2SQL([this.userText, dbName], (data) => {
+                
+                // Show loading state
+                this.$message({
+                    message: 'Processing your query...',
+                    type: 'info',
+                    duration: 1000
+                });
+                
                 dataService.text2SQL(text2SQLQuery, (data) => {
                     const sqlResult = {
                             "sql": data["sql"].trim(),
@@ -75,7 +82,6 @@ export default {
                         // send "sql" to settings and record sql history
                     if (sqlResult["sql"].length > 0) {
                         dataService.SQL2text(sqlResult["sql"], dbName, (data) => {
-                            console.log("sql2text:",  data)
                             sqlResult.SQLTrans = data;
                             dataService.SQL2VL(sqlResult["sql"], dbName, (data) => {
                                 sqlResult.VLSpecs = [data];
@@ -84,36 +90,53 @@ export default {
                                 // query suggestions
                                 dataService.SQLSugg(dbName, (data) => {
                                     console.log("query suggestion after submitting nl query: ", data);
-                                    
-                                    if(data.nl.length>5){
-                                        let newData = data.nl.map((nl, nlidx)=>{
-                                            return [nl, data.sql[nlidx]]
-                                        })
-                                        let suggDict = {}
-                                        suggDict.nl = []
-                                        suggDict.sql = []
-                                        _.shuffle(newData).slice(0,5).map(d=>{
-                                            suggDict.nl.push(d[0]);
-                                            suggDict.sql.push(d[1]);
-                                        });
-                                        pipeService.emitQuerySugg(suggDict);
-                                        this.qSugg = suggDict['nl'];
-
-                                    }
-                                    else{
-                                        pipeService.emitQuerySugg(data);
-                                        this.qSugg = data['nl'];
-                                    }
-                                   
+                                    pipeService.emitQuerySugg(data);
+                                    this.qSugg = data['nl'];
+                                    this.isSearching = false; // Re-enable interactions after successful completion
                                 })
+                            }, (error) => {
+                                this.handleError('Failed to generate visualization', error);
                             });
+                        }, (error) => {
+                            this.handleError('Failed to translate SQL to text', error);
                         });
                     } else {
-                        alert("sql returns is empty");
+                        this.isSearching = false; // Re-enable interactions when no SQL generated
+                        this.$message({
+                            message: 'No SQL query was generated. Please try rephrasing your question.',
+                            type: 'warning'
+                        });
                     }
+                }, (error) => {
+                    this.handleError('Failed to convert text to SQL', error);
                 });
             } else {
-                alert("input text is empty");
+                this.isSearching = false; // Re-enable interactions when no input provided
+                this.$message({
+                    message: 'Please enter a query to search.',
+                    type: 'warning'
+                });
+            }
+        },
+        
+        handleError: function(userMessage, error) {
+            console.error('Query error:', error);
+            this.isSearching = false; // Re-enable interactions on error
+            
+            let errorMessage = userMessage;
+            if (error && error.message) {
+                errorMessage += `: ${error.message}`;
+            }
+            
+            this.$message({
+                message: errorMessage,
+                type: 'error',
+                duration: 5000
+            });
+            
+            // Optionally show more detailed error for debugging
+            if (error && error.details) {
+                console.error('Detailed error:', error.details);
             }
         },
         onInput: function(input) {
@@ -172,6 +195,9 @@ export default {
         },
 
         selectQuery: function(nlidx) {
+            if (this.isSearching) {
+                return; // Block selection during search
+            }
             if (this.qSugg) {
                 console.log("receive nl query:", nlidx, this.qSugg[nlidx]);
                 this.userText = this.qSugg[nlidx];

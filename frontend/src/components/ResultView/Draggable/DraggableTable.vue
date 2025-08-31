@@ -11,9 +11,15 @@
       :dataContent="dataContent"
       :columnNames="columnNames"
       :width="width"
+      :tableConfig="tableConfig"
     />
     <template v-slot:setting-popover>
-      <slot name="setting-popover"></slot>
+      <TableConfig 
+        :currentConfig="tableConfig"
+        @config-change="handleConfigChange"
+        @apply-config="applyConfiguration"
+        @reset-config="resetConfiguration"
+      />
     </template>
     <template v-slot:info-popover>
       <slot name="info-popover"></slot>
@@ -25,12 +31,13 @@
 /* global _ $*/
 import DraggableChart from "./DraggableChart.vue";
 import Table from "./Table.vue";
+import TableConfig from "./TableConfig.vue";
 
 const maxWidth = 200;
 
 export default {
   name: "DraggableTable",
-  components: { DraggableChart, Table },
+  components: { DraggableChart, Table, TableConfig },
   props: {
     dataContent: Array,
     columnNames: Array,
@@ -44,6 +51,11 @@ export default {
     return {
       width: 500,
       height: 300,
+      tableConfig: {
+        rowsPerPage: 25,
+        tableStyle: 'default',
+        columnWidth: 'auto'
+      }
     };
   },
   watch: {
@@ -71,6 +83,37 @@ export default {
         this.height = height;
       }
     },
+    
+    // Configuration methods
+    handleConfigChange: function(configChange) {
+      const { type, value } = configChange;
+      
+      switch(type) {
+        case 'pagination':
+          this.tableConfig.rowsPerPage = value;
+          break;
+        case 'style':
+          this.tableConfig.tableStyle = value;
+          break;
+        case 'column-width':
+          this.tableConfig.columnWidth = value;
+          break;
+      }
+    },
+    
+    applyConfiguration: function(config) {
+      this.tableConfig = { ...config };
+      this.$forceUpdate();
+    },
+    
+    resetConfiguration: function() {
+      this.tableConfig = {
+        rowsPerPage: 25,
+        tableStyle: 'default',
+        columnWidth: 'auto'
+      };
+      this.$forceUpdate();
+    }
   },
 };
 </script>

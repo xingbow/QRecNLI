@@ -69,4 +69,18 @@
   border: 1px solid #409eff;
   border-radius: 5px;
 }
+
+.recommend-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.updating-message {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  color: #409eff;
+  font-style: italic;
+}
 </style>

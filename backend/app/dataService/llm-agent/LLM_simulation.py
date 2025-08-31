@@ -42,9 +42,9 @@ client, model_name = initialize_llm_client(provider=preferred_provider)
 
 
 # --- 2. System Interface Module (API Wrapper) ---
-class Lux_API_Wrapper:
+class QRecNLI_LUX_API_Wrapper:
     """
-       A wrapper class to handle all API communications with the backend service(Baseline-Lux).
+       A wrapper class to handle all API communications with the backend service(QRec-NLI).
        It encapsulates methods for fetching database schema, recommendations, and executing queries.
     """
     def __init__(self, base_url, db_id):
@@ -143,7 +143,7 @@ class Lux_API_Wrapper:
     def execute_query_and_get_next_state(self, query_text: str):
         """
             Sends a natural language query to the backend, gets the resulting SQL and data,
-            and then fetches new next-step recommendations for the next turn.
+            and then fetches new interesting recommendations for the next turn.
         """
         try:
             print(f"Executing query: '{query_text}'...")
@@ -153,13 +153,13 @@ class Lux_API_Wrapper:
             result = response.json()
             sql_query = result.get('sql', '')
             print(f"Generated SQL: {sql_query}")
-            print("Fetching new next-step recommendations...")
+            print("Fetching new interesting recommendations...")
             headers = {'Accept-Encoding': None, 'User-Agent': 'curl/7.81.0'}
-            logger.info(f"Fetching next-step SQL suggestions after query execution")
+            logger.info(f"Fetching interesting SQL suggestions after query execution")
             sugg_response = requests.get(f"{self.base_url}/sql_sugg/{self.db_id}", headers=headers)
             sugg_response.raise_for_status()
             new_text_recs = sugg_response.json().get("nl", [])
-            logger.info(f"Received {len(new_text_recs)} new next-step NL recommendations")
+            logger.info(f"Received {len(new_text_recs)} new interesting NL recommendations")
             print(f"Directly fetched new NL recommendations: {new_text_recs[:5]}")
             return {"sql": sql_query, "data": result.get('data', []), "recommendations": new_text_recs}
         except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
@@ -283,11 +283,11 @@ class LLMAnalystAgent:
         """
         return self._call_llm(prompt_template)
 
-    def decide_next_query(self, last_query, query_result_text, recommendations, use_lux=True):
+    def decide_next_query(self, last_query, query_result_text, recommendations, use_recommendations=True):
         """ Makes a decision for the next step based on the previous turn's results."""
         memory_log = "\n".join([f"- {item}" for item in self.memory]) if self.memory else "No insights have been gained yet."
         recs_text = "The system did not provide any contextual recommendations."
-        if use_lux and recommendations:
+        if use_recommendations and recommendations:
             recs_text = chr(10).join([f'{i + 1}. {rec}' for i, rec in enumerate(recommendations[:5])])
 
         prompt_template = f"""
@@ -334,21 +334,21 @@ class LLMAnalystAgent:
 
 
 # --- 5. Main Simulation Loop ---
-def run_simulation(max_turns=6, use_lux=True):
+def run_simulation(max_turns=6, use_recommendations=True):
     """
         The main function that orchestrates the entire simulation from start to finish.
         It initializes the agent and API wrapper, runs the cold start phase,
         and then enters the main interaction loop for a specified number of turns.
         Finally, it saves the complete interaction log.
     """
-    mode_str = 'With Lux' if use_lux else 'No Lux'
+    mode_str = 'With Recommendations' if use_recommendations else 'No Recommendations'
     print("======================================================")
-    print(f"      Starting LLM Data Analyst Simulation           ")
+    print(f"      Starting LLM Data Analyst Simulation v8 (Revised)      ")
     print(f"      Target Database: {DB_ID}")
     print(f"      Mode: {mode_str}")
     print("======================================================")
 
-    api = Lux_API_Wrapper(BASE_URL, DB_ID)
+    api = QRecNLI_LUX_API_Wrapper(BASE_URL, DB_ID)
     agent_persona = "You are a professional data analyst skilled in exploratory analysis with incomplete information. You can only interact with the system through natural language, including viewing recommended exploration questions."
     agent_goal = f"Analyze the '{DB_ID}' database to understand basic customer information."
     agent = LLMAnalystAgent(persona=agent_persona, goal=agent_goal)
@@ -362,7 +362,7 @@ def run_simulation(max_turns=6, use_lux=True):
 
     cold_start_decision = agent.decide_first_query(
         initial_state["schema"],
-        initial_state["recommendations"] if use_lux else []
+        initial_state["recommendations"] if use_recommendations else []
     )
     if not cold_start_decision:
         print("Cold start decision failed, aborting simulation.")
@@ -392,8 +392,8 @@ def run_simulation(max_turns=6, use_lux=True):
         next_decision = agent.decide_next_query(
             last_query=current_query,
             query_result_text=result_text,
-            recommendations=response_state.get('recommendations', []) if use_lux else [],
-            use_lux=use_lux
+            recommendations=response_state.get('recommendations', []) if use_recommendations else [],
+            use_recommendations=use_recommendations
         )
         if not next_decision:
             print("Analyst decision failed, ending simulation.")
@@ -425,22 +425,24 @@ def run_simulation(max_turns=6, use_lux=True):
             "agent_persona": agent.persona,
             "agent_goal": agent.goal,
             "db_id": DB_ID,
-            "simulation_mode": 'with_lux' if use_lux else 'no_lux',
+            "simulation_mode": 'with_recs' if use_recommendations else 'no_recs',
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
         },
         "interaction_log": agent.interaction_log
     }
 
-    log_filename = f"simulation_log_{'with_lux' if use_lux else 'no_lux'}_{DB_ID}.json"
+    log_filename = f"simulation_log_{'with_lux_recs' if use_recommendations else 'no_lux_recs'}_{DB_ID}.json"
     with open(log_filename, 'w', encoding='utf-8') as f:
         json.dump(final_log_data, f, indent=2, ensure_ascii=False)
     print(f"\n💾 Full interaction log saved to '{log_filename}'")
 
 
 if __name__ == "__main__":
-    # Run with lux mode
-    run_simulation(max_turns=5, use_lux=True)
+    # Run with recommendations mode
+    run_simulation(max_turns=5, use_recommendations=True)
 
-    # # # For comparison, you can run the no-lux mode
+    # # # For comparison, you can run the no-recommendations mode
     # print("\n\n" + "=" * 80 + "\n\n")
-    # run_simulation(max_turns=5, use_lux=False)
+    # run_simulation(max_turns=5, use_recommendations=False)
+
+

@@ -32,7 +32,7 @@ def clean_sql(sql: str) -> str:
     Cleans and standardizes a raw SQL query string.
 
     This function performs several normalization steps:
-    1. Removes common markdown code fences (e.g., ```sql).
+    1. Removes common markdown code fences (e.g., ```sql, sqlquery).
     2. Removes double quotes and trailing semicolons.
     3. Converts all defined SQL keywords to uppercase.
     4. Keep column and table names in lowercase
@@ -50,7 +50,8 @@ def clean_sql(sql: str) -> str:
         return sql
 
     # 1. Remove optional markdown code fences and trim leading/trailing whitespace.
-    cleaned_sql = re.sub(r'^```sql\s*|\s*```$', '', sql, flags=re.IGNORECASE).strip()
+    cleaned_sql = re.sub(r"^(```sql\s*|sqlquery:\s*)", "", sql, flags=re.IGNORECASE).strip()
+    cleaned_sql = re.sub(r"^(```sql\s*|sqlquery:\s*)", "", cleaned_sql, flags=re.IGNORECASE).strip() 
 
     # 2. Remove all double quotes, often used for identifiers but can be inconsistent.
     cleaned_sql = cleaned_sql.replace('"', '')
@@ -94,7 +95,7 @@ if __name__ == '__main__':
 
     # Define a more complex query to showcase multiple features of the cleaner.
     complex_sql_example = """
-    ```sql
+    ```sqlquery
     select
         user_id,
         COUNT(order_id) as order_count,
@@ -109,3 +110,20 @@ if __name__ == '__main__':
     print("--- Complex Example ---")
     print(f"Original SQL:\n{complex_sql_example.strip()}")
     print(f"Cleaned SQL:\n{clean_sql(complex_sql_example)}")
+
+    test_sqls = [
+        "sqlquery: SELECT * FROM table",
+        "SQLQUERY: SELECT * FROM table",
+        "  sqlquery:  SELECT * FROM table  ",
+        "```sql sqlquery:SELECT * FROM table```",
+        "```sql\nsqlquery:  SELECT * FROM table\n```",
+        "SELECT * FROM table",
+        "   SELECT * FROM table   ",
+        "```sql SELECT * FROM table ```",
+    ]
+
+    for sql in test_sqls:
+        cleaned = clean_sql(sql)
+        print(f"Original: '{sql}'")
+        print(f"Cleaned: '{cleaned}'")
+        print("-" * 20)

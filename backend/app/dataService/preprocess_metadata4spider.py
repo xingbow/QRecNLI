@@ -60,7 +60,7 @@ def generate_metadata_cache_concurrently():
         for table_name in cleaned_table_names:
             all_metadata_items.add(table_name)
             # Add a wildcard entry for the table as a whole topic
-            all_metadata_items.add(f"{table_name}:*")
+            all_metadata_items.add(f"{table_name}: *")
 
         for table_idx, col_name in column_names_original:
             if table_idx >= 0:
@@ -69,7 +69,7 @@ def generate_metadata_cache_concurrently():
                 # Clean the column name
                 cleaned_column = clean_name(col_name)
 
-                full_col_name = f"{cleaned_table}:{cleaned_column}"
+                full_col_name = f"{cleaned_table}: {cleaned_column}"
                 all_metadata_items.add(full_col_name)
 
     logger.info(

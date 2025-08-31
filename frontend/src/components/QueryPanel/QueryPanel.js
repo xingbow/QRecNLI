@@ -17,6 +17,7 @@ export default {
             },
             showSugg: true,
             qSugg: {},
+            isSearching: false,
         }
     },
     watch: {
@@ -57,6 +58,8 @@ export default {
             if (this.userText.length > 0) {
                 const userText = this.userText;
                 const dbName = this.dbselected;
+                this.isSearching = true; // Block interactions during search
+                pipeService.emitSearchStart(); // Signal search operation start
                 pipeService.emitNLQuery(userText);
                 let text2SQLQuery = {
                     "user_text": this.userText,
@@ -89,6 +92,7 @@ export default {
                                     console.log("query suggestion after submitting nl query: ", data);
                                     pipeService.emitQuerySugg(data);
                                     this.qSugg = data['nl'];
+                                    this.isSearching = false; // Re-enable interactions after successful completion
                                 })
                             }, (error) => {
                                 this.handleError('Failed to generate visualization', error);
@@ -97,6 +101,7 @@ export default {
                             this.handleError('Failed to translate SQL to text', error);
                         });
                     } else {
+                        this.isSearching = false; // Re-enable interactions when no SQL generated
                         this.$message({
                             message: 'No SQL query was generated. Please try rephrasing your question.',
                             type: 'warning'
@@ -106,6 +111,7 @@ export default {
                     this.handleError('Failed to convert text to SQL', error);
                 });
             } else {
+                this.isSearching = false; // Re-enable interactions when no input provided
                 this.$message({
                     message: 'Please enter a query to search.',
                     type: 'warning'
@@ -115,6 +121,7 @@ export default {
         
         handleError: function(userMessage, error) {
             console.error('Query error:', error);
+            this.isSearching = false; // Re-enable interactions on error
             
             let errorMessage = userMessage;
             if (error && error.message) {
@@ -188,6 +195,9 @@ export default {
         },
 
         selectQuery: function(nlidx) {
+            if (this.isSearching) {
+                return; // Block selection during search
+            }
             if (this.qSugg) {
                 console.log("receive nl query:", nlidx, this.qSugg[nlidx]);
                 this.userText = this.qSugg[nlidx];

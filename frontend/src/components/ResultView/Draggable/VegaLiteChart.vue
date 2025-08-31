@@ -8,6 +8,7 @@
     :defaultTitle="defaultTitle"
     :chartId="innerKey"
     :nlQuery="nlQuery"
+    @bookmark-changed="onBookmarkChanged"
   >
     <vega-lite
       :spec="vlSpec"
@@ -313,6 +314,11 @@ export default {
       if (this.innerKey) {
         configStorageService.deleteChartState(this.innerKey);
       }
+    },
+    
+    // Pass through bookmark events
+    onBookmarkChanged: function(bookmarkData) {
+      this.$emit('bookmark-changed', bookmarkData);
     }
   },
   

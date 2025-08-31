@@ -12,6 +12,14 @@
         <el-button
           plain
           size="small"
+          :icon="isBookmarked ? 'el-icon-star-on' : 'el-icon-star-off'"
+          :type="isBookmarked ? 'primary' : ''"
+          v-on:click="toggleBookmark"
+          title="Pin/Unpin chart"
+        ></el-button>
+        <el-button
+          plain
+          size="small"
           icon="el-icon-info"
           v-on:click="infoVisible = !infoVisible"
         ></el-button>
@@ -103,6 +111,7 @@ export default {
       inputVisible: false,
       titleVisible: true,
       title: "",
+      isBookmarked: false,
       margin: {
         top: 10,
         bottom: 10,
@@ -189,6 +198,15 @@ export default {
       this.inputVisible = false;
       this.titleVisible = true;
       this.saveTitle();
+    },
+    
+    // Bookmark functionality
+    toggleBookmark: function() {
+      this.isBookmarked = !this.isBookmarked;
+      this.$emit('bookmark-changed', {
+        chartId: this.chartId,
+        isBookmarked: this.isBookmarked
+      });
     }
   },
 };

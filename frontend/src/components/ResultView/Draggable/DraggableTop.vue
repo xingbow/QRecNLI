@@ -8,6 +8,7 @@
       :defaultTitle="qRet.title"
       :savedConfig="qRet.savedConfig"
       :nlQuery="qRet.nlQuery"
+      @bookmark-changed="onBookmarkChanged"
     >
       <template v-slot:setting-popover>
         <slot name="setting-popover"></slot>
@@ -40,6 +41,8 @@
       :w="80"
       :h="50"
       :onDelete="onDelete"
+      :chartId="qRet.id"
+      @bookmark-changed="onBookmarkChanged"
     >
       <span class="result-text">{{ qRet.content }}</span>
       <template v-slot:setting-popover>
@@ -73,6 +76,11 @@ export default {
       type: Function,
       default: () => "",
     },
+  },
+  methods: {
+    onBookmarkChanged: function(bookmarkData) {
+      this.$emit('bookmark-changed', bookmarkData);
+    }
   },
 };
 </script>

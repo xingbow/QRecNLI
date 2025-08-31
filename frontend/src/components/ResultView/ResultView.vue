@@ -44,4 +44,19 @@
         height: 500px;
         border: none;
     }
+
+    .generating-results {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+        color: #409eff;
+    }
+
+    .loading-spinner {
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        font-weight: 500;
+    }
 </style>

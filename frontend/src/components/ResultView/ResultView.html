@@ -11,9 +11,15 @@
                             :whereDecoded="qRet.sqlDecoded['where'].filter((d, i) => i % 2 === 0)" 
                             :groupbyDecoded="qRet.sqlDecoded['groupBy']" -->
         <div id="vegaLiteContainer">
-            <draggable class="list-group" :list="queryReturns" handle="none" group="historyNode">
+            <div v-if="isGenerating" class="generating-results">
+                <div class="loading-spinner">
+                    <i class="el-icon-loading"></i>
+                    <span style="margin-left: 10px;">Generating results...</span>
+                </div>
+            </div>
+            <draggable v-else class="list-group" :list="queryReturns" handle="none" group="historyNode">
                 <div class="list-group-item-invisible" v-for="(qRet, index) in queryReturns" :key="qRet.id">
-                    <DraggableTop :qRet="qRet" :onDelete="()=>onDelete(index)">
+                    <DraggableTop :qRet="qRet" :onDelete="()=>onDelete(index)" @bookmark-changed="onBookmarkChanged">
                         <template v-slot:setting-popover>
                             <!-- Configuration will be handled by individual components -->
                         </template>

@@ -49,30 +49,6 @@
       />
     </div>
 
-    <!-- Chart Size -->
-    <div class="config-section">
-      <label>Chart Size:</label>
-      <div class="size-controls">
-        <el-input-number 
-          v-model="chartWidth" 
-          @change="onSizeChange"
-          :min="100" 
-          :max="800" 
-          size="small"
-          placeholder="Width"
-        />
-        <span class="size-separator">×</span>
-        <el-input-number 
-          v-model="chartHeight" 
-          @change="onSizeChange"
-          :min="100" 
-          :max="600" 
-          size="small"
-          placeholder="Height"
-        />
-      </div>
-    </div>
-
     <!-- Reset Buttons -->
     <div class="config-actions">
       <el-button size="small" @click="resetConfiguration">

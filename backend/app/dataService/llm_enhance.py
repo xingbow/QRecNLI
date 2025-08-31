@@ -32,7 +32,7 @@ class LLMEnhancer:
 
         # --- LLM model initialization ---
         try:
-            self.model = ChatOpenAI(model_name="gpt-3.5-turbo-1106", temperature=0, openai_api_key = GV.openai_key, model_kwargs={"seed": 42})
+            self.model = ChatOpenAI(model_name="gpt-4o", temperature=0, openai_api_key = GV.openai_key, model_kwargs={"seed": 42})
             self.logger.info("LLM Enhancer initialized with LLM model.")
         except Exception as e:
             self.logger.error(f"Failed to initialize LLM model. Error: {e}")

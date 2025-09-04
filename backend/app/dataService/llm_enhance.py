@@ -137,7 +137,7 @@ class LLMEnhancer:
         ])
 
         if not items_to_process:
-            self.logger.info("All provided items are already in one of the caches. No new items to process.")
+            # self.logger.info("All provided items are already in one of the caches. No new items to process.")
             return
 
         results = {}

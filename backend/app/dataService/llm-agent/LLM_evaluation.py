@@ -220,7 +220,7 @@ def evaluate_log_file(log_filename: str):
 
 
 if __name__ == "__main__":
-    log_file_to_evaluate = "simulation_log_with_recs_customers_and_addresses_enhance_0813_best.json"
+    log_file_to_evaluate = "simulation_log_with_recs_customers_and_addresses.json"
 
     if os.path.exists(log_file_to_evaluate):
         evaluate_log_file(log_file_to_evaluate)

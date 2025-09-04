@@ -333,7 +333,58 @@ class LLMAnalystAgent:
         return self._call_llm(prompt_template)
 
 
-# --- 5. Main Simulation Loop ---
+# --- 5. Statistics Calculation ---
+def calculate_action_statistics(interaction_log):
+    """
+    Calculate statistics for CHOOSE_RECOMMENDATION, REFINE_RECOMMENDATION, and FORMULATE_NEW actions.
+    
+    Args:
+        interaction_log (list): The complete interaction log from the simulation
+    
+    Returns:
+        dict: Statistics about action types
+    """
+    action_counts = {
+        "CHOOSE_RECOMMENDATION": 0,
+        "REFINE_RECOMMENDATION": 0,
+        "FORMULATE_NEW": 0
+    }
+    
+    total_actions = 0
+    
+    for turn_data in interaction_log:
+        decision = turn_data.get("decision", {})
+        
+        # Check for cold start decision
+        if "first_action_type" in decision:
+            action_type = decision["first_action_type"]
+            if action_type in action_counts:
+                action_counts[action_type] += 1
+                total_actions += 1
+        
+        # Check for interaction turn decisions
+        if "next_action_type" in decision:
+            action_type = decision["next_action_type"]
+            if action_type in action_counts:
+                action_counts[action_type] += 1
+                total_actions += 1
+    
+    # Calculate percentages
+    statistics = {
+        "total_actions": total_actions,
+        "action_counts": action_counts,
+        "action_percentages": {}
+    }
+    
+    if total_actions > 0:
+        for action_type, count in action_counts.items():
+            percentage = (count / total_actions) * 100
+            statistics["action_percentages"][action_type] = round(percentage, 2)
+    
+    return statistics
+
+
+# --- 6. Main Simulation Loop ---
 def run_simulation(max_turns=6, use_recommendations=True):
     """
         The main function that orchestrates the entire simulation from start to finish.
@@ -413,6 +464,17 @@ def run_simulation(max_turns=6, use_recommendations=True):
     print("\n\n======================================================")
     print("           🏁 Simulation Ended 🏁          ")
     print("======================================================")
+    
+    # Calculate and display action statistics
+    action_stats = calculate_action_statistics(agent.interaction_log)
+    print("\n📊 Action Type Statistics:")
+    print("======================================================")
+    print(f"Total Actions: {action_stats['total_actions']}")
+    print("\nAction Distribution:")
+    for action_type, count in action_stats['action_counts'].items():
+        percentage = action_stats['action_percentages'].get(action_type, 0)
+        print(f"  {action_type}: {count} ({percentage}%)")
+    
     print("\n📝 Analyst Report Summary (Based on Memory):")
     if agent.memory:
         for i, insight in enumerate(agent.memory):
@@ -428,6 +490,7 @@ def run_simulation(max_turns=6, use_recommendations=True):
             "simulation_mode": 'with_recs' if use_recommendations else 'no_recs',
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
         },
+        # "action_statistics": action_stats,
         "interaction_log": agent.interaction_log
     }
 

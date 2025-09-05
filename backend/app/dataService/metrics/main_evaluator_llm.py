@@ -1,7 +1,7 @@
 import os
 import pathlib
-from coverage_metrics import CoverageEvaluator
-from cohesion_metrics import CohesionEvaluator
+from coverage_metrics_llm import CoverageEvaluator
+from cohesion_metrics_llm import CohesionEvaluator
 
 
 def evaluate_user_session(json_filepath: str, schema_folder_name: str, schema_base_dir: str) -> dict:

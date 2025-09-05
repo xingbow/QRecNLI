@@ -3,8 +3,8 @@ import re
 import numpy as np
 from sql_metadata import Parser
 import sqlparse
-from sqlparse.sql import Where
-
+from sqlparse.sql import IdentifierList, Where
+from sqlparse.tokens import Keyword, DML
 
 class CohesionEvaluator:
     """
@@ -29,7 +29,6 @@ class CohesionEvaluator:
                                             The keys are 'projections','clauses', 'aggregations', and 'tables',
                                             and the values are sets of the corresponding SQL fragments.
     """
-
     def __init__(self, json_filepath):
         """
         Initializes the CohesionEvaluator instance.
@@ -44,26 +43,11 @@ class CohesionEvaluator:
             filepath (str): The path to the JSON log file.
 
         --Outputs:
-            list[str]: A list of SQL query strings in the order they were executed.
+            list[str]: A list of SQL query strings in the order they appeared.
         """
         with open(filepath, 'r', encoding='utf-8') as f:
             log_data = json.load(f)
-
-        chosen_queries = []
-        interaction_log = log_data.get("interaction_log", [])
-
-        # Iterate through each turn in the interaction log
-        for turn in interaction_log:
-            # We are interested in turns of type 'interaction' which contain the executed SQL
-            if turn.get("type") == "interaction":
-                system_response = turn.get("system_response", {})
-                sql = system_response.get("sql")
-
-                # Add the SQL to our list if it exists and is not empty
-                if sql:
-                    chosen_queries.append(sql)
-
-        return chosen_queries
+        return [step.get('SQL', {}).get('sql') for step in log_data['userdata']['suerQueryData'] if step.get('SQL', {}).get('sql')]
 
     def _get_where_conditions(self, sql):
         """
@@ -106,8 +90,7 @@ class CohesionEvaluator:
                             keys are 'projections', 'clauses', 'aggregations', and 'tables',
                             and the values are sets of strings representing the fragments.
         """
-        if not sql:
-            return {'projections': set(), 'selections': set(), 'clauses': set(), 'aggregations': set(), 'tables': set()}
+        if not sql: return {'projections': set(), 'selections': set(), 'clauses': set(), 'aggregations': set(), 'tables': set()}
         try:
             AGG_OPS = ['COUNT', 'SUM', 'AVG', 'MAX', 'MIN']
             CLAUSE_KEYWORDS = {'GROUP BY', 'ORDER BY', 'LIMIT', 'INTERSECT', 'UNION', 'EXCEPT', 'JOIN'}
@@ -118,13 +101,8 @@ class CohesionEvaluator:
             }
             parser = Parser(sql)
             selections = self._get_where_conditions(sql)
-            return {
-                'projections': set(parser.columns),
-                'selections': selections,
-                'clauses': clauses,
-                'aggregations': aggs,
-                'tables': set(parser.tables)
-            }
+            return {'projections': set(parser.columns),  'selections': selections,  'clauses': clauses, 'aggregations': aggs,
+                    'tables': set(parser.tables)}
         except Exception:
             return {'projections': set(), 'selections': set(), 'clauses': set(), 'aggregations': set(), 'tables': set()}
 
@@ -144,13 +122,8 @@ class CohesionEvaluator:
                 }
         """
         if len(self.parsed_chosen_queries) < 2:
-            return {
-                "Edit Index": 0.0,
-                "Jaccard Index": 0.0,
-                "Cosine Index": 0.0,
-                "Common Fragments Index": 0.0,
-                "Common Tables Index": 0.0
-            }
+            return {"Edit Index": 0.0, "Jaccard Index": 0.0, "Cosine Index": 0.0,
+                    "Common Fragments Index": 0.0, "Common Tables Index": 0.0}
 
         indices = {k: [] for k in ["edit", "jaccard", "cosine", "cf", "ct"]}
         max_tables_in_session = max((len(p['tables']) for p in self.parsed_chosen_queries if p['tables']), default=1)
@@ -171,8 +144,7 @@ class CohesionEvaluator:
 
             intersection_size = len(fragments_prev.intersection(fragments_curr))
             union_size = len(fragments_prev.union(fragments_curr))
-            indices["jaccard"].append(
-                intersection_size / union_size if union_size > 0 else 1.0 if not fragments_prev and not fragments_curr else 0.0)
+            indices["jaccard"].append(intersection_size / union_size if union_size > 0 else 1.0 if not fragments_prev and not fragments_curr else 0.0)
 
             # Cosine Index
             vec_prev = np.array([len(q_prev[f]) for f in fragment_keys])

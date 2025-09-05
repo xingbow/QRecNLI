@@ -3,7 +3,6 @@ import re
 from sql_metadata import Parser
 import sqlite3
 
-
 class CoverageEvaluator:
     """
     Calculates coverage and novelty related metrics:
@@ -40,7 +39,7 @@ class CoverageEvaluator:
 
     def _parse_log_file_for_recommendations(self, filepath):
         """
-        Reads the recommended SQL queries from each turn in the log file.
+        Reads the initial recommended queries and all subsequent ones from the log file.
         --Args:
             filepath (str): The path to the JSON log file.
 
@@ -50,20 +49,10 @@ class CoverageEvaluator:
         """
         with open(filepath, 'r', encoding='utf-8') as f:
             log_data = json.load(f)
-
-        recommendation_lists = []
-        # The interaction data is stored in the "interaction_log" list
-        interaction_log = log_data.get("interaction_log", [])
-
-        for turn in interaction_log:
-            # Recommendations are in the "system_response" object of each turn
-            system_response = turn.get("system_response", {})
-            sql_recommendations = system_response.get("sql_recommendations")
-
-            # Check if sql_recommendations exists and is a list
-            if isinstance(sql_recommendations, list):
-                recommendation_lists.append(sql_recommendations)
-
+        recommendation_lists = [log_data['userdata']['origQuerySugg']['sql']]
+        for step in log_data['userdata']['suerQueryData']:
+            if 'QuerySugg' in step and 'sql' in step['QuerySugg']:
+                recommendation_lists.append(step['QuerySugg']['sql'])
         return recommendation_lists
 
     def _parse_schema(self, db_filepath):
@@ -118,35 +107,18 @@ class CoverageEvaluator:
             dict[str, set]: A dictionary containing the parsed components. Keys are
                             'tables', 'columns', 'aggregations', and 'clauses'.
         """
-        if not sql:
-            return {'tables': set(), 'columns': set(), 'aggregations': set(), 'clauses': set()}
+        if not sql: return {'tables': set(), 'columns': set(), 'aggregations': set(), 'clauses': set()}
         try:
-            AGG_OPS, CLAUSE_KEYWORDS = ['COUNT', 'SUM', 'AVG', 'MAX', 'MIN'], {'GROUP BY', 'ORDER BY', 'LIMIT',
-                                                                               'INTERSECT', 'UNION', 'EXCEPT', 'JOIN',
-                                                                               'WHERE'}
+            AGG_OPS, CLAUSE_KEYWORDS = ['COUNT', 'SUM', 'AVG', 'MAX', 'MIN'], {'GROUP BY', 'ORDER BY', 'LIMIT', 'INTERSECT', 'UNION', 'EXCEPT', 'JOIN', 'WHERE'}
             aggs, clauses = set(), set()
-
-            # Check for aggregation functions
             for op in AGG_OPS:
-                if re.search(r'\b' + op + r'\s*\(', sql, re.IGNORECASE):
-                    aggs.add(op)
-
-            # Check for SQL clauses
+                if re.search(r'\b' + op + r'\s*\(', sql, re.IGNORECASE): aggs.add(op)
             for clause in CLAUSE_KEYWORDS:
-                if re.search(r'\b' + clause + r'\b', sql, re.IGNORECASE):
-                    clauses.add(clause)
-
+                if re.search(r'\b' + clause + r'\b', sql, re.IGNORECASE): clauses.add(clause)
             parser = Parser(sql)
-
-            cleaned_columns = {col.split('.')[-1] for col in parser.columns}
-            return {
-                'tables': set(parser.tables),
-                'columns': cleaned_columns,
-                'aggregations': aggs,
-                'clauses': clauses
-            }
+            return {'tables': set(parser.tables), 'columns': set(parser.columns), 'aggregations': aggs,
+                    'clauses': clauses}
         except Exception:
-            # Return empty sets if parsing fails
             return {'tables': set(), 'columns': set(), 'aggregations': set(), 'clauses': set()}
 
     def evaluate(self):
@@ -173,10 +145,7 @@ class CoverageEvaluator:
         table_coverage = len(recommended_tables) / len(total_tables) if total_tables else 0
         column_coverage = len(recommended_columns) / len(total_columns) if total_columns else 0
 
-        # Define the universe of possible aggregations and clauses for coverage calculation
-        AGG_FUNCTIONS = {'COUNT', 'SUM', 'AVG', 'MAX', 'MIN'}
-        CLAUSES = {'GROUP BY', 'ORDER BY', 'LIMIT', 'INTERSECT', 'UNION', 'EXCEPT', 'JOIN', 'WHERE'}
-
+        AGG_FUNCTIONS, CLAUSES = {'COUNT', 'SUM', 'AVG', 'MAX', 'MIN'}, {'GROUP BY', 'ORDER BY', 'LIMIT', 'INTERSECT', 'UNION', 'EXCEPT', 'JOIN', 'WHERE'}
         agg_coverage = len(recommended_aggs.intersection(AGG_FUNCTIONS)) / len(AGG_FUNCTIONS) if AGG_FUNCTIONS else 0
         clause_coverage = len(recommended_clauses.intersection(CLAUSES)) / len(CLAUSES) if CLAUSES else 0
 
@@ -186,4 +155,3 @@ class CoverageEvaluator:
             "Aggregation Coverage": agg_coverage,
             "Clause Coverage": clause_coverage
         }
-
